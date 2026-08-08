@@ -1,0 +1,35 @@
+.bar {
+  display: block;
+  inline-size: 100%;
+  background-color: var(--surface-sunken);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+
+  /* Non una spazzolata luminosa (sarebbe un gradiente, e qui i gradienti non
+     esistono): solo l'opacità che respira. Coerente con lo stile piatto. */
+  animation: pulse 1400ms ease-in-out infinite;
+}
+
+.bar + .bar {
+  margin-block-start: var(--space-2);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* global.css azzera già le animazioni con reduced-motion, ma quella regola
+   generale spegnerebbe il battito lasciando lo skeleton a metà pulsazione.
+   Qui lo fissiamo a un'opacità stabile e leggibile. */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+    opacity: 0.7;
+  }
+}

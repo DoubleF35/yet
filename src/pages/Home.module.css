@@ -1,0 +1,312 @@
+/* =========================================================================
+   Home — pagina principale (rotta "/home")
+   -------------------------------------------------------------------------
+   Solo token da theme.css: nessun colore, nessuna misura arbitraria.
+   Nessuna ombra, nessun gradiente, nessun raggio: la gerarchia la fanno
+   il peso del bordo (1px vs 2px) e la quantità di spazio bianco.
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. APERTURA
+   ---------------------------------------------------------------------- */
+
+.hero {
+  /* Il padding-top da solo copre l'altezza della navbar fissa: --space-11 va
+     da 64 a 96px, --nav-h da 56 a 72px, quindi il logo non finisce sotto la
+     barra nemmeno se il Layout non aggiungesse spazio suo. Se invece lo
+     aggiunge, il risultato è solo più aria — che qui è quello che vogliamo. */
+  padding-top: var(--space-11);
+  padding-bottom: var(--space-10);
+}
+
+/* Il titolo di pagina è UNO: contiene il logo (immagine, alt "YET") e la
+   tagline. Così il nome del brand e la promessa stanno nello stesso h1
+   invece di avere una tagline enorme senza gerarchia. */
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+
+  /* Il font-size dell'h1 lo decide .tagline: qui serve solo come contenitore,
+     e un font-size grande sull'h1 gonfierebbe il gap in em. */
+  font-size: var(--step-0);
+  margin: 0;
+}
+
+.logo {
+  /* Grande davvero: 176px sul telefono, 352px sul desktop. Le width/height
+     nell'HTML restano quelle native (486x291) per riservare lo spazio ed
+     evitare il salto di layout al caricamento. */
+  width: clamp(11rem, 32vw, 22rem);
+}
+
+.tagline {
+  display: block;
+  font-size: var(--step-6); /* 40 -> 80px */
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+/* Il punto finale in coral: unico tocco di colore nell'apertura. È testo
+   grande (>=40px) quindi il 3.7:1 di --coral puro passa comunque AA. */
+.dot {
+  color: var(--coral);
+}
+
+.lead {
+  max-width: var(--measure);
+  margin-top: var(--space-9);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+}
+
+.meta {
+  margin-top: var(--space-5);
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-9);
+}
+
+/* Bottone pieno. --coral-dark e non --coral: il bianco sopra il coral puro
+   fa 4.4:1, appena sotto AA; su --coral-dark arriva a 6.4:1. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 2.75rem; /* 44px: area di tocco minima */
+  padding: var(--space-4) var(--space-7);
+  border: 2px solid var(--coral-dark);
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition);
+}
+
+/* La classe batte `a:hover { color: var(--coral-dark) }` di global.css per
+   specificità: senza questa regola il testo del bottone diventerebbe coral
+   su coral in hover. */
+.cta:hover {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* Su fondo scuro l'anello coral si vedrebbe poco: qui usiamo la variante
+   invertita, che è il beige del fondo pagina. */
+.cta:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.ctaArrow {
+  flex: none;
+  transition: transform var(--transition);
+}
+
+.cta:hover .ctaArrow {
+  transform: translateX(0.25rem);
+}
+
+/* -------------------------------------------------------------------------
+   2. SEZIONE NOTIZIE
+   ---------------------------------------------------------------------- */
+
+.news {
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-12);
+}
+
+.newsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-strong);
+}
+
+.newsTitle {
+  margin: 0;
+}
+
+.newsCount {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+/* auto-fit + minmax: due o tre colonne quando c'è spazio, una sola sotto i
+   ~600px, senza media query. min(100%, 18rem) invece di 18rem secco perché
+   a 375px una traccia da 288px + i gap sfonderebbe il contenitore. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--border);
+  background-color: var(--surface);
+
+  /* Quante righe di corpo si vedono prima di "Leggi tutto". È una custom
+     property e non un valore fisso in .body così .featured può alzarla senza
+     riscrivere il calcolo dell'altezza. */
+  --collapsed-lines: 7;
+}
+
+/* Notizia in evidenza: prima card a piena larghezza e bordo pieno da 2px.
+   Scelta editoriale, serve a rompere la griglia regolare. */
+.featured {
+  grid-column: 1 / -1;
+  padding: var(--space-8);
+  border: var(--border-strong);
+  --collapsed-lines: 10;
+}
+
+.badge {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.cardTitle {
+  font-size: var(--step-2);
+}
+
+.featured .cardTitle {
+  font-size: var(--step-3);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.sep {
+  color: var(--line);
+}
+
+.body {
+  /* pre-wrap: i ritorni a capo scritti dall'autore contano. Il testo resta
+     un nodo di testo React (escapato): mai innerHTML su contenuto di persone. */
+  white-space: pre-wrap;
+  max-width: var(--measure);
+  line-height: var(--lh-relaxed);
+}
+
+/* Taglio in altezza, non troncamento: il testo c'è tutto nel DOM e nessuna
+   parola viene sostituita da puntini. calc() in em, così il numero di righe
+   resta corretto anche quando la scala fluida cambia il font-size. */
+.bodyClamped {
+  max-height: calc(var(--collapsed-lines) * var(--lh-relaxed) * 1em);
+  overflow: hidden;
+}
+
+.moreBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-block: var(--space-1);
+  border-bottom: var(--border-coral);
+  color: var(--ink);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  transition: color var(--transition-fast);
+}
+
+.moreBtn:hover {
+  color: var(--coral-dark);
+}
+
+/* -------------------------------------------------------------------------
+   3. STATI (caricamento, avviso di configurazione)
+   ---------------------------------------------------------------------- */
+
+/* Le card scheletro hanno la stessa forma di quelle vere (stesso bordo,
+   stesso padding, stessa griglia) così il passaggio a contenuto caricato
+   non sposta nulla. */
+.skelLine {
+  margin-bottom: var(--space-2);
+}
+
+.notice {
+  padding: var(--space-6);
+  border: var(--border);
+  border-left: 4px solid var(--coral);
+  background-color: var(--surface);
+}
+
+.noticeTitle {
+  margin-bottom: var(--space-3);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+}
+
+.noticeText {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+
+.noticeText + .noticeText {
+  margin-top: var(--space-3);
+}
+
+.code {
+  padding: 0 var(--space-1);
+  background-color: var(--surface-sunken);
+  color: var(--ink);
+}
+
+/* -------------------------------------------------------------------------
+   4. MOBILE
+
+   Sotto i 768px la card in evidenza torna identica alle altre: a colonna
+   singola il padding doppio e il titolo più grande farebbero solo scendere
+   il resto del feed sotto la piega.
+   ---------------------------------------------------------------------- */
+
+@media (max-width: 47.9375rem) {
+  .featured {
+    padding: var(--space-6);
+    border: var(--border);
+  }
+
+  .featured .cardTitle {
+    font-size: var(--step-2);
+  }
+}

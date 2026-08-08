@@ -1,0 +1,58 @@
+.error {
+  padding: clamp(var(--space-6), 6vw, var(--space-8));
+  /* Bordo e fondo nella famiglia del rosso, ma desaturati: si distingue dalle
+     altre card senza urlare, e resta dentro la palette. */
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  background-color: var(--danger-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.message {
+  margin-block: var(--space-3) 0;
+  max-inline-size: 60ch;
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.retry {
+  margin-block-start: var(--space-5);
+  /* 44px pieni: sotto questa soglia il bersaglio è scomodo su un telefono. */
+  min-block-size: 44px;
+  padding-inline: var(--space-5);
+
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+
+  /* Coral scuro e non coral pieno: è un bottone con del testo sopra, e il
+     bianco sul coral pieno non arriva alla soglia AA (~3,4:1). */
+  color: var(--on-coral);
+  background-color: var(--coral-dark);
+  border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.retry:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Il fondo è coral: l'anello coral scuro ci sparirebbe sopra, quindi qui si
+   usa la variante chiara. */
+.retry:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}

@@ -1,0 +1,66 @@
+.gate {
+  padding-block: clamp(var(--space-9), 14vw, var(--space-12));
+}
+
+.loading {
+  font-size: var(--step-1);
+  color: var(--muted);
+}
+
+.title {
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  margin: 0 0 var(--space-5);
+  text-wrap: balance;
+}
+
+.text {
+  max-inline-size: var(--measure);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  margin: 0 0 var(--space-7);
+  text-wrap: pretty;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background-color: var(--surface-sunken);
+  border: var(--border-soft);
+  /* Un percorso di file non deve mandare in scroll orizzontale il telefono. */
+  overflow-wrap: anywhere;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 48px;
+  padding-inline: var(--space-6);
+
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+
+  color: var(--bg);
+  background-color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.button:hover {
+  background-color: var(--coral-dark);
+  border-color: var(--coral-dark);
+}
+
+/* Fondo scuro: l'anello coral non si vedrebbe, serve quello chiaro. */
+.button:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}

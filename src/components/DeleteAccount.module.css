@@ -1,0 +1,102 @@
+.zone {
+  margin-block-start: clamp(var(--space-9), 10vw, var(--space-11));
+  padding: clamp(var(--space-6), 6vw, var(--space-8));
+  /* Bordo nella famiglia del rosso: si distingue dal resto del form senza
+     diventare un cartello di pericolo. L'azione è legittima, non un errore. */
+  border: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+}
+
+.text {
+  margin-block: var(--space-3) var(--space-6);
+  max-inline-size: var(--measure);
+  color: var(--muted);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+/* Il blocco di conferma sostituisce il bottone singolo: senza un margine
+   proprio, i due bottoni si attaccherebbero al paragrafo di spiegazione. */
+.confirm {
+  margin-block-start: var(--space-2);
+}
+
+.question {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.danger,
+.cancel {
+  min-block-size: 44px;
+  padding-inline: var(--space-5);
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.danger {
+  color: var(--bg);
+  background-color: var(--danger);
+  border: 2px solid var(--danger);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Fondo scuro: l'anello scuro ci sparirebbe sopra. */
+.danger:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+/* "Torna indietro" è la scelta sicura, quindi è quella riposante: bordo e
+   nient'altro. Il bottone pieno resta uno solo, così non c'è dubbio su quale
+   dei due fa la cosa irreversibile. */
+.cancel {
+  color: var(--ink);
+  background-color: transparent;
+  border: var(--border-strong);
+}
+
+.cancel:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.cancel:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.danger:disabled,
+.cancel:disabled {
+  opacity: 0.6;
+}
+
+.error {
+  margin-block-start: var(--space-5);
+  max-inline-size: var(--measure);
+  color: var(--ink);
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+}

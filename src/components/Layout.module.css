@@ -1,0 +1,18 @@
+.main {
+  /* La navbar è `position: fixed`, quindi non occupa spazio nel flusso: senza
+     questo padding il primo titolo di ogni pagina finisce sotto la barra.
+     Va insieme allo scroll-padding-top che global.css mette su :root, che
+     risolve lo stesso problema per le ancore. */
+  padding-block-start: var(--nav-h);
+  /* Almeno una schermata piena, così il footer sta in fondo anche sulle
+     pagine corte (l'errore di /admin senza permessi, per esempio) invece di
+     risalire a metà schermo. */
+  min-block-size: calc(100svh - var(--nav-h));
+}
+
+/* Il focus arriva qui solo dallo skip-link. L'anello di default lo
+   riquadrerebbe tutto, cioè l'intera pagina: inutile e brutto. Il fatto che
+   il focus si sia spostato lo si capisce dal contenuto che compare in cima. */
+.main:focus {
+  outline: none;
+}

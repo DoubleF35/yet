@@ -1,0 +1,496 @@
+/* =========================================================================
+   Admin — area riservata (redazione delle notizie)
+   -------------------------------------------------------------------------
+   Solo token di theme.css: nessun colore, nessuna dimensione tipografica
+   hardcodata. I bordi sono l'unico mezzo di separazione (niente ombre).
+   ========================================================================= */
+
+.page {
+  /* Sotto la navbar fissa serve aria in cima; in fondo di più, così il footer
+     non sembra incollato all'ultima notizia. */
+  padding-block: var(--space-9) var(--space-12);
+}
+
+/* -------------------------------------------------------------------------
+   Testata
+   ---------------------------------------------------------------------- */
+
+.head {
+  max-width: var(--measure);
+}
+
+.eyebrow {
+  margin-bottom: var(--space-2);
+  color: var(--coral-dark); /* --coral puro qui sarebbe 3.7:1: testo piccolo, non basta */
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+}
+
+.lead {
+  margin-top: var(--space-4);
+  color: var(--muted);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+}
+
+/* Promemoria tecnico: discreto ma non invisibile. La barra coral a sinistra lo
+   distingue dal testo corrente senza usare un fondo colorato. */
+.note {
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border-soft);
+  border-left: var(--border-coral);
+  background-color: var(--surface);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+}
+
+.warning {
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--danger);
+  background-color: var(--danger-soft);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  max-width: var(--measure);
+}
+
+/* Lo scoping del module rende queste regole locali a .note/.warning: non
+   toccano i <code> del resto del sito. */
+.note code,
+.warning code {
+  padding: 0 var(--space-1);
+  background-color: var(--coral-soft);
+  font-size: 0.95em;
+}
+
+.warning code {
+  background-color: var(--surface);
+}
+
+/* -------------------------------------------------------------------------
+   Sezioni
+   ---------------------------------------------------------------------- */
+
+.section {
+  margin-top: var(--space-10);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+}
+
+.sectionTitle {
+  font-size: var(--step-3);
+}
+
+.count {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------
+   Form
+   ---------------------------------------------------------------------- */
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+  /* Un input largo 1120px è scomodo da leggere mentre si scrive: il form resta
+     nella colonna stretta anche quando la pagina è larga. */
+  max-width: var(--maxw-narrow);
+  margin-top: var(--space-6);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+}
+
+.counter {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border); /* --line: 3.3:1, l'unico peso ammesso per un controllo */
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-size: var(--step-0);
+  transition: border-color var(--transition-fast);
+}
+
+.input:hover:not(:disabled),
+.textarea:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.textarea {
+  /* Textarea alta: si scrive una notizia, non una riga. */
+  min-height: 16rem;
+  line-height: var(--lh-relaxed);
+}
+
+/* Il campo sbagliato non è segnalato SOLO dal colore (WCAG 1.4.1): sotto c'è
+   sempre il messaggio di testo, e il bordo passa da 1px a 2px. */
+.inputInvalid,
+.inputInvalid:hover:not(:disabled) {
+  border: 2px solid var(--danger);
+}
+
+.input:disabled,
+.textarea:disabled {
+  background-color: var(--surface-sunken);
+  border-color: var(--line-soft);
+  color: var(--muted);
+}
+
+.fieldError {
+  color: var(--danger);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+}
+
+.hint {
+  display: block;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+/* Checkbox: nativa, con accent-color. Una finta casella fatta di <span> avrebbe
+   richiesto di riscrivere focus, stato indeterminato e alto contrasto — la
+   nativa li ha già. */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.checkbox {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  /* L'allineamento con la prima riga di testo: 1.25rem di casella contro
+     1.6 di interlinea, quindi la si abbassa di poco. */
+  margin-top: 0.15em;
+  accent-color: var(--coral-dark);
+}
+
+.checkLabel {
+  display: block;
+  font-weight: var(--weight-semibold);
+}
+
+/* -------------------------------------------------------------------------
+   Bottoni
+   ---------------------------------------------------------------------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: var(--border-strong);
+  border-radius: var(--radius);
+  background-color: transparent;
+  color: var(--ink);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  /* Bersaglio comodo sul telefono anche quando il testo è piccolo. */
+  min-height: 2.75rem;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.btn:disabled {
+  /* Non usiamo opacity: sbiadire il bordo di un bottone lo rende illeggibile.
+     Preferiamo un fondo incavato, che si legge come "spento". */
+  border-color: var(--line);
+  background-color: var(--surface-sunken);
+  color: var(--muted);
+}
+
+.primary {
+  border-color: var(--coral-dark);
+  background-color: var(--coral-dark); /* fill pieno: serve la variante scura, --coral puro non passa AA */
+  color: var(--on-coral);
+}
+
+.primary:hover:not(:disabled) {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.small {
+  padding: var(--space-2) var(--space-4);
+  border: var(--border);
+  font-size: var(--step--1);
+  min-height: 2.5rem;
+}
+
+/* .small perde il bordo forte, ma il primario piccolo deve restare pieno:
+   la specificità di due classi basta, senza !important. */
+.small.primary {
+  border: 1px solid var(--coral-dark);
+}
+
+.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background-color: var(--danger);
+  color: var(--bg); /* 5.7:1 */
+}
+
+/* -------------------------------------------------------------------------
+   Messaggi del form
+   ---------------------------------------------------------------------- */
+
+/* La live region resta nel DOM anche vuota (vedi commento nel JSX) ma non deve
+   occupare spazio quando non ha niente da dire. */
+.statusLine:empty {
+  display: none;
+}
+
+.success {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--ok);
+  background-color: var(--ok-soft);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+}
+
+.formError {
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-relaxed);
+}
+
+/* -------------------------------------------------------------------------
+   Lista delle notizie
+   ---------------------------------------------------------------------- */
+
+.skeletons {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.list {
+  display: grid;
+  /* Una colonna sola: le righe hanno azioni e un corpo di testo, affiancarle
+     due a due renderebbe l'editing in linea strettissimo. */
+  gap: var(--space-5);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding: var(--space-5);
+  border: var(--border);
+  background-color: var(--surface);
+}
+
+/* Le bozze si distinguono per DUE segnali: il bordo sinistro coral e
+   l'etichetta testuale. Il colore da solo non basterebbe. */
+.itemDraft {
+  border-left: var(--border-coral);
+  background-color: var(--bg);
+}
+
+.itemTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.itemTitle {
+  font-size: var(--step-2);
+  /* Il titolo non deve spingere il badge fuori dalla card a 375px. */
+  min-width: 0;
+  flex: 1 1 14ch;
+}
+
+.badgeDraft,
+.badgePublished {
+  flex: none;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badgeDraft {
+  border-color: var(--coral-dark);
+  background-color: var(--coral-soft);
+  color: var(--coral-dark);
+}
+
+.badgePublished {
+  border-color: var(--ok);
+  background-color: var(--ok-soft);
+  color: var(--ok);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.body {
+  margin-top: var(--space-4);
+  max-width: var(--measure);
+  /* pre-wrap: gli a-capo scritti nella textarea si vedono anche qui, così
+     l'admin rilegge esattamente quello che ha salvato. */
+  white-space: pre-wrap;
+  line-height: var(--lh-relaxed);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--border-soft); /* divisorio decorativo: peso soft */
+}
+
+.editForm {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--border-soft);
+}
+
+/* Nel form di editing le azioni sono già dentro una griglia con il suo gap:
+   il bordo in cima sarebbe una seconda riga a un pixel dal campo. */
+.editForm .rowActions {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  border: 1px solid var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.confirmText {
+  color: var(--danger);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.rowError {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+}
+
+/* -------------------------------------------------------------------------
+   Da 768px in su
+   ---------------------------------------------------------------------- */
+
+@media (min-width: 48rem) {
+  .item {
+    padding: var(--space-6);
+  }
+
+  /* Sul telefono i bottoni riempiono la riga uno sotto l'altro se non ci
+     stanno; da tablet in su restano affiancati e non si allargano. */
+  .btn {
+    flex: none;
+  }
+}
+
+/* Sotto i 26rem (~416px) i bottoni di una riga d'azione stanno larghi: meglio
+   pieni e impilati che tagliati a metà. */
+@media (max-width: 26rem) {
+  .actions > .btn,
+  .rowActions > .btn {
+    flex: 1 1 100%;
+  }
+
+  .confirm {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}

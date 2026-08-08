@@ -1,0 +1,200 @@
+/* Foglio condiviso da Privacy e Cookie: sono due documenti con la stessa
+   forma, e tenerne due copie garantirebbe solo che divergano. */
+
+.page {
+  padding-block: clamp(var(--space-9), 10vw, var(--space-11));
+}
+
+.head {
+  max-inline-size: var(--measure);
+}
+
+.eyebrow {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 var(--space-3);
+}
+
+.title {
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.updated {
+  margin: var(--space-4) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.lead {
+  max-inline-size: var(--measure);
+  margin: var(--space-6) 0 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+/* --- corpo ---------------------------------------------------------------- */
+
+.body {
+  /* Colonna più stretta del resto del sito: qui si legge davvero, e 1120px di
+     riga su un testo lungo si perdono a ogni ritorno a capo. */
+  max-inline-size: var(--measure);
+  margin-block-start: clamp(var(--space-8), 8vw, var(--space-10));
+}
+
+.section {
+  padding-block-start: clamp(var(--space-7), 7vw, var(--space-9));
+}
+
+.section + .section {
+  border-block-start: var(--border);
+}
+
+.h2 {
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+
+.h3 {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+.p {
+  margin: 0 0 var(--space-4);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 0 0 var(--space-4);
+  padding-inline-start: var(--space-5);
+  line-height: var(--lh-relaxed);
+}
+
+.list li {
+  margin-block-end: var(--space-2);
+}
+
+.list li::marker {
+  color: var(--coral);
+}
+
+.link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--coral);
+  overflow-wrap: anywhere;
+}
+
+.link:hover {
+  color: var(--coral-dark);
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background-color: var(--surface-sunken);
+  border: var(--border-soft);
+  overflow-wrap: anywhere;
+}
+
+/* --- tabella dei trattamenti / dei cookie --------------------------------- */
+
+/* Il wrapper è la parte che conta: a 375px una tabella a tre colonne non ci
+   sta, e senza un contenitore che scorre per conto suo manderebbe in scroll
+   orizzontale l'INTERA pagina. Così scorre solo lei. */
+.tableWrap {
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+  border: var(--border);
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  /* Sotto questa soglia le celle diventano illeggibili: meglio far scorrere. */
+  min-inline-size: 34rem;
+  font-size: var(--step--1);
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: start;
+  vertical-align: top;
+  line-height: var(--lh-base);
+}
+
+.table thead th {
+  background-color: var(--surface-sunken);
+  font-weight: var(--weight-semibold);
+  border-block-end: var(--border-strong);
+  white-space: nowrap;
+}
+
+.table tbody tr + tr th,
+.table tbody tr + tr td {
+  border-block-start: var(--border);
+}
+
+.table tbody th {
+  font-weight: var(--weight-semibold);
+}
+
+/* Segnala che la tabella scorre: senza, su un telefono sembra tagliata. */
+.tableHint {
+  margin: calc(var(--space-4) * -1) 0 var(--space-4);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+@media (min-width: 48rem) {
+  .tableHint {
+    display: none;
+  }
+}
+
+/* --- riquadro di avviso per i campi da riempire --------------------------- */
+
+.todo {
+  margin: 0 0 var(--space-6);
+  padding: var(--space-5);
+  border: 2px solid var(--coral);
+  background-color: var(--coral-soft);
+}
+
+.todoTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-0);
+  font-weight: var(--weight-bold);
+}
+
+.todoText {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+}

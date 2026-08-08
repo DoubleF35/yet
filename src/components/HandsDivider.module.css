@@ -1,0 +1,43 @@
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+  /* Spazio generoso sopra e sotto: il divisore serve a far respirare, non a
+     riempire. Cresce col viewport insieme al resto della pagina. */
+  margin-block: clamp(var(--space-8), 9vw, var(--space-11));
+}
+
+.rule {
+  flex: 1 1 0;
+  block-size: 0;
+  border-block-start: var(--border);
+}
+
+.hands {
+  /* Piccolo: è un accento, non un'illustrazione. */
+  block-size: clamp(28px, 5vw, 40px);
+  inline-size: auto;
+  flex: 0 0 auto;
+  /* Le lancette nel marchio sono inclinate; qui le raddrizziamo appena per
+     dare l'idea di un movimento fermato a metà. */
+  transform: rotate(-8deg);
+}
+
+/* Le varianti spostano il segno cambiando quanto crescono i due filetti,
+   invece di usare margini: così i filetti restano sempre attaccati ai bordi. */
+.center .rule {
+  flex-grow: 1;
+}
+
+.left .rule:first-of-type {
+  flex-grow: 0;
+  flex-basis: var(--space-6);
+}
+
+.right .rule:last-of-type {
+  flex-grow: 0;
+  flex-basis: var(--space-6);
+}

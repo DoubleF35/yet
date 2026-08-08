@@ -1,0 +1,304 @@
+/* =========================================================================
+   1. APERTURA
+   ====================================================================== */
+
+.hero {
+  padding-block: var(--space-10) var(--space-8);
+}
+
+.eyebrow {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  margin: 0;
+}
+
+.lead {
+  max-width: var(--measure);
+  margin-top: var(--space-5);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* =========================================================================
+   2. GRIGLIA
+
+   minmax(min(100%, 17rem), 1fr): il min() interno è la parte che conta.
+   Senza, a 375px una traccia da 272px più i gap sfonderebbe il contenitore e
+   comparirebbe lo scroll orizzontale. Con auto-fill invece di auto-fit le
+   colonne restano larghe uguali anche quando i membri sono due: auto-fit le
+   allargherebbe a mezza pagina ciascuna.
+   ====================================================================== */
+
+.body {
+  padding-bottom: var(--space-10);
+}
+
+.count {
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-5);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.item {
+  display: flex;
+}
+
+/* =========================================================================
+   3. LA CARD
+   ====================================================================== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+
+  inline-size: 100%;
+  padding: var(--space-6);
+  border: var(--border);
+  background-color: var(--surface);
+  transition: border-color var(--transition);
+}
+
+.card:hover {
+  border-color: var(--ink);
+}
+
+/* Il proprio profilo si riconosce dal bordo coral: un segno, non solo un
+   colore di sfondo appena diverso. */
+.cardMe {
+  border: var(--border-coral);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  inline-size: 100%;
+}
+
+.identity {
+  /* min-width: 0 su un figlio flex è ciò che permette al testo di andare a
+     capo invece di allargare la card: senza, un nome lungo sfonda. */
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  display: inline-block;
+  margin-top: var(--space-1);
+  padding: 0 var(--space-2);
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.bio {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+  /* I ritorni a capo scritti dall'utente contano anche qui. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bioEmpty {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.toggle {
+  min-height: 2.75rem; /* 44px */
+  padding-block: var(--space-1);
+  border-bottom: var(--border-coral);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  transition: color var(--transition-fast);
+}
+
+.toggle:hover {
+  color: var(--coral-dark);
+}
+
+.toggle:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* =========================================================================
+   4. SOCIAL
+   ====================================================================== */
+
+.socials {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  /* 44px pieni di bersaglio: sono i link più piccoli della pagina e stanno
+     uno accanto all'altro, cioè il caso in cui sbagliare tocco è più facile. */
+  min-height: 2.75rem;
+  padding-inline: var(--space-3);
+
+  border: var(--border);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.social:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.social:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.icon {
+  inline-size: 1em;
+  block-size: 1em;
+  font-size: var(--step-0);
+  flex: 0 0 auto;
+}
+
+/* =========================================================================
+   5. STATI
+   ====================================================================== */
+
+/* Lo scheletro ricalca la card vera — stesso bordo, stesso padding, stesso
+   ordine di blocchi — così quando i dati arrivano nulla si sposta. */
+.ghost {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  inline-size: 100%;
+  padding: var(--space-6);
+  border: var(--border);
+  background-color: var(--surface);
+}
+
+.ghostHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Sempre presente nel DOM (vedi il commento nel JSX): se comparisse solo
+   durante il caricamento, il cambiamento non verrebbe annunciato. */
+.srStatus {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding-inline: var(--space-6);
+
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+
+  color: var(--bg);
+  background-color: var(--ink);
+  border: 2px solid var(--ink);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.cta:hover {
+  background-color: var(--coral-dark);
+  border-color: var(--coral-dark);
+}
+
+/* Fondo scuro: serve l'anello chiaro, quello coral scuro ci sparirebbe sopra. */
+.cta:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.notice {
+  padding: var(--space-6);
+  border: var(--border);
+  border-left: 4px solid var(--coral);
+  background-color: var(--surface);
+}
+
+.noticeTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+}
+
+.noticeText {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--muted);
+  line-height: var(--lh-relaxed);
+}
+
+.noticeText + .noticeText {
+  margin-top: var(--space-3);
+}

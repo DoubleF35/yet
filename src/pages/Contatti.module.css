@@ -1,0 +1,345 @@
+/* =========================================================================
+   Contatti — rotta "/contatti"
+
+   Impianto: tanto bianco, tipografia grande, spigoli vivi. L'elenco dei
+   canali è un ELENCO (righe separate da una linea), non una griglia di card
+   colorate: le card metterebbero sullo stesso piano visivo sei cose che
+   invece si leggono meglio una sotto l'altra.
+
+   Solo variabili di theme.css: nessun colore, nessuna misura arbitraria.
+   ========================================================================= */
+
+.page {
+  /* Il respiro verticale della pagina. L'offset della navbar fissa lo mette
+     il Layout: se lo aggiungessimo anche qui, il primo titolo si troverebbe
+     con il doppio dello spazio sopra rispetto alle altre pagine. */
+  padding-block: var(--space-10) var(--space-12);
+}
+
+/* -------------------------------------------------------------------------
+   1. TESTA DELLA PAGINA
+   ---------------------------------------------------------------------- */
+
+.head {
+  margin-bottom: var(--space-11);
+}
+
+.eyebrow {
+  margin-bottom: var(--space-4);
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 22ch; /* la misura la decide il titolo, non i paragrafi sotto */
+  font-size: var(--step-6);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  /* `pretty` e non `balance` (che gli heading prendono da global.css): qui la
+     spezzatura è già decisa da un <br> nel markup, e `balance` ridistribuirebbe
+     le parole rendendo imprevedibile il risultato. Non usiamo `nowrap`: a 375px
+     la seconda riga sfiora la larghezza disponibile e verrebbe tagliata. */
+  text-wrap: pretty;
+}
+
+.titleAccent {
+  color: var(--coral);
+  /* --coral su --bg fa 3.7:1: sotto la soglia AA per il testo normale, ma
+     questo è testo grande (>= 24px), dove la soglia è 3:1. Vale QUI e non
+     va copiato su un paragrafo. */
+}
+
+.lead {
+  max-width: var(--measure);
+  margin-top: var(--space-6);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* -------------------------------------------------------------------------
+   2. IL BLOCCO DELLA MAIL
+   ---------------------------------------------------------------------- */
+
+.mailBlock {
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  margin-bottom: var(--space-11);
+  /* 2px --ink: è l'unico riquadro pieno della pagina e deve pesare più delle
+     righe dell'elenco, che sono a 1px. */
+  border: var(--border-strong);
+}
+
+.mailLabel {
+  margin-bottom: var(--space-4);
+  /* È un <h2> per la gerarchia del documento, ma visivamente è un'etichetta:
+     il protagonista del blocco è l'indirizzo, non il titoletto. */
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mailRow {
+  display: flex;
+  flex-wrap: wrap; /* sotto i ~480px il bottone scende sotto l'indirizzo */
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.mailLink {
+  font-size: clamp(1.3125rem, 1.02rem + 1.25vw, 2.0625rem); /* 21 -> 33px */
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.15em;
+  /* Un indirizzo lungo a 375px sfonderebbe: `anywhere` gli permette di
+     andare a capo anche senza un punto di sillabazione naturale. */
+  overflow-wrap: anywhere;
+}
+
+.mailLink:hover,
+.mailLink:focus-visible {
+  color: var(--coral-dark); /* 5.3:1: qui il coral chiaro non basterebbe */
+}
+
+.copyButton {
+  display: inline-flex;
+  flex-shrink: 0; /* non si schiaccia quando l'indirizzo è lungo */
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: var(--border-strong);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  /* Il colore del bordo non è in transizione: cambia solo il riempimento,
+     così l'ingombro del bottone resta identico e niente si muove. */
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.copyButton:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* Il bottone è alto ~44px in totale con il padding: sotto quella soglia
+   diventa difficile da centrare col pollice. */
+@media (max-width: 32rem) {
+  .copyButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.copyIcon {
+  width: 1.125em;
+  height: 1.125em;
+  flex-shrink: 0;
+}
+
+.feedback {
+  /* Spazio riservato SEMPRE, anche a messaggio vuoto, così la conferma non
+     spinge giù il resto della pagina quando appare.
+     Due dichiarazioni di proposito: `1lh` è la misura giusta (una riga esatta
+     alla dimensione corrente) ma è recente; `1.6em` la approssima usando la
+     line-height di base per i browser che non la conoscono e viene
+     semplicemente sovrascritta dove `lh` è supportata. */
+  min-height: 1.6em;
+  min-height: 1lh;
+  margin-top: var(--space-4);
+  font-size: var(--step--1);
+  color: var(--muted);
+  transition: color var(--transition-fast);
+}
+
+.feedbackOk {
+  color: var(--ok);
+  font-weight: var(--weight-medium);
+}
+
+.feedbackError {
+  /* Colore E testo esplicito: il colore da solo non è un canale di
+     informazione accettabile (WCAG 1.4.1). Il messaggio dice cosa fare. */
+  color: var(--danger);
+  font-weight: var(--weight-medium);
+}
+
+.mailMissing {
+  font-size: var(--step-0);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------------------
+   3. ELENCO DEI CANALI
+   ---------------------------------------------------------------------- */
+
+.section {
+  margin-bottom: var(--space-11);
+}
+
+.sectionTitle {
+  margin-bottom: var(--space-6);
+  font-size: var(--step-3);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border-strong);
+}
+
+.item {
+  /* Separatore fra le righe: 1px --line, che passa il contrasto non-testuale
+     (3.3:1) perché qui la linea delimita un elemento interattivo. */
+  border-bottom: var(--border);
+}
+
+.item:last-child {
+  border-bottom: var(--border-strong); /* chiude l'elenco come lo apre */
+}
+
+.row {
+  display: grid;
+  /* icona | testo | freccia. `1fr` sul testo così le tre colonne restano
+     allineate su tutte le righe anche con handle di lunghezza diversa. */
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  padding: var(--space-5) var(--space-4);
+  text-decoration: none;
+  /* La barra coral esiste già trasparente: cambiarne solo il colore in hover
+     evita lo scatto di 3px che si avrebbe aggiungendo il bordo al passaggio. */
+  border-left: 3px solid transparent;
+  transition:
+    background-color var(--transition-fast),
+    border-left-color var(--transition-fast);
+}
+
+.row:hover,
+.row:focus-visible {
+  background-color: var(--surface);
+  border-left-color: var(--coral);
+  color: inherit; /* annulla il colore di hover globale sui link: qui reagisce la riga intera */
+}
+
+/* L'anello di focus arriva da global.css. L'offset negativo lo tiene dentro
+   la riga: con l'offset positivo di default sborderebbe sopra la riga
+   precedente e sembrerebbe che il focus sia su due elementi. */
+.row:focus-visible {
+  outline-offset: -3px;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2rem, 1.5rem + 2vw, 2.5rem);
+  height: clamp(2rem, 1.5rem + 2vw, 2.5rem);
+  flex-shrink: 0;
+  color: var(--ink);
+  transition: color var(--transition-fast);
+}
+
+.row:hover .iconWrap,
+.row:focus-visible .iconWrap {
+  color: var(--coral-dark);
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+}
+
+.iconFallback {
+  /* Voce di config senza icona: un quadrato coral tiene la griglia allineata
+     invece di lasciare un buco che disallinea tutta la colonna del testo. */
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: var(--coral);
+}
+
+.rowText {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-4);
+  min-width: 0; /* senza, un handle lungo sfonda la colonna 1fr della griglia */
+}
+
+.rowLabel {
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+}
+
+.rowHandle {
+  font-size: var(--step-0);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.arrow {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition:
+    transform var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.row:hover .arrow,
+.row:focus-visible .arrow {
+  color: var(--coral-dark);
+  transform: translateX(var(--space-2));
+}
+
+/* -------------------------------------------------------------------------
+   4. DOVE SIAMO
+   ---------------------------------------------------------------------- */
+
+.place {
+  margin-top: var(--space-9);
+}
+
+.placeCity {
+  margin-top: var(--space-2);
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+}
+
+.placeNote {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------------------
+   5. DESKTOP
+
+   Da 48rem (768px) in su le righe respirano di più e il blocco della mail
+   diventa una fascia larga: sotto quella soglia lo stesso padding
+   mangerebbe metà dello schermo.
+   ---------------------------------------------------------------------- */
+
+@media (min-width: 48rem) {
+  .mailBlock {
+    padding: var(--space-8);
+  }
+
+  .row {
+    padding: var(--space-6) var(--space-5);
+  }
+}

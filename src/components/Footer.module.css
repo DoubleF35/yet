@@ -1,0 +1,153 @@
+.footer {
+  border-block-start: var(--border);
+  margin-block-start: clamp(var(--space-9), 12vw, var(--space-12));
+  padding-block: clamp(var(--space-8), 9vw, var(--space-10));
+}
+
+.inner {
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+
+  display: grid;
+  /* auto-fit e non colonne fisse: a 375px va in colonna singola da solo,
+     senza una media query in più. */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(var(--space-7), 6vw, var(--space-9));
+}
+
+.brandBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.brand {
+  display: inline-block;
+  border-radius: var(--radius);
+}
+
+.brand:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.logo {
+  block-size: 34px;
+  inline-size: auto;
+  display: block;
+}
+
+.tagline {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-heading);
+}
+
+.city {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.linksBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.link {
+  display: inline-block;
+  /* Il padding verticale porta il bersaglio a 44px senza allontanare le voci
+     visivamente: il gap sopra è volutamente piccolo. */
+  padding-block: var(--space-3);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step-0);
+  border-block-end: 1px solid transparent;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.link:hover {
+  color: var(--coral-dark);
+  border-block-end-color: var(--coral);
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.bottom {
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+  margin-block-start: clamp(var(--space-7), 7vw, var(--space-9));
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border);
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.copy {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.legalLink {
+  font-size: var(--step--1);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  /* Un indirizzo lungo su schermo stretto deve andare a capo, non sfondare. */
+  overflow-wrap: anywhere;
+  /* Il bersaglio a 44px si ottiene col padding verticale: allargare la riga
+     con un min-height romperebbe l'allineamento sulla linea di base. */
+  padding-block: var(--space-3);
+}
+
+.legalLink:hover {
+  color: var(--coral-dark);
+}
+
+.legalLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.legalSep {
+  color: var(--line);
+  font-size: var(--step--1);
+}
