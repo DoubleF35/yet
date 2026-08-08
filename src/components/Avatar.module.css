@@ -1,0 +1,41 @@
+/* Le due varianti condividono forma e dimensione: così scambiare la foto con
+   le iniziali non fa saltare il layout di un pixel. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  inline-size: var(--avatar-size, 48px);
+  block-size: var(--avatar-size, 48px);
+  /* flex-shrink a 0: dentro una riga flex stretta l'avatar verrebbe schiacciato
+     in un ovale, che è il difetto più visibile di tutti. */
+  flex: 0 0 auto;
+
+  border: var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  user-select: none;
+}
+
+.image {
+  object-fit: cover;
+  /* Mentre la foto carica, il buco bianco stona sul beige. */
+  background-color: var(--surface-sunken);
+}
+
+.fallback {
+  /* --coral-dark e non --coral: qui sopra ci va del testo (le iniziali), e il
+     bianco sul coral pieno sta a ~3,4:1, sotto la soglia AA. Sul coral scuro
+     sale a 6,4:1. Sulle forme puramente decorative (le barrette della navbar)
+     resta invece il coral pieno, che è il colore del marchio. */
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+
+  font-size: var(--avatar-font, 18px);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  line-height: 1;
+  /* Le maiuscole hanno il baricentro ottico un filo alto: un pixel di
+     compensazione le centra davvero nel quadrato. */
+  padding-block-start: 1px;
+}

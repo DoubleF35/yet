@@ -1,0 +1,355 @@
+.header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-nav);
+
+  background-color: var(--bg);
+  border-block-end: var(--border);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  block-size: var(--nav-h);
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+}
+
+/* --- logo ---------------------------------------------------------------- */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  /* margin-inline-end: auto spinge tutto il resto a destra quando i link
+     sono nascosti (mobile), senza bisogno di un secondo spaziatore. */
+  margin-inline-end: auto;
+  padding: var(--space-2);
+  /* Compensa il padding così il logo resta allineato al bordo del contenuto. */
+  margin-inline-start: calc(var(--space-2) * -1);
+  border-radius: var(--radius);
+}
+
+.brand:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.logo {
+  block-size: clamp(22px, 3.4vw, 28px);
+  inline-size: auto;
+  display: block;
+}
+
+/* --- link desktop -------------------------------------------------------- */
+
+.links {
+  display: none;
+  align-items: center;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  position: relative;
+  display: inline-block;
+  padding-block: var(--space-2);
+
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  transition: color var(--transition);
+}
+
+/* La barra sotto la voce attiva: un segno grafico netto, non solo un colore.
+   Chi non distingue bene i colori vede comunque dov'è. */
+.link::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -2px;
+  block-size: 2px;
+  background-color: var(--coral);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
+}
+
+.link:hover::after,
+.linkActive::after {
+  transform: scaleX(1);
+}
+
+.linkActive {
+  font-weight: var(--weight-semibold);
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Admin: coral pieno, perché è il link che deve saltare all'occhio.
+   Il coral su beige sta a ~4.3:1 — sopra la soglia AA per questo peso e
+   corpo, ma non per testo più piccolo: qui usiamo la variante scura. */
+.admin {
+  color: var(--coral-dark);
+  font-weight: var(--weight-bold);
+}
+
+/* --- zona destra --------------------------------------------------------- */
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
+.authPlaceholder {
+  inline-size: 36px;
+  block-size: 36px;
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface-sunken);
+}
+
+.signIn {
+  min-block-size: 40px;
+  padding-inline: var(--space-4);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+
+  color: var(--ink);
+  background-color: transparent;
+  border: var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.signIn:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.signIn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.signIn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- menu utente --------------------------------------------------------- */
+
+.user {
+  position: relative;
+}
+
+.userButton {
+  display: block;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: var(--radius);
+  line-height: 0;
+}
+
+.userButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.userMenu {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-3));
+  inset-inline-end: 0;
+  z-index: var(--z-dropdown);
+
+  min-inline-size: 220px;
+  padding: var(--space-2);
+  background-color: var(--bg);
+  border: var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.userName {
+  margin: 0;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  border-block-end: var(--border);
+  /* Un nome lungo non deve allargare il pannello all'infinito. */
+  overflow-wrap: anywhere;
+}
+
+.userItem {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: var(--space-3);
+
+  font: inherit;
+  font-size: var(--step-0);
+  text-align: start;
+  color: var(--ink);
+  text-decoration: none;
+
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.userItem:hover {
+  background-color: var(--surface-sunken);
+}
+
+.userItem:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -3px; /* verso l'interno: fuori verrebbe tagliato dal pannello */
+}
+
+.userItemAdmin {
+  color: var(--coral-dark);
+  font-weight: var(--weight-semibold);
+}
+
+/* --- panino -------------------------------------------------------------- */
+
+.burger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+
+  /* 44x44 pieni: è il bersaglio più usato del sito su telefono. */
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0 10px;
+
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.burger:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.burgerBar {
+  display: block;
+  block-size: 2px;
+  inline-size: 100%;
+  background-color: var(--ink);
+  transition: transform var(--transition), opacity var(--transition-fast);
+}
+
+/* Le tre barre diventano una X. transform-origin al centro perché le barre
+   sono già distanziate dal gap: ruotarle sul centro le fa incrociare lì. */
+.burgerBarTop {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burgerBarMid {
+  opacity: 0;
+}
+
+.burgerBarBot {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* --- pannello mobile ----------------------------------------------------- */
+
+.panel {
+  position: fixed;
+  inset-block-start: var(--nav-h);
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-overlay);
+
+  background-color: var(--bg);
+  border-block-start: var(--border);
+  padding: var(--space-6) var(--container-pad);
+  /* Un elenco lungo (o uno schermo basso in orizzontale) deve poter scorrere
+     dentro il pannello, non finire tagliato. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.panelLinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelLink {
+  display: block;
+  padding-block: var(--space-4);
+  border-block-end: var(--border);
+
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step-3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-heading);
+}
+
+.panelLinkActive {
+  color: var(--coral-dark);
+}
+
+/* Il segno grafico anche qui, per lo stesso motivo del desktop. */
+.panelLinkActive::before {
+  content: '';
+  display: inline-block;
+  inline-size: var(--space-4);
+  block-size: 2px;
+  vertical-align: middle;
+  margin-inline-end: var(--space-3);
+  background-color: var(--coral);
+}
+
+.panelLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+}
+
+/* --- oltre i 768px ------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .links {
+    display: flex;
+  }
+
+  .burger {
+    display: none;
+  }
+
+  /* Il pannello non deve poter restare aperto se si allarga la finestra
+     mentre lo è: senza questa riga resterebbe a coprire la pagina. */
+  .panel {
+    display: none;
+  }
+}

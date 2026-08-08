@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>YET — Build ambition.</title>
+    <meta
+      name="description"
+      content="YET, Young Entrepreneurs Together: la community dei giovani builder di Torino, dai 14 ai 25 anni."
+    />
+    <meta name="theme-color" content="#ECEAE4" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png" />
+    <link rel="apple-touch-icon" href="./icon-180.png" />
+
+    <!-- Open Graph / social preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="YET — Build ambition." />
+    <meta
+      property="og:description"
+      content="La community dei giovani builder di Torino, dai 14 ai 25 anni."
+    />
+    <meta property="og:image" content="./hero-poster.jpg" />
+    <meta property="og:locale" content="it_IT" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      Inter NON arriva da Google Fonts.
+
+      È una scelta di privacy, non di prestazioni: chiedere il font al CDN di
+      Google significa che il browser di ogni visitatore apre una connessione
+      verso un server di Google e gli consegna il proprio indirizzo IP, prima
+      ancora che la pagina sia disegnata e senza che l'utente possa dire di no.
+      È esattamente il trasferimento che rende necessario un banner di consenso
+      (e che un tribunale tedesco ha già giudicato illecito nel 2022).
+
+      Il font è quindi impacchettato nel sito, via @fontsource/inter, e
+      importato in src/main.jsx. Il risultato è che il sito non fa NESSUNA
+      chiamata a terzi prima del login: da qui la scelta di non mettere un
+      banner cookie ma solo l'informativa. Vedi /privacy e /cookie.
+    -->
+
+    <!--
+      Il video dell'intro parte appena la Intro monta: dargli un hint qui
+      guadagna qualche centinaio di ms sulla prima visita, che è esattamente
+      l'unica visita in cui l'intro viene mostrata.
+    -->
+    <link rel="preload" as="image" href="./hero-poster.jpg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

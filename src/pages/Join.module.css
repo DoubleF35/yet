@@ -1,0 +1,429 @@
+/* =========================================================================
+   /join — stili della pagina.
+
+   Solo token di theme.css: nessun colore, nessuna dimensione tipografica
+   scritta a mano. Le uniche misure in px/rem letterali sono geometrie locali
+   (larghezza del logo, altezza minima di un blocco) per cui un token non
+   esiste e non avrebbe senso inventarlo.
+
+   Niente ombre, niente gradienti, niente raggi: la profondità la fanno i
+   bordi netti e lo spazio bianco.
+   ========================================================================= */
+
+/* Il padding superiore NON compensa la navbar fissa: quello è compito del
+   Layout, che è il componente che possiede la navbar. Qui c'è solo il ritmo
+   verticale della pagina. */
+.page {
+  padding-block: var(--space-10) var(--space-12);
+}
+
+/* -------------------------------------------------------------------------
+   INTESTAZIONE
+   ---------------------------------------------------------------------- */
+
+.head {
+  margin-bottom: var(--space-10);
+}
+
+/* Il logo è un'immagine, mai testo ricostruito. 486x291 nativi: fissiamo solo
+   la larghezza e lasciamo che l'altezza segua (height:auto sta in global.css),
+   così non si deforma mai. */
+.mark {
+  width: clamp(88px, 16vw, 132px);
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  /* ~18 caratteri: il titolo va a capo dove vogliamo noi anche a 1440px,
+     invece di stendersi su una riga sola larghissima. */
+  max-inline-size: 18ch;
+}
+
+.lead {
+  margin-top: var(--space-5);
+  max-inline-size: var(--measure);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------------------
+   AVVISO DI CONFIGURAZIONE
+   ---------------------------------------------------------------------- */
+
+.configNotice {
+  margin-bottom: var(--space-9);
+  padding: var(--space-5);
+  border: var(--border-strong);
+  background-color: var(--danger-soft);
+  color: var(--ink);
+  font-size: var(--step-0);
+  max-inline-size: var(--measure);
+}
+
+.configNotice code {
+  /* Lo sfondo dell'avviso è già colorato: il codice si stacca col bordo. */
+  padding: 0 var(--space-1);
+  border: var(--border-soft);
+}
+
+/* -------------------------------------------------------------------------
+   I QUATTRO PUNTI
+
+   auto-fit + minmax: una colonna sul telefono, due sul tablet, quattro sul
+   desktop, senza una sola media query. `min(100%, 16rem)` è la parte che
+   evita l'overflow a 320px, dove 16rem sarebbe più larga della colonna.
+   ---------------------------------------------------------------------- */
+
+.points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-8) var(--space-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.point {
+  /* Il filo netto in alto è tutto il "contenitore" che serve: nessuna card,
+     nessun bordo chiuso. */
+  padding-top: var(--space-4);
+  border-top: var(--border-strong);
+}
+
+.pointNum {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  font-variant-numeric: tabular-nums;
+  /* --coral puro fa 3.7:1 sul beige e a questa dimensione non passerebbe AA:
+     per il testo piccolo si usa sempre --coral-dark (5.3:1). */
+  color: var(--coral-dark);
+}
+
+/* Sono <h2>: global.css li porta a --step-4, qui li riportiamo alla scala di
+   una card. La gerarchia resta quella del markup, cambia solo la misura. */
+.pointTitle {
+  font-size: var(--step-2);
+}
+
+.pointText {
+  margin-top: var(--space-3);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------------------
+   CHIAMATA ALL'AZIONE
+   ---------------------------------------------------------------------- */
+
+.cta {
+  margin-top: var(--space-9);
+}
+
+.ctaNote {
+  margin-top: var(--space-5);
+  max-inline-size: 48ch;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------------------
+   BOTTONI
+
+   Due soli stili. Entrambi a spigolo vivo, con bordo da 2px: il bordo è
+   parte del disegno, non una decorazione, quindi resta anche sul pieno.
+   ---------------------------------------------------------------------- */
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px di area tattile minima (WCAG 2.5.8) anche con un testo corto. */
+  min-height: 44px;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+}
+
+.primary {
+  border: 2px solid var(--coral-dark);
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+}
+
+.primary:hover:not(:disabled) {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* L'anello di focus globale è coral-dark: sopra un bottone coral-dark
+   sembrerebbe un unico blocco. Cambiamo solo il colore, non la geometria,
+   così tutti i focus del sito restano identici in spessore e distanza. */
+.primary:focus-visible {
+  outline: var(--focus-ring);
+  outline-color: var(--ink);
+  outline-offset: var(--focus-offset);
+}
+
+.primary:disabled {
+  /* Grigio caldo su beige, con --ink sopra: resta leggibile invece di
+     sparire come farebbe un opacity: 0.5. */
+  border-color: var(--line);
+  background-color: var(--surface-sunken);
+  color: var(--muted);
+}
+
+.secondary {
+  border: var(--border-strong);
+  background-color: transparent;
+  color: var(--ink);
+}
+
+.secondary:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* -------------------------------------------------------------------------
+   MESSAGGIO DI STATO
+
+   Ha min-height anche quando è vuoto: senza, la comparsa del messaggio
+   sposterebbe tutto quello che sta sotto.
+   ---------------------------------------------------------------------- */
+
+.status {
+  min-height: calc(var(--step-0) * var(--lh-base));
+  margin-top: var(--space-5);
+  font-size: var(--step-0);
+  font-weight: var(--weight-medium);
+  max-inline-size: var(--measure);
+}
+
+.statusOk {
+  color: var(--ok);
+}
+
+.statusError {
+  color: var(--danger);
+}
+
+/* -------------------------------------------------------------------------
+   SCHELETRI DI CARICAMENTO
+   ---------------------------------------------------------------------- */
+
+.loadingBlocks {
+  display: grid;
+  /* I blocchi sono elementi separati e non un solo Skeleton con count: così
+     il gap resta nostro e non dipende da come Skeleton impagina i suoi. */
+  gap: var(--space-5);
+  max-inline-size: var(--maxw-narrow);
+}
+
+/* -------------------------------------------------------------------------
+   FORM
+   ---------------------------------------------------------------------- */
+
+.form {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-7);
+}
+
+/* <legend> è un elemento capriccioso: il fieldset in global.css ha già
+   border:0 e padding:0, qui basta trattarla come un titolo di sezione a
+   larghezza piena. */
+.legend {
+  display: block;
+  width: 100%;
+  padding: 0 0 var(--space-3);
+  border-bottom: var(--border-strong);
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+}
+
+.groupHint {
+  /* Il gap del .group vale già come distacco: qui serve solo togliere il
+     doppio spazio fra legend e primo campo. */
+  margin-top: calc(-1 * var(--space-4));
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-inline-size: var(--measure);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+}
+
+.req {
+  margin-left: var(--space-1);
+  color: var(--coral-dark);
+}
+
+.input {
+  width: 100%;
+  /* I campi sono spesso figli di un grid: senza min-width:0 un valore lungo
+     (un URL) allargherebbe la colonna e sfonderebbe il layout a 375px. */
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-size: var(--step-0);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.input::placeholder {
+  /* --muted fa 4.8:1 sul beige, ma il campo è --surface: il rapporto resta
+     sopra AA. Il placeholder mostra il FORMATO, mai il nome del campo:
+     quello è nella <label>. */
+  color: var(--muted);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+/* Il bordo si scurisce oltre all'anello di focus globale: sul beige aiuta a
+   capire quale campo è attivo anche a colpo d'occhio. */
+.input:focus-visible {
+  border-color: var(--ink);
+  background-color: var(--bg);
+}
+
+/* Solo il colore del bordo cambia, non lo spessore: 1px -> 2px farebbe
+   saltare il layout di mezzo pixel a ogni errore. La distinzione non è
+   affidata al colore da solo — c'è sempre un messaggio di testo legato con
+   aria-describedby. */
+.inputInvalid {
+  border-color: var(--danger);
+}
+
+.textarea {
+  min-height: 8rem;
+  line-height: var(--lh-base);
+}
+
+.hint {
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-inline-size: var(--measure);
+}
+
+.fieldError {
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  color: var(--danger);
+  max-inline-size: var(--measure);
+}
+
+/* -------------------------------------------------------------------------
+   PIEDE DELLA BIO: suggerimento a sinistra, contatore a destra
+   ---------------------------------------------------------------------- */
+
+.bioFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.bioFoot .hint {
+  /* Deve poter cedere spazio al contatore, non spingerlo a capo. */
+  flex: 1 1 12rem;
+}
+
+.count {
+  flex: 0 0 auto;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums; /* il numero non balla mentre si scrive */
+  color: var(--muted);
+  transition: color var(--transition-fast);
+}
+
+/* Meno di 30 caratteri residui. Coral, ma la variante scura: --coral puro a
+   questa dimensione non passerebbe AA. */
+.countWarn {
+  color: var(--coral-dark);
+}
+
+/* Oltre il limite: cambia colore E il salvataggio si blocca con un messaggio,
+   quindi l'informazione non è mai solo cromatica. */
+.countOver {
+  color: var(--danger);
+  font-weight: var(--weight-bold);
+}
+
+/* -------------------------------------------------------------------------
+   FOTO: anteprima accanto al campo
+   ---------------------------------------------------------------------- */
+
+.photoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+.photoPreview {
+  flex: 0 0 auto;
+}
+
+.photoCol {
+  display: grid;
+  gap: var(--space-2);
+  /* 14rem: sotto questa larghezza l'anteprima passa sopra e il campo prende
+     tutta la riga, invece di ridursi a una fessura. */
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.photoNote {
+  font-size: var(--step--1);
+  color: var(--coral-dark);
+  max-inline-size: var(--measure);
+}
+
+/* -------------------------------------------------------------------------
+   AZIONI
+   ---------------------------------------------------------------------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* A 375px i due bottoni stanno uno sopra l'altro a piena larghezza: due
+   bottoni stretti affiancati sarebbero un bersaglio scomodo. */
+@media (max-width: 26rem) {
+  .actions {
+    display: grid;
+  }
+}

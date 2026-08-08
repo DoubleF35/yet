@@ -1,0 +1,215 @@
+rules_version = '2';
+
+// =============================================================================
+// YET — regole di sicurezza Firestore
+//
+// QUESTE REGOLE SONO L'UNICA PROTEZIONE VERA.
+//
+// `src/config/admins.js` serve solo a mostrare o nascondere l'interfaccia:
+// chiunque apra la console del browser può montare la pagina /admin lo stesso.
+// A fermarlo c'è solo quello che sta scritto qui, perché queste condizioni
+// girano sui server di Google e non su un computer che l'utente controlla.
+//
+// Da cui la conseguenza pratica: cambiare la lista degli admin in
+// src/config/admins.js NON cambia i permessi. Vanno modificate entrambe le
+// liste e va ri-pubblicato questo file (istruzioni nel README).
+//
+// COME PUBBLICARLE
+//   console Firebase -> Firestore Database -> scheda "Regole" -> incolla -> Pubblica
+//   oppure:  firebase deploy --only firestore:rules
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // ALLOWLIST DEGLI AMMINISTRATORI
+    //
+    // TODO: sostituisci queste quattro email con quelle vere, e tieni la lista
+    // identica a quella in src/config/admins.js. Vanno scritte in MINUSCOLO:
+    // il confronto qui sotto abbassa la mail del token, non queste costanti.
+    // -------------------------------------------------------------------------
+    function adminEmails() {
+      return [
+        'admin1@yetcommunity.it',
+        'admin2@yetcommunity.it',
+        'admin3@yetcommunity.it',
+        'admin4@yetcommunity.it'
+      ];
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Il controllo su email_verified non è pignoleria.
+    //
+    // Il modello di minaccia è questo: la nostra chiave di autorizzazione è
+    // l'INDIRIZZO EMAIL, non l'uid. Con Google l'email è sempre verificata,
+    // quindi la condizione non costa niente. Ma se un domani venisse attivato
+    // un secondo metodo di accesso (email/password, un provider OIDC
+    // qualsiasi), chiunque potrebbe registrarsi dichiarando l'indirizzo di un
+    // admin e ottenere un token con quella email dentro. Il flag è ciò che
+    // impedisce a quella modifica futura di aprire un buco in silenzio.
+    function isAdmin() {
+      return isSignedIn()
+          && request.auth.token.email != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() in adminEmails();
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // I dati in arrivo con una create o una update.
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // =========================================================================
+    // users/{uid} — i profili dei membri
+    //
+    // Lettura pubblica: la pagina /membri deve funzionare anche per chi non ha
+    // fatto login, ed è tutto contenuto che i membri scrivono per essere letto.
+    // Scrittura solo sul proprio documento, con l'uid come chiave: è l'uid del
+    // token, quindi non è falsificabile.
+    // =========================================================================
+    match /users/{uid} {
+
+      allow read: if true;
+
+      // Le sole chiavi ammesse. hasOnly() è la metà che conta: senza,
+      // chiunque potrebbe attaccare al proprio profilo campi arbitrari
+      // (`isAdmin: true`, un payload da megabyte) e ce li ritroveremmo in
+      // pancia al database.
+      function usersKeysOk() {
+        return incoming().keys().hasOnly(
+          ['displayName', 'bio', 'photoURL', 'socials', 'createdAt', 'updatedAt']
+        );
+      }
+
+      function displayNameOk() {
+        return incoming().displayName is string
+            && incoming().displayName.size() >= 1
+            && incoming().displayName.size() <= 80;
+      }
+
+      // Il limite di 300 deve esistere QUI, non solo nel contatore della
+      // pagina Join: il contatore è un aiuto per chi scrive, non un controllo.
+      // Chi scrive a mano una richiesta al database non lo incontra nemmeno.
+      // Se cambi il numero, cambialo anche in BIO_MAX dentro src/lib/db.js.
+      function bioOk() {
+        return incoming().bio is string
+            && incoming().bio.size() <= 300;
+      }
+
+      // Stringa vuota ammessa (il campo è opzionale). Se valorizzata deve
+      // essere un URL http/https: senza questo controllo si potrebbe salvare
+      // un `javascript:` che diventerebbe pericoloso il giorno in cui qualcuno
+      // usasse quel valore come href invece che come src.
+      function photoOk() {
+        return incoming().photoURL is string
+            && incoming().photoURL.size() <= 500
+            && (incoming().photoURL == '' || incoming().photoURL.matches('https?://.*'));
+      }
+
+      function socialsOk() {
+        return incoming().socials is map
+            && incoming().socials.keys().hasOnly(['linkedin', 'instagram', 'other'])
+            && (!('linkedin' in incoming().socials)
+                || (incoming().socials.linkedin is string && incoming().socials.linkedin.size() <= 200))
+            && (!('instagram' in incoming().socials)
+                || (incoming().socials.instagram is string && incoming().socials.instagram.size() <= 200))
+            && (!('other' in incoming().socials)
+                || (incoming().socials.other is string && incoming().socials.other.size() <= 200));
+      }
+
+      function usersShapeOk() {
+        return usersKeysOk() && displayNameOk() && bioOk() && photoOk() && socialsOk();
+      }
+
+      allow create: if isOwner(uid)
+                    && usersShapeOk()
+                    && incoming().createdAt == request.time;
+
+      // createdAt non deve poter cambiare: è il campo su cui /membri ordina
+      // l'elenco, e senza questo vincolo chiunque potrebbe riscriverlo per
+      // mettersi in cima. Il confronto con resource.data (il documento com'è
+      // ADESSO sul server) è ciò che rende il vincolo non aggirabile.
+      allow update: if isOwner(uid)
+                    && usersShapeOk()
+                    && incoming().createdAt == resource.data.createdAt
+                    && incoming().updatedAt == request.time;
+
+      // Solo il proprietario può cancellarsi. Nemmeno un admin: cancellare il
+      // profilo di un altro non è un'operazione che deve esistere da qui.
+      allow delete: if isOwner(uid);
+    }
+
+    // =========================================================================
+    // news/{id} — le notizie
+    //
+    // Lettura pubblica, comprese le bozze.
+    //
+    // ATTENZIONE, ed è una scelta consapevole: `published: false` NASCONDE la
+    // notizia dall'interfaccia, non la rende segreta. La query della home
+    // filtra su published==true, ma chiunque può interrogare la collection
+    // senza quel filtro e leggere le bozze. Rendere le bozze illeggibili
+    // richiederebbe due collection separate.
+    // Regola pratica: non scrivere in una bozza niente che non possa diventare
+    // pubblico.
+    // =========================================================================
+    match /news/{newsId} {
+
+      allow read: if true;
+
+      function newsKeysOk() {
+        return incoming().keys().hasOnly(
+          ['title', 'body', 'authorUid', 'authorName', 'createdAt', 'published']
+        );
+      }
+
+      function newsShapeOk() {
+        return newsKeysOk()
+            && incoming().title is string
+            && incoming().title.size() >= 1
+            && incoming().title.size() <= 200
+            && incoming().body is string
+            && incoming().body.size() >= 1
+            && incoming().body.size() <= 20000
+            && incoming().published is bool;
+      }
+
+      // authorUid deve essere l'uid di chi scrive: un admin non può firmare
+      // una notizia a nome di un altro.
+      allow create: if isAdmin()
+                    && newsShapeOk()
+                    && incoming().authorUid == request.auth.uid
+                    && incoming().createdAt == request.time;
+
+      // In modifica restano fissi autore e data: cambiarli riscriverebbe la
+      // storia del feed, che è il senso di avere una data.
+      allow update: if isAdmin()
+                    && newsShapeOk()
+                    && incoming().authorUid == resource.data.authorUid
+                    && incoming().createdAt == resource.data.createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // TUTTO IL RESTO: NEGATO
+    //
+    // Non è ridondante rispetto al comportamento predefinito di Firestore.
+    // È una dichiarazione di intenti che vale per il futuro: la collection che
+    // qualcuno creerà fra sei mesi (eventi, commenti, iscrizioni) nasce chiusa,
+    // e per aprirla bisognerà passare da questo file e pensarci. Senza questa
+    // riga, chi aggiunge una `match` nuova può dimenticarsi le condizioni e
+    // non se ne accorge nessuno.
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

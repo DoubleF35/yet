@@ -1,0 +1,174 @@
+/* Lo schermo intero. `fixed` e non `absolute`: su mobile la barra
+   dell'indirizzo che compare e sparisce farebbe ballare un blocco assoluto. */
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  overflow: hidden;
+  background-color: var(--bg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------------------------
+   La finestra di ritaglio.
+
+   Il video sorgente è 1280x720 ma la parte buona è più stretta (vedi il
+   blocco "RITAGLIO DEL VIDEO" in theme.css). Quindi:
+
+   1. .frame è la regione utile, con il suo rapporto, dimensionata per
+      COPRIRE il viewport — il max() sceglie il lato che comanda a seconda che
+      lo schermo sia più largo o più alto della regione.
+   2. .video ci sta dentro sovradimensionato, spostato in negativo di quanto
+      vale il bordo che vogliamo tagliare.
+
+   object-fit da solo non basterebbe: taglia sempre in modo simmetrico, mentre
+   qui la regione utile non è detto che sia centrata.
+
+   100svh e non 100vh: svh è l'altezza dello schermo con la barra
+   dell'indirizzo VISIBILE, cioè quella che c'è davvero mentre il video parte.
+   Con 100vh il video sfonderebbe sotto e l'animazione finirebbe fuori campo.
+   La riga con vh resta prima, come ripiego per i browser che non conoscono svh.
+--------------------------------------------------------------------------- */
+.frame {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+
+  inline-size: max(100vw, calc(100vh * var(--hero-crop-w) / var(--hero-crop-h)));
+  block-size: max(100vh, calc(100vw * var(--hero-crop-h) / var(--hero-crop-w)));
+  inline-size: max(100vw, calc(100svh * var(--hero-crop-w) / var(--hero-crop-h)));
+  block-size: max(100svh, calc(100vw * var(--hero-crop-h) / var(--hero-crop-w)));
+
+  overflow: hidden;
+}
+
+.video {
+  position: absolute;
+  display: block;
+
+  /* Il sorgente sta al ritaglio come 1280 sta a --hero-crop-w. */
+  inline-size: calc(var(--hero-src-w) / var(--hero-crop-w) * 100%);
+  block-size: calc(var(--hero-src-h) / var(--hero-crop-h) * 100%);
+
+  /* SERVE, e il motivo è tutt'altro che ovvio: il reset di global.css mette
+     `max-width: 100%` su img/video perché non sfondino il contenitore. Qui
+     però il video DEVE sfondare — è tutto il senso del ritaglio, sta dentro
+     una finestra più piccola di lui. Senza questa riga la larghezza calcolata
+     sopra (178% della finestra) viene ricondotta a 100%, il taglio laterale
+     sparisce e si vede la cornice bianca ai lati. Il bug è invisibile in
+     verticale, perché lì il video è più alto ma non c'è nessun max-height a
+     fermarlo: si manifesta solo sull'asse orizzontale. */
+  max-inline-size: none;
+  max-block-size: none;
+
+  /* Spostamento negativo pari al bordo da nascondere, espresso in percentuale
+     della finestra di ritaglio. */
+  inset-inline-start: calc(var(--hero-crop-x) / var(--hero-crop-w) * -100%);
+  inset-block-start: calc(var(--hero-crop-y) / var(--hero-crop-h) * -100%);
+
+  /* Riallinea il beige del video a quello del sito: senza, si vede il gradino
+     fra il fondo del video e il fondo della pagina durante la dissolvenza. */
+  filter: var(--hero-color-fix);
+
+  /* `fill` e NON `cover`. Le due dimensioni qui sopra sono già esattamente il
+     sorgente in scala, quindi il riquadro ha per costruzione il rapporto del
+     video: `fill` lo appoggia dentro senza deformarlo. `cover` invece
+     ri-scalerebbe il contenuto per coprire il riquadro e ritaglierebbe una
+     seconda volta, in modo simmetrico — cioè annullando proprio lo
+     spostamento asimmetrico che stiamo calcolando. */
+  object-fit: fill;
+}
+
+/* --- comandi -------------------------------------------------------------- */
+
+.controls {
+  position: absolute;
+  /* Sopra la tacca e sopra la barra gesti di iOS. */
+  inset-block-end: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  inset-inline-end: calc(var(--space-6) + env(safe-area-inset-right, 0px));
+  z-index: var(--z-overlay);
+}
+
+/* Skip ed Entra condividono tutto tranne il colore: il primo deve farsi
+   notare senza rubare la scena, il secondo è l'unica via d'uscita e quindi
+   è pieno. Entrambi con fondo pieno e non solo testo: sotto c'è un video che
+   cambia colore, e un testo trasparente diventerebbe illeggibile a metà. */
+.skip,
+.enter {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding-inline: var(--space-5);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.skip {
+  color: var(--ink);
+  background-color: var(--bg);
+  border: var(--border-strong);
+}
+
+.skip:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.enter {
+  /* Coral scuro: è l'unica via d'uscita della schermata, quindi il testo
+     dev'essere leggibile davvero. Il bianco sul coral pieno sta a ~3,4:1. */
+  color: var(--on-coral);
+  background-color: var(--coral-dark);
+  border: 2px solid var(--coral-dark);
+}
+
+.enter:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Il focus deve restare visibile sopra qualunque fotogramma: doppio anello,
+   chiaro all'interno e scuro all'esterno, così almeno uno dei due stacca
+   sempre dallo sfondo. */
+.skip:focus-visible,
+.enter:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 var(--focus-offset) var(--bg);
+}
+
+/* --- dissolvenza ---------------------------------------------------------- */
+
+.fade {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-modal);
+  background-color: var(--bg);
+
+  opacity: 0;
+  /* Mentre è trasparente non deve intercettare i click: senza, il velo
+     coprirebbe il bottone Skip per tutta la durata dell'intro. */
+  pointer-events: none;
+  transition: opacity 450ms ease;
+}
+
+.fadeOn {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade {
+    transition: none;
+  }
+}

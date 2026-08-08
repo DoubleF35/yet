@@ -1,0 +1,429 @@
+/* =========================================================================
+   YET — reset e stili di base
+   -------------------------------------------------------------------------
+   Questo è l'UNICO foglio di stile globale del progetto insieme a theme.css.
+   Tutto il resto vive nei CSS Modules accanto ai componenti.
+
+   Regola per chi legge: qui dentro si mettono solo cose che valgono per
+   TUTTO il sito (reset, tipografia degli elementi HTML, .container,
+   focus, accessibilità). Qualunque regola che riguardi un componente
+   specifico va nel suo .module.css, altrimenti si rompe il lavoro degli
+   altri e non c'è più modo di sapere chi ha scritto cosa.
+
+   I colori arrivano tutti da theme.css: qui non compare nessun valore
+   esadecimale.
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. RESET
+   ---------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Azzeriamo i margini solo dove servono davvero. ul/ol restano fuori di
+   proposito: il corpo di una news può contenere una lista vera e senza il
+   padding di default i bullet finirebbero fuori dal contenitore. */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd,
+fieldset {
+  margin: 0;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-inline-size: 0; /* i fieldset hanno un min-width implicito che rompe il flex */
+}
+
+html {
+  /* Niente dark mode: dichiararlo fa sì che scrollbar, campi e controlli di
+     sistema si disegnino chiari anche su un OS in tema scuro. */
+  color-scheme: light;
+
+  /* iOS ingrandisce da solo il testo in landscape senza questa riga. */
+  -webkit-text-size-adjust: 100%;
+
+  /* La navbar è FISSA in alto: senza questo, cliccare un'ancora (#membri)
+     porta la sezione esattamente sotto la barra e il titolo resta nascosto.
+     Lo stesso vale per il focus spostato via tastiera. Il margine in più
+     serve a non incollare il titolo al bordo inferiore della navbar. */
+  scroll-padding-top: calc(var(--nav-h) + var(--space-5));
+}
+
+/* Lo scroll morbido solo per chi non ha chiesto meno movimento. Messo in
+   media query "no-preference" e non in un override: così di default, su un
+   browser che non espone la preferenza, resta comunque attivo, ma chi ha
+   attivato la riduzione del movimento non lo vede mai nemmeno per un frame. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  font-weight: var(--weight-regular);
+  line-height: var(--lh-base);
+  letter-spacing: var(--ls-base);
+
+  /* Inter su fondo chiaro è più pulita senza il subpixel antialiasing. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Nessuna pagina deve poter scrollare in orizzontale: se un elemento sfonda
+     è un bug di layout, ma intanto non lo facciamo pagare all'utente.
+
+     `clip` e NON `hidden`: hidden trasformerebbe il body in uno scroll
+     container, e da quel momento qualunque `position: sticky` in una pagina
+     smetterebbe di funzionare (si aggancerebbe al body invece che al
+     viewport) — un guasto invisibile finché qualcuno non scrive un componente
+     sticky. `clip` taglia e basta. Dove non è supportato la riga viene
+     semplicemente ignorata, e l'eventuale overflow torna visibile: meglio un
+     bug che si vede di uno sticky rotto che non si spiega. */
+  overflow-x: clip;
+}
+
+/* Media.
+   `height: auto` va solo a img e svg: su <video> annullerebbe l'altezza che
+   il componente hero imposta per il ritaglio 4:3, e il video tornerebbe
+   16:9 con le bande beige ai lati. */
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+svg {
+  height: auto;
+}
+
+/* I controlli di form non ereditano il font dal body per impostazione
+   predefinita: senza questa riga un <input> userebbe il font di sistema. */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+textarea {
+  resize: vertical; /* orizzontale romperebbe il layout */
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
+/* Le parole lunghe (URL, email, nomi utente) non devono sfondare la colonna
+   a 375px. */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+dd,
+figcaption,
+blockquote {
+  overflow-wrap: break-word;
+}
+
+/* -------------------------------------------------------------------------
+   2. TIPOGRAFIA DI BASE
+
+   Gli heading prendono la scala fluida di theme.css. Sono stilizzati come
+   ELEMENTI e non come classi perché l'ordine semantico (h1 poi h2 poi h3)
+   deve essere quello giusto in ogni pagina: se h2 fosse una classe, sarebbe
+   troppo comodo saltare un livello per ragioni estetiche.
+
+   --step-6 non è assegnato a nessun tag: è riservato al display dell'hero,
+   che resta comunque un <h1>, con il font-size sovrascritto dal suo modulo.
+   ---------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+
+  /* Distribuisce le parole sulle righe in modo che l'ultima non resti
+     orfana. Vale la pena solo sui titoli: è costoso e il browser lo applica
+     al massimo su poche righe. Dove non è supportato, degrada a normale. */
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--step-5);
+  letter-spacing: var(--ls-display);
+}
+
+h2 {
+  font-size: var(--step-4);
+}
+
+h3 {
+  font-size: var(--step-3);
+}
+
+h4 {
+  font-size: var(--step-2);
+}
+
+h5 {
+  font-size: var(--step-1);
+}
+
+h6 {
+  font-size: var(--step-0);
+  letter-spacing: var(--ls-base);
+}
+
+p {
+  /* `pretty` evita la riga finale con una parola sola senza toccare le altre
+     righe: è la variante giusta per il testo corrente, mentre `balance` sui
+     paragrafi lunghi verrebbe ignorato dal browser comunque. */
+  text-wrap: pretty;
+}
+
+/* I link ereditano il colore e si distinguono per la sottolineatura, non per
+   la tinta: il coral puro su beige fa 3.7:1, che NON basta per un link
+   inline dentro un paragrafo. In hover passiamo a --coral-dark, che di
+   contrasto ne fa 5.3:1. */
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--coral-dark);
+}
+
+strong,
+b {
+  font-weight: var(--weight-semibold);
+}
+
+small {
+  font-size: var(--step--1);
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.9em;
+}
+
+hr {
+  height: 0;
+  margin: var(--space-8) 0;
+  border: 0;
+  border-top: var(--border-soft);
+}
+
+/* Le date e i tempi si leggono meglio con le cifre a larghezza fissa: in una
+   lista di news i numeri restano incolonnati. */
+time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------
+   3. LAYOUT DI PAGINA
+   ---------------------------------------------------------------------- */
+
+/* #root è flex-column così il Layout può spingere il footer in fondo anche
+   sulle pagine corte, semplicemente mettendo flex: 1 sul suo <main>.
+   Il doppio min-height è voluto: 100dvh tiene conto della barra degli
+   indirizzi mobile che si apre e si chiude, ma non è ovunque, quindi 100vh
+   resta come fallback per i browser che non la conoscono. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* La colonna di contenuto. Da usare così: <section><div class="container">…
+   Il padding laterale cresce col viewport (vedi --container-pad). */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* Variante stretta per testo lungo e form, dove 1120px sarebbe una riga
+   troppo larga per leggere. */
+.container-narrow {
+  width: 100%;
+  max-width: var(--maxw-narrow);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* -------------------------------------------------------------------------
+   4. FOCUS
+
+   Un solo anello per tutto il sito. :focus-visible e non :focus, così il
+   mouse non lascia contorni ovunque ma la tastiera li vede sempre.
+   ---------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Safari e i browser più vecchi disegnano ancora l'outline di default su
+   :focus da mouse. Lo togliamo SOLO nel caso in cui :focus-visible non sia
+   scattato: l'anello sopra resta comunque. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Il <main> riceve il focus da programma quando si usa lo skip-link
+   (tabIndex={-1}). Non deve però mostrare l'anello: l'utente ha appena
+   chiesto di saltare al contenuto, non ha "messo a fuoco" un controllo. */
+main:focus,
+[tabindex='-1']:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* -------------------------------------------------------------------------
+   5. UTILITÀ DI ACCESSIBILITÀ
+   ---------------------------------------------------------------------- */
+
+/* Skip-link: primo elemento del DOM, invisibile finché non riceve il focus,
+   poi compare in alto a sinistra sopra qualunque cosa.
+   È in `fixed` e non `absolute` perché deve essere visibile anche se
+   l'utente ha già scrollato quando preme Tab.
+   Usiamo translate e non display:none / visibility:hidden: quelli lo
+   toglierebbero dall'ordine di tabulazione e il link non sarebbe più
+   raggiungibile, che è esattamente il contrario dello scopo. */
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: var(--z-skip);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--ink);
+  color: var(--bg);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border: var(--border-strong);
+  transform: translateY(calc(-100% - var(--space-4)));
+  transition: transform var(--transition);
+}
+
+/* :focus e non solo :focus-visible: se un browser dovesse dargli il focus
+   senza classificarlo come "visibile", il link deve comparire lo stesso,
+   altrimenti l'utente sta navigando su un elemento che non vede. */
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+/* Nasconde visivamente ma lascia il testo agli screen reader.
+   Il clip-path insieme al clip legacy copre anche i browser vecchi;
+   white-space: nowrap evita che il testo mandi a capo dentro il pixel. */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -------------------------------------------------------------------------
+   6. SELEZIONE
+
+   Coral, ma la variante scura: con --coral puro il bianco sopra farebbe
+   4.4:1, appena sotto la soglia AA. --coral-dark porta il rapporto a 6.4:1
+   e resta chiaramente lo stesso colore del brand.
+   ---------------------------------------------------------------------- */
+
+::selection {
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+}
+
+/* -------------------------------------------------------------------------
+   7. MOVIMENTO RIDOTTO
+
+   Non azzeriamo del tutto le durate: le portiamo a 0.01ms. Zero secco farebbe
+   saltare l'evento `transitionend`/`animationend`, e i componenti che ci si
+   appoggiano (un menu che si chiude, un toast) resterebbero appesi.
+
+   !important è necessario: deve vincere su qualunque .module.css, che viene
+   caricato dopo questo file.
+   ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

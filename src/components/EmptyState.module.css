@@ -1,0 +1,42 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  padding: clamp(var(--space-7), 8vw, var(--space-10)) var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+}
+
+.mark {
+  block-size: clamp(44px, 8vw, 64px);
+  inline-size: auto;
+  /* Sbiadito: deve accompagnare il messaggio, non rubargli l'attenzione. */
+  opacity: 0.55;
+  transform: rotate(-8deg);
+  margin-block-end: var(--space-5);
+}
+
+.title {
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.text {
+  margin-block: var(--space-3) 0;
+  max-inline-size: 46ch;
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.action {
+  margin-block-start: var(--space-6);
+}
