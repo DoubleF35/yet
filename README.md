@@ -372,15 +372,39 @@ Il codice c'è ed è collegato: nell'editor degli allegati, sotto il campo per
 l'indirizzo, c'è **«Carica un file»** con barra di avanzamento. Accetta
 immagini (JPEG, PNG, WebP, GIF, AVIF) e PDF fino a **10 MB**.
 
-**Ma richiede Firebase Storage, che va acceso una volta sola:**
+> ### ⚠️ Storage NON è disponibile sul piano Spark
+>
+> Non è una soglia di consumo da superare: **dal 3 febbraio 2026 un progetto
+> Spark non ha accesso a nessun bucket**, nemmeno quello predefinito, e le
+> chiamate rispondono `402` o `403`. Serve il piano **Blaze**, cioè una carta
+> collegata al progetto, anche solo per caricare un file da 50 KB.
+>
+> Blaze è a consumo senza minimi: se resti nella soglia gratuita non paghi
+> nulla. Ma la soglia dipende dalla regione, ed è la parte che si scopre tardi.
 
-1. Console Firebase → **Storage** → «Inizia» → stessa regione del database
-   (`eur3`). Se chiede il piano Blaze è perché sui progetti recenti il bucket
-   richiede un account di fatturazione: con questi volumi si resta dentro la
-   soglia gratuita, ma la carta va collegata.
-2. Storage → scheda **Regole** → incolla `storage.rules` → **Pubblica**.
+**I tre passaggi, una volta sola:**
 
-Il passo 2 è quello che si dimentica: `storage.rules` è un **file separato** da
+1. Passa il progetto al piano **Blaze** (serve una carta). Conviene subito
+   impostare un avviso di budget da qualche euro: non blocca la spesa, ma ti
+   avvisa se qualcosa va storto.
+2. Console Firebase → **Storage** → «Inizia» → **scegli la regione con cura**:
+
+   | Regione | Costo | Dove stanno i file |
+   | ------- | ----- | ------------------ |
+   | `us-central1`, `us-east1`, `us-west1` | **zero** (soglia Always Free: 5 GB) | Stati Uniti |
+   | `eur3` o altre europee | pochi centesimi al mese | Europa |
+
+   La soglia «Always Free» dei bucket `.firebasestorage.app` vale **solo per
+   quelle tre regioni statunitensi**. In Europa si paga dal primo byte: con i
+   volumi di un club sono cifre trascurabili, ma non zero.
+
+   È un compromesso vero, non una formalità: gli Stati Uniti costano zero ma
+   spostano i file fuori dall'Europa, e in quel caso va aggiornata la sezione
+   «Dove finiscono i dati» dell'informativa privacy. **La regione non si può
+   cambiare dopo.**
+3. Storage → scheda **Regole** → incolla `storage.rules` → **Pubblica**.
+
+Il passo 3 è quello che si dimentica: `storage.rules` è un **file separato** da
 `firestore.rules` e vive in un'altra scheda della console. Saltarlo dà
 `storage/unauthorized` al primo caricamento, con un errore che non spiega
 perché.

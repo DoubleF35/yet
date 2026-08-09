@@ -9,12 +9,21 @@
  *     numero uno sono le regole di Storage (storage.rules), che sono un file
  *     separato da firestore.rules e vanno pubblicate a parte.
  *
+ * ⚠️  STORAGE NON ESISTE SUL PIANO SPARK. Non è una soglia da superare: dal
+ *     3 febbraio 2026 un progetto Spark non ha accesso a NESSUN bucket, nemmeno
+ *     quello predefinito, e le chiamate rispondono 402 o 403. Serve per forza il
+ *     piano Blaze, cioè una carta collegata al progetto — anche per caricare un
+ *     solo file da 50 KB.
+ *
  * COME ATTIVARE STORAGE
- *   console Firebase → Storage → «Inizia» → scegli la stessa regione del
- *   database (eur3). Se chiede il piano Blaze è perché sui progetti recenti il
- *   bucket richiede un account di fatturazione: con questi volumi si resta
- *   dentro la soglia gratuita, ma la carta va collegata.
- *   Poi pubblica storage.rules dalla scheda «Regole» di Storage.
+ *   1. Passa il progetto al piano Blaze (serve una carta).
+ *   2. console Firebase → Storage → «Inizia» → SCEGLI LA REGIONE CON CURA:
+ *      la soglia «Always Free» dei bucket .firebasestorage.app vale SOLO per
+ *      us-central1, us-east1 e us-west1. In una regione europea si paga dal
+ *      primo byte — pochi centesimi al mese con questi volumi, ma non zero.
+ *      È un compromesso vero: gli Stati Uniti costano zero ma spostano i file
+ *      fuori dall'Europa, e l'informativa privacy va aggiornata di conseguenza.
+ *   3. Storage → scheda «Regole» → incolla storage.rules → Pubblica.
  */
 
 import { getApp } from 'firebase/app'
