@@ -26,6 +26,7 @@ import {
 
 import { auth, db, isFirebaseConfigured } from './firebase.js'
 import { isAdminEmail } from '../config/admins.js'
+import { normalizeAttachments } from './attachments.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
  *  della pagina Join sia — soprattutto — le regole in firestore.rules, che
@@ -217,7 +218,7 @@ export function listenNews({ onlyPublished = true } = {}, onData, onError) {
   )
 }
 
-export async function createNews({ title, body, published }, author) {
+export async function createNews({ title, body, published, attachments }, author) {
   if (!isFirebaseConfigured) throw notConfigured()
 
   const cleanTitle = String(title ?? '').trim()
@@ -234,6 +235,10 @@ export async function createNews({ title, body, published }, author) {
   const ref = await addDoc(collection(db, NEWS), {
     title: cleanTitle,
     body: cleanBody,
+    // normalizeAttachments scarta quel che non è un http(s) valido, toglie i
+    // doppioni e tronca al massimo: quel che finisce nel documento è già
+    // pulito, e la pagina che lo legge non deve rifare il lavoro.
+    attachments: normalizeAttachments(attachments),
     published: Boolean(published),
     authorUid: author?.uid ?? null,
     authorName: author?.displayName || author?.name || 'Redazione YET',
@@ -258,6 +263,11 @@ export async function updateNews(id, patch) {
     }
   }
   if (typeof patch.published === 'boolean') allowed.published = patch.published
+  // Il confronto con undefined e non un controllo di verità: un array vuoto
+  // significa "togli tutti gli allegati" ed è una modifica legittima.
+  if (patch.attachments !== undefined) {
+    allowed.attachments = normalizeAttachments(patch.attachments)
+  }
 
   if (Object.keys(allowed).length === 0) return
   // Nessun createdAt e nessun authorUid qui dentro: le regole rifiutano che

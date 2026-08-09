@@ -16,12 +16,13 @@ sta nel piano gratuito Spark di Firebase.
 4. [Impostare i 4 admin](#impostare-i-4-admin)
 5. [Pubblicare le regole di sicurezza](#pubblicare-le-regole-di-sicurezza)
 6. [Deploy su GitHub Pages](#deploy-su-github-pages)
-7. [Iscrizione con approvazione](#iscrizione-con-approvazione)
-8. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-9. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-10. [Struttura delle cartelle](#struttura-delle-cartelle)
-11. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-12. [Problemi comuni](#problemi-comuni)
+7. [Allegati alle notizie](#allegati-alle-notizie)
+8. [Iscrizione con approvazione](#iscrizione-con-approvazione)
+9. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+10. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+11. [Struttura delle cartelle](#struttura-delle-cartelle)
+12. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+13. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -329,6 +330,56 @@ L'action parte da sola (scheda **Actions**). Al termine il sito è su
 Da lì in poi ogni push su `main` ripubblica. Puoi anche lanciarlo a mano da
 **Actions** → **Deploy su GitHub Pages** → **Run workflow**: utile dopo aver
 cambiato un secret, che da solo non fa ripartire niente.
+
+---
+
+## Allegati alle notizie
+
+Da `/admin`, sotto il corpo di ogni notizia, c'è il riquadro **Allegati**: si
+incolla un indirizzo e si aggiunge. Massimo 8 per notizia.
+
+- Gli indirizzi che finiscono in `.jpg`, `.png`, `.webp`, `.gif`, `.avif`,
+  `.svg` diventano **immagini** e vengono mostrate dentro la notizia, in
+  griglia, cliccabili per aprirle a dimensione piena.
+- Tutto il resto diventa un **link**, elencato sotto al testo.
+- Il tipo si può forzare con «Tratta come immagine / Tratta come link»: serve
+  per le immagini servite da un CDN senza estensione nell'URL, e per le foto
+  enormi che è meglio non caricare dentro la pagina.
+
+### Sono ammessi solo `http` e `https`
+
+Un URL finisce dentro un attributo `href` o `src`. Uno schema come
+`javascript:` in un href è codice che parte al clic — è il classico XSS.
+Vengono quindi rifiutati `javascript:`, `data:`, `file:` e gli indirizzi senza
+schema.
+
+Il controllo è fatto **due volte**, ed è voluto: quando si salva *e* quando si
+mostra. La seconda è quella che conta davvero, perché è l'unica che protegge
+anche i dati scritti prima che questa validazione esistesse, o inseriti a mano
+dalla console Firebase. La logica sta tutta in `src/lib/attachments.js`, usata
+sia dall'editor sia dalla pagina che li mostra, così le due non possono
+divergere.
+
+Nelle regole il controllo si ferma a «è una lista e non supera 8 elementi»:
+le Security Rules non sanno iterare una lista, non esiste un «per ogni
+elemento». Regge lo stesso perché su `news` scrive **solo un admin in
+allowlist**: il rischio non è l'estraneo che inietta dati, è l'amministratore
+che sbaglia.
+
+### Caricare file veri (non ancora possibile)
+
+Oggi si allega **l'indirizzo** di un file, non il file. Per caricarlo davvero
+serve Firebase Storage, che su questo progetto **non è attivo**: entrambi i
+bucket rispondono 404.
+
+Per attivarlo: console Firebase → **Storage** → «Inizia». Se la console chiede
+di passare al piano Blaze, è perché sui progetti creati di recente il bucket
+richiede un account di fatturazione — con questi volumi resterebbe comunque
+dentro la soglia gratuita, ma la carta va inserita.
+
+Nel frattempo funziona bene appoggiarsi a quello che già usate: una foto su
+Instagram, un PDF su Drive con link pubblico, un'immagine su un qualsiasi
+host. Si incolla l'indirizzo e viene mostrato.
 
 ---
 

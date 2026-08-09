@@ -1,0 +1,219 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  max-inline-size: var(--measure);
+}
+
+/* --- elenco degli allegati già aggiunti ---------------------------------- */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: var(--border);
+  background-color: var(--surface);
+  /* Su schermo stretto i comandi vanno sotto invece di stringere il testo
+     fino a renderlo illeggibile. */
+  flex-wrap: wrap;
+}
+
+.thumb,
+.thumbFallback {
+  inline-size: 44px;
+  block-size: 44px;
+  flex: 0 0 auto;
+  border: var(--border);
+  object-fit: cover;
+  background-color: var(--surface-sunken);
+}
+
+/* Un quadrato coral tiene la colonna allineata quando l'allegato è un link e
+   non c'è nessuna anteprima da mostrare. */
+.thumbFallback {
+  background-color: var(--coral-soft);
+  border: var(--border-coral);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* min-width: 0 è quel che permette al testo di troncare invece di allargare
+     la riga oltre il contenitore. */
+  min-inline-size: 0;
+  flex: 1 1 12rem;
+}
+
+.label {
+  font-weight: var(--weight-semibold);
+  font-size: var(--step-0);
+  overflow-wrap: anywhere;
+}
+
+.url {
+  font-size: var(--step--1);
+  color: var(--muted);
+  /* L'URL intero non serve a nessuno in un elenco: una riga sola, tagliata. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.small {
+  min-block-size: 44px;
+  padding-inline: var(--space-3);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.small:hover:not(:disabled) {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.small:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.remove:hover:not(:disabled) {
+  background-color: var(--danger);
+  border-color: var(--danger);
+  color: var(--bg);
+}
+
+.small:disabled {
+  opacity: 0.55;
+}
+
+/* --- form di aggiunta ----------------------------------------------------- */
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* L'indirizzo cresce, l'etichetta resta più stretta: sono le proporzioni
+     con cui vengono davvero riempiti. */
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+
+.field:nth-child(2) {
+  flex: 1 1 10rem;
+}
+
+.fieldLabel {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.optional {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--weight-regular);
+}
+
+.input {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--ink);
+  background-color: var(--bg);
+  border: var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.input:disabled {
+  opacity: 0.55;
+}
+
+.add {
+  min-block-size: 44px;
+  padding-inline: var(--space-5);
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  color: var(--bg);
+  background-color: var(--ink);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.add:hover:not(:disabled) {
+  background-color: var(--coral-dark);
+  border-color: var(--coral-dark);
+}
+
+.add:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.add:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-3);
+  border: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+}
+
+.full {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}

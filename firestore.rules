@@ -268,12 +268,38 @@ service cloud.firestore {
 
       function newsKeysOk() {
         return incoming().keys().hasOnly(
-          ['title', 'body', 'authorUid', 'authorName', 'createdAt', 'published']
+          ['title', 'body', 'attachments', 'authorUid', 'authorName',
+           'createdAt', 'published']
         );
+      }
+
+      // Sugli allegati il controllo si ferma al tipo e alla lunghezza, e va
+      // detto perché invece di lasciarlo scoprire.
+      //
+      // Le Security Rules non sanno iterare una lista: non esiste un "per ogni
+      // elemento", quindi non è possibile verificare qui dentro che ogni voce
+      // sia una mappa con quelle tre chiavi e un URL http(s). Si può controllare
+      // che sia una lista e quanto è lunga, e basta.
+      //
+      // Regge lo stesso, perché su news il modello di minaccia è diverso da
+      // quello su users: scrivere qui può SOLO un admin autenticato e nella
+      // allowlist. Il rischio non è l'estraneo che inietta dati, è
+      // l'amministratore che sbaglia — e per quello bastano la validazione del
+      // form e normalizeAttachments in lib/db.js.
+      //
+      // La difesa che conta davvero è comunque un'altra e sta altrove: gli URL
+      // vengono ricontrollati AL MOMENTO DI MOSTRARLI (safeUrl in
+      // src/lib/attachments.js), perché è lì che un `javascript:` diventerebbe
+      // pericoloso, ed è l'unico punto che protegge anche i dati scritti prima
+      // di questa regola o a mano dalla console.
+      function attachmentsOk() {
+        return !('attachments' in incoming())
+            || (incoming().attachments is list && incoming().attachments.size() <= 8);
       }
 
       function newsShapeOk() {
         return newsKeysOk()
+            && attachmentsOk()
             && incoming().title is string
             && incoming().title.size() >= 1
             && incoming().title.size() <= 200

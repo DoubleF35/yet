@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
+import AttachmentEditor from '../components/AttachmentEditor.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
@@ -18,7 +19,7 @@ const TITLE_MAX = 120
    rispecchiamo nel form perché scoprirlo DOPO aver scritto ventimila caratteri,
    sotto forma di "permission-denied", sarebbe crudele. */
 
-const EMPTY_DRAFT = { title: '', body: '', published: false }
+const EMPTY_DRAFT = { title: '', body: '', published: false, attachments: [] }
 
 /* Traduce un errore Firebase in una frase che dice anche COSA FARE.
    `permission-denied` è l'errore che farà chiunque configuri il progetto la
@@ -204,7 +205,12 @@ export default function Admin() {
     const wasPublished = form.published
     try {
       await createNews(
-        { title: form.title.trim(), body: form.body.trim(), published: wasPublished },
+        {
+          title: form.title.trim(),
+          body: form.body.trim(),
+          published: wasPublished,
+          attachments: form.attachments,
+        },
         author,
       )
       setForm(EMPTY_DRAFT)
@@ -245,6 +251,7 @@ export default function Admin() {
     setEditDraft({
       title: item.title ?? '',
       body: item.body ?? '',
+      attachments: Array.isArray(item.attachments) ? item.attachments : [],
       published: Boolean(item.published),
     })
   }
@@ -274,6 +281,7 @@ export default function Admin() {
       await updateNews(item.id, {
         title: editDraft.title.trim(),
         body: editDraft.body.trim(),
+        attachments: editDraft.attachments,
         published: editDraft.published,
       })
       setEditingId(null)
@@ -419,6 +427,15 @@ export default function Admin() {
             </div>
 
             <div className={s.field}>
+              <span className={s.label}>Allegati</span>
+              <AttachmentEditor
+                value={form.attachments}
+                onChange={(next) => updateForm({ attachments: next })}
+                disabled={saving}
+              />
+            </div>
+
+            <div className={s.field}>
               <label className={s.check} htmlFor="news-published">
                 <input
                   id="news-published"
@@ -446,7 +463,7 @@ export default function Admin() {
               >
                 {saving ? 'Salvataggio…' : 'Salva notizia'}
               </button>
-              {(form.title || form.body || form.published) && !saving && (
+              {(form.title || form.body || form.published || form.attachments.length > 0) && !saving && (
                 <button
                   type="button"
                   className={s.btn}
@@ -610,6 +627,17 @@ export default function Admin() {
                                 {editErrors.body}
                               </p>
                             )}
+                          </div>
+
+                          <div className={s.field}>
+                            <span className={s.label}>Allegati</span>
+                            <AttachmentEditor
+                              value={editDraft.attachments}
+                              onChange={(next) =>
+                                setEditDraft((prev) => ({ ...prev, attachments: next }))
+                              }
+                              disabled={busy === 'save'}
+                            />
                           </div>
 
                           <label className={s.check} htmlFor={`edit-published-${item.id}`}>
