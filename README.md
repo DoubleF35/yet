@@ -18,9 +18,10 @@ sta nel piano gratuito Spark di Firebase.
 6. [Deploy su GitHub Pages](#deploy-su-github-pages)
 7. [Iscrizione con approvazione](#iscrizione-con-approvazione)
 8. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-9. [Struttura delle cartelle](#struttura-delle-cartelle)
-10. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-11. [Problemi comuni](#problemi-comuni)
+9. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+10. [Struttura delle cartelle](#struttura-delle-cartelle)
+11. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+12. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -454,6 +455,94 @@ ripetere l'operazione per togliere anche l'account.
 
 ---
 
+## Dove stanno i dati, e come non perderli
+
+### Il deploy non tocca i dati
+
+Sono due posti separati, ed è la cosa più utile da sapere:
+
+| Cosa | Dove sta | Cosa succede a ogni deploy |
+| ---- | -------- | -------------------------- |
+| Codice del sito | GitHub → GitHub Pages | viene sostituito |
+| Profili e notizie | Firestore (Google) | **non viene toccato** |
+
+Puoi ripubblicare il sito cento volte, tornare a un commit vecchio, sbagliare
+un merge: i dati restano dove sono. Il codice non li contiene e non li
+sovrascrive. L'unica cosa che agisce sui dati sono le **regole** — e anche
+quelle possono al massimo bloccare l'accesso, non cancellare.
+
+### Quello che invece può andare perso
+
+Sul piano gratuito Spark **Firebase non fa backup**: niente copie programmate,
+niente ripristino a un istante preciso (sono funzioni del piano Blaze). Quindi:
+
+- un admin che elimina la notizia sbagliata → sparita;
+- un membro che usa «Cancella il mio profilo» → sparito;
+- una regola scritta male che lascia scrivere qualcuno che non doveva → nessun
+  modo di tornare indietro.
+
+Per questo c'è l'export.
+
+### Fare un backup
+
+```bash
+npm run backup
+```
+
+Scrive un JSON in `backups/`, che è già in `.gitignore` — contiene dati
+personali dei membri e non deve finire nel repo.
+
+Lo script funziona in due modi e **dice sempre quale ha usato**, perché un
+backup che si crede completo e non lo è sarebbe peggio di nessun backup:
+
+- **parziale**, senza configurare niente: prende tutte le notizie (bozze
+  comprese) e i profili approvati. Restano fuori le richieste in attesa e
+  quelle rifiutate, perché le regole non le rendono leggibili pubblicamente.
+- **completo**, con una chiave di servizio: prende tutto.
+
+  ```bash
+  npm install --save-dev firebase-admin
+  # console Firebase → Impostazioni progetto → Account di servizio
+  #                  → "Genera nuova chiave privata"
+  export GOOGLE_APPLICATION_CREDENTIALS=/percorso/della/chiave.json
+  npm run backup
+  ```
+
+> ⚠️ **La chiave di servizio scavalca ogni regola di sicurezza.** Vale più
+> delle chiavi in `.env`, che sono pubbliche per progettazione. Non va nel
+> repo (`.gitignore` la copre), non va in chat, non va su un Drive condiviso.
+
+Quanto spesso? Non c'è un modo di automatizzarlo senza un server, quindi vale
+la regola pratica: **prima di toccare le regole** e ogni tanto quando la
+community cresce.
+
+### Ripristinare
+
+```bash
+npm run restore -- backups/yet-2026-08-09T06-37-23.json            # prova
+npm run restore -- backups/yet-2026-08-09T06-37-23.json --scrivi   # applica
+```
+
+Senza `--scrivi` non scrive niente: elenca soltanto cosa verrebbe ricreato e
+cosa sovrascritto. È voluto — è lo strumento che si usa quando qualcosa è già
+andato storto, cioè nel momento in cui si sbaglia più facilmente.
+
+Il ripristino **non cancella** i documenti creati dopo il backup: chi ha
+continuato a usare il sito mentre sistemavi le cose non deve perdere il
+proprio lavoro. Se qualcosa va tolto, si toglie a mano.
+
+Serve la chiave di servizio anche qui: riscrivere il documento di un altro
+utente è vietato dalle regole a chiunque, amministratori compresi.
+
+> Onestà sul collaudo: il percorso di **scrittura** del ripristino non è mai
+> stato eseguito contro un progetto vero, perché richiede una chiave di
+> servizio che non è mai esistita su questa macchina. Sono verificati il
+> caricamento del backup, il confronto con il server e tutti i controlli che
+> impediscono di scrivere per sbaglio. Fai la prova senza `--scrivi` e leggi
+> il riepilogo prima di fidarti.
+
+---
+
 ## Struttura delle cartelle
 
 ```
@@ -490,6 +579,10 @@ yet/
 │       ├── theme.css          TUTTI i token: colori, scala tipografica,
 │       │                      spazi, ritaglio del video. Si tocca solo qui.
 │       └── global.css         reset, tipografia di base, .container, focus
+│
+├── scripts/
+│   ├── backup.mjs             export di Firestore in JSON  (npm run backup)
+│   └── restore.mjs            ripristino, dry-run di default (npm run restore)
 │
 ├── firestore.rules            la protezione VERA. Va pubblicata.
 ├── .env.example               le chiavi da riempire
