@@ -6,6 +6,7 @@ import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { COMMUNITY } from '../config/socials.js'
+import { normalizeAttachments } from '../lib/attachments.js'
 import { formatDate, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
@@ -23,6 +24,10 @@ function NewsCard({ item, featured }) {
   const [expanded, setExpanded] = useState(false)
   const body = String(item.body ?? '')
   const isLong = body.length > CLAMP_OVER
+
+  const allegati = normalizeAttachments(item.attachments)
+  const immagini = allegati.filter((a) => a.type === 'image')
+  const link = allegati.filter((a) => a.type === 'link')
 
   return (
     <article className={`${s.card} ${featured ? s.featured : ''}`.trim()}>
@@ -54,6 +59,43 @@ function NewsCard({ item, featured }) {
         >
           {expanded ? 'Mostra meno' : 'Leggi tutto'}
         </button>
+      )}
+
+      {/* Gli allegati ripassano da normalizeAttachments anche qui, in lettura.
+          Non è una ripetizione inutile: è l'unico controllo che protegge dai
+          dati scritti prima che la validazione esistesse, o messi a mano dalla
+          console Firebase. Un `javascript:` finito in un href diventerebbe
+          codice al primo clic, e il posto giusto per fermarlo è quello in cui
+          l'URL viene usato. */}
+      {immagini.length > 0 && (
+        <div className={s.gallery}>
+          {immagini.map((a) => (
+            <a
+              className={s.shot}
+              key={a.url}
+              href={a.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src={a.url} alt={a.label} loading="lazy" decoding="async" />
+              <span className="sr-only"> (apri a dimensione piena in una nuova scheda)</span>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {link.length > 0 && (
+        <ul className={s.links}>
+          {link.map((a) => (
+            <li key={a.url}>
+              <a className={s.link} href={a.url} target="_blank" rel="noopener noreferrer">
+                <span className={s.linkIcon} aria-hidden="true" />
+                <span className={s.linkLabel}>{a.label}</span>
+                <span className="sr-only"> (si apre in una nuova scheda)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       )}
     </article>
   )
