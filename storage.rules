@@ -1,0 +1,85 @@
+rules_version = '2';
+
+// =============================================================================
+// YET — regole di sicurezza per Firebase Storage
+//
+// ⚠️  SONO UN FILE SEPARATO DA firestore.rules E SI PUBBLICANO A PARTE.
+//     console Firebase → Storage → scheda «Regole» → incolla → Pubblica
+//     oppure:  firebase deploy --only storage
+//
+//     È l'errore che fanno tutti la prima volta: si pubblicano le regole di
+//     Firestore, si prova a caricare un file e si prende
+//     `storage/unauthorized` senza capire perché. Sono due sistemi diversi con
+//     due file diversi.
+//
+// La allowlist qui sotto deve restare IDENTICA a quella in firestore.rules e
+// in src/config/admins.js. Tre posti, sì: sono tre sistemi che non si parlano.
+// =============================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function adminEmails() {
+      return [
+        'fedefas.210@gmail.com',
+        'greta.dal19@gmail.com',
+        'lucafrancesco.rollino@gmail.com',
+        'mattiapapa.075@gmail.com'
+      ];
+    }
+
+    // Stesso ragionamento di firestore.rules: la chiave di autorizzazione è
+    // l'email, quindi pretendiamo che sia verificata. Con Google lo è sempre,
+    // e il giorno in cui venisse attivato un altro metodo di accesso questa
+    // riga impedisce a chiunque di dichiarare l'indirizzo di un admin.
+    function isAdmin() {
+      return request.auth != null
+          && request.auth.token.email != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() in adminEmails();
+    }
+
+    function sizeOk() {
+      return request.resource.size <= 10 * 1024 * 1024; // 10 MB
+    }
+
+    // Elenco chiuso, non "tutto tranne": un elenco di esclusioni si dimentica
+    // sempre qualcosa, e qui la cosa dimenticata sarebbe un file eseguibile
+    // ospitato sul nostro dominio.
+    function typeOk() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|gif|avif)')
+          || request.resource.contentType == 'application/pdf';
+    }
+
+    // =========================================================================
+    // Allegati delle notizie.
+    //
+    // LETTURA PUBBLICA, ed è voluto: questi file compaiono dentro notizie
+    // pubbliche, quindi chiunque veda la notizia deve poter vedere l'allegato.
+    // Regola pratica per chi carica: qui dentro va solo roba destinata a
+    // diventare pubblica.
+    //
+    // SCRITTURA SOLO AGLI ADMIN, perché solo loro possono scrivere notizie.
+    // L'uid nel percorso serve a tenere le cose in ordine e a poter risalire a
+    // chi ha caricato cosa; il permesso però dipende dall'essere admin, non
+    // dall'uid — altrimenti chiunque potrebbe caricare nella «propria»
+    // cartella e usarci il nostro dominio come hosting gratuito.
+    // =========================================================================
+    match /news/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && sizeOk() && typeOk();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // TUTTO IL RESTO: NEGATO.
+    //
+    // Come in firestore.rules, non è ridondante: è la garanzia che un percorso
+    // inventato domani nasca chiuso, e che per aprirlo bisogni passare da qui
+    // e pensarci.
+    // =========================================================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

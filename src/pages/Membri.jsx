@@ -6,6 +6,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { listUsers } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
@@ -194,6 +195,7 @@ function MemberCard({ member, isMe, isAdmin = false }) {
             </h2>
             {/* Un distintivo solo per card: "Il tuo profilo" ha la precedenza
                 perché è l'informazione che serve a te che stai guardando. */}
+            {member.location ? <p className={s.place}>{member.location}</p> : null}
             {isMe ? (
               <p className={s.badge}>Il tuo profilo</p>
             ) : isAdmin ? (
@@ -351,6 +353,18 @@ export default function Membri() {
             da Torino e dal resto d’Italia. Apri un profilo per leggere la presentazione completa e
             trovare i suoi contatti.
           </p>
+
+          {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
+              carica direbbe una cosa falsa, e su un club appena nato la
+              differenza fra "zero membri" e "sto caricando" è tutta. */}
+          {status === 'ready' && count > 0 && (
+            <p className={s.tally}>
+              <span className={s.tallyNumber}>{count}</span>
+              <span className={s.tallyLabel}>
+                {count === 1 ? 'persona nella community' : 'persone nella community'}
+              </span>
+            </p>
+          )}
         </div>
       </section>
 
@@ -471,6 +485,8 @@ export default function Membri() {
           )}
         </div>
       </section>
+
+      <WhatsAppCta />
     </>
   )
 }

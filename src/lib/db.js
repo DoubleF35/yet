@@ -12,6 +12,7 @@
 import {
   addDoc,
   collection,
+  getCountFromServer,
   deleteDoc,
   doc,
   getDoc,
@@ -32,6 +33,11 @@ import { normalizeAttachments } from './attachments.js'
  *  della pagina Join sia — soprattutto — le regole in firestore.rules, che
  *  sono la validazione vera. Se lo cambi qui, cambialo anche nelle rules. */
 export const BIO_MAX = 300
+
+/** Da dove scrive un membro: "Torino", "Bari", "Provincia di Cuneo".
+ *  Corto apposta — è un'informazione da riga sotto il nome, non un indirizzo.
+ *  Se lo cambi qui, cambialo anche in firestore.rules. */
+export const LOCATION_MAX = 60
 
 const USERS = 'users'
 const NEWS = 'news'
@@ -335,6 +341,11 @@ export async function saveUserProfile(uid, data) {
   const displayName = String(data.displayName ?? '').trim()
   if (!displayName) throw new Error('Il nome non può essere vuoto.')
 
+  const location = String(data.location ?? '').trim()
+  if (location.length > LOCATION_MAX) {
+    throw new Error(`La provenienza supera i ${LOCATION_MAX} caratteri.`)
+  }
+
   const bio = String(data.bio ?? '').trim()
   if (bio.length > BIO_MAX) {
     throw new Error(`La bio supera i ${BIO_MAX} caratteri.`)
@@ -345,6 +356,7 @@ export async function saveUserProfile(uid, data) {
 
   const payload = {
     displayName: displayName.slice(0, 80),
+    location,
     bio,
     photoURL: normalizeUrlScheme(data.photoURL).slice(0, 500),
     socials: {
@@ -417,6 +429,7 @@ export async function createUserProfileFromGoogle(user) {
 
   const payload = {
     displayName: (user.displayName || user.email?.split('@')[0] || 'Membro YET').slice(0, 80),
+    location: '',
     bio: '',
     photoURL: normalizeUrlScheme(user.photoURL).slice(0, 500),
     socials: { linkedin: '', instagram: '', other: '' },
@@ -500,4 +513,26 @@ export async function setUserStatus(uid, status) {
   }
 
   await updateDoc(doc(db, USERS, uid), { status, updatedAt: serverTimestamp() })
+}
+
+/**
+ * Quanti membri approvati ci sono.
+ *
+ * `getCountFromServer` e non un getDocs seguito da .length: l'aggregazione la
+ * calcola il server e ci rimanda un numero, senza spedire i documenti. Costa
+ * una lettura ogni mille documenti invece di una per documento, e non scarica
+ * bio e foto di tutti per poi buttarle via — il che conta, perché questo
+ * numero sta sulla home e la home la apre chiunque.
+ *
+ * Il filtro su status è obbligatorio, non estetico: le regole concedono la
+ * lettura pubblica ai soli profili approvati, e senza il where l'aggregazione
+ * verrebbe rifiutata in blocco.
+ */
+export async function countApprovedUsers() {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const snap = await getCountFromServer(
+    query(collection(db, USERS), where('status', '==', 'approved')),
+  )
+  return snap.data().count
 }

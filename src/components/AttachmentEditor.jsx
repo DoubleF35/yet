@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import {
   LABEL_MAX,
@@ -7,6 +7,16 @@ import {
   looksLikeImage,
   safeUrl,
 } from '../lib/attachments.js'
+
+import {
+  ACCEPT_ATTR,
+  MAX_UPLOAD_BYTES,
+  deleteUploadedFile,
+  humanSize,
+  probeStorage,
+  uploadNewsFile,
+} from '../lib/storage.js'
+import { useAuth } from '../lib/auth.jsx'
 
 import s from './AttachmentEditor.module.css'
 
@@ -21,9 +31,30 @@ import s from './AttachmentEditor.module.css'
  * @param {boolean}  disabled durante il salvataggio
  */
 export default function AttachmentEditor({ value = [], onChange, disabled = false }) {
+  const { user } = useAuth()
+
   const [url, setUrl] = useState('')
   const [label, setLabel] = useState('')
   const [error, setError] = useState(null)
+
+  /* null = nessun caricamento in corso; 0..100 = percentuale. Lo zero è uno
+     stato legittimo (caricamento appena partito), quindi non si può usare la
+     verità del valore per sapere se sta caricando: da qui il null. */
+  const [progress, setProgress] = useState(null)
+  const fileRef = useRef(null)
+
+  /* null = non lo sappiamo ancora. Finché non sappiamo, non mostriamo né il
+     bottone né l'avviso: far comparire «non è attivo» per mezzo secondo a chi
+     ce l'ha attivo sarebbe peggio di aspettare. */
+  const [storageOk, setStorageOk] = useState(null)
+
+  useEffect(() => {
+    let alive = true
+    probeStorage().then((ok) => alive && setStorageOk(ok))
+    return () => {
+      alive = false
+    }
+  }, [])
 
   const reactId = useId()
   const urlId = `${reactId}-url`
@@ -63,7 +94,49 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
   }
 
   function rimuovi(target) {
+    const tolto = value.find((a) => a.url === target)
     onChange(value.filter((a) => a.url !== target))
+    /* Se il file l'avevamo caricato noi, va tolto anche dal bucket: senza,
+       ogni ripensamento lascerebbe un file pagato e mai mostrato. Non si
+       aspetta l'esito — l'allegato è già sparito dalla notizia, che è quello
+       che l'utente ha chiesto. */
+    if (tolto?.storagePath) deleteUploadedFile(tolto.storagePath)
+  }
+
+  async function carica(file) {
+    if (!file) return
+    setError(null)
+
+    if (value.length >= MAX_ATTACHMENTS) {
+      setError(`Massimo ${MAX_ATTACHMENTS} allegati per notizia.`)
+      return
+    }
+
+    setProgress(0)
+    try {
+      const caricato = await uploadNewsFile(file, { uid: user?.uid, onProgress: setProgress })
+      onChange([
+        ...value,
+        {
+          type: caricato.contentType.startsWith('image/') ? 'image' : 'link',
+          url: caricato.url,
+          label: label.trim().slice(0, LABEL_MAX) || caricato.name,
+          // Serve solo a noi, per poter cancellare il file se l'allegato viene
+          // tolto. normalizeAttachments lo scarta prima di salvare su
+          // Firestore: le regole ammettono solo type/url/label.
+          storagePath: caricato.path,
+        },
+      ])
+      setLabel('')
+    } catch (err) {
+      setError(err?.message || 'Caricamento non riuscito.')
+    } finally {
+      setProgress(null)
+      // Azzerare l'input è necessario, non cosmesi: senza, scegliere DI NUOVO
+      // lo stesso file non fa scattare onChange e sembra che il bottone si sia
+      // rotto.
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   /* Serve davvero: un URL che finisce in .jpg ma pesa otto megabyte è meglio
@@ -80,8 +153,9 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
   return (
     <div className={s.wrap}>
       <p className={s.hint}>
-        Puoi allegare link e immagini incollando il loro indirizzo. Le immagini vengono mostrate
-        dentro la notizia, i link come elenco sotto al testo.
+        Carica un file dal tuo dispositivo, oppure incolla l’indirizzo di qualcosa che è già
+        online. Le immagini vengono mostrate dentro la notizia, tutto il resto come elenco di
+        link sotto al testo.
       </p>
 
       {value.length > 0 && (
@@ -179,6 +253,43 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
         <button type="button" className={s.add} onClick={aggiungi} disabled={disabled || pieno}>
           Aggiungi
         </button>
+      </div>
+
+      <div className={s.upload}>
+        {storageOk === null ? null : storageOk ? (
+          <>
+            <label className={s.fileLabel}>
+              <input
+                ref={fileRef}
+                className={s.file}
+                type="file"
+                accept={ACCEPT_ATTR}
+                onChange={(e) => carica(e.target.files?.[0])}
+                disabled={disabled || pieno || progress !== null}
+              />
+              <span className={s.fileButton}>
+                {progress !== null ? `Caricamento ${progress}%` : 'Carica un file'}
+              </span>
+            </label>
+            <span className={s.uploadHint}>
+              Immagini o PDF, fino a {humanSize(MAX_UPLOAD_BYTES)}.
+            </span>
+
+            {progress !== null && (
+              <progress className={s.progress} value={progress} max="100">
+                {progress}%
+              </progress>
+            )}
+          </>
+        ) : (
+          /* Spiegare invece di nascondere: un bottone che sparisce senza dire
+             niente sembra una funzione che non esiste, non una da attivare. */
+          <p className={s.uploadOff}>
+            <strong>Il caricamento di file non è attivo.</strong> Serve Firebase Storage: console
+            Firebase → Storage → «Inizia», poi pubblica <code>storage.rules</code>. Nel frattempo
+            puoi incollare qui sopra l’indirizzo di un file già online.
+          </p>
+        )}
       </div>
 
       {error && (

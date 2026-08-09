@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar.jsx'
 import DeleteAccount from '../components/DeleteAccount.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
+import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { COMMUNITY } from '../config/socials.js'
 import { useAuth } from '../lib/auth.jsx'
-import { BIO_MAX, saveUserProfile } from '../lib/db.js'
+import { BIO_MAX, LOCATION_MAX, saveUserProfile } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Join.module.css'
@@ -260,6 +261,11 @@ function JoinPitch({ firebaseMissing }) {
         ))}
       </ul>
 
+      {/* Prima del login: il profilo richiede un'approvazione, il gruppo no.
+          Chi non se la sente di aspettare ha comunque un modo di entrare
+          oggi, invece di chiudere la pagina. */}
+      <WhatsAppCta />
+
       <HandsDivider />
 
       <div className={s.cta}>
@@ -293,6 +299,7 @@ function JoinPitch({ firebaseMissing }) {
 
 const EMPTY_FORM = {
   displayName: '',
+  location: '',
   bio: '',
   photoURL: '',
   linkedin: '',
@@ -305,6 +312,7 @@ function formFromProfile(profile, user) {
   const socials = (profile && profile.socials) || {}
   return {
     displayName: (profile && profile.displayName) || (user && user.displayName) || '',
+    location: (profile && profile.location) || '',
     bio: (profile && profile.bio) || '',
     photoURL: (profile && profile.photoURL) || (user && user.photoURL) || '',
     linkedin: socials.linkedin || '',
@@ -461,6 +469,7 @@ function ProfileForm({ firebaseMissing }) {
     try {
       await saveUserProfile(user.uid, {
         displayName,
+        location: form.location.trim(),
         bio: form.bio.trim(),
         photoURL,
         socials: {
@@ -571,6 +580,30 @@ function ProfileForm({ firebaseMissing }) {
                   {errors.displayName}
                 </p>
               )}
+            </div>
+
+            <div className={s.field}>
+              <label className={s.label} htmlFor={`${fid}-place`}>
+                Da dove scrivi
+              </label>
+              <input
+                className={s.input}
+                id={`${fid}-place`}
+                type="text"
+                value={form.location}
+                onChange={update('location')}
+                maxLength={LOCATION_MAX}
+                placeholder="Torino"
+                /* address-level2 e non "address": non vogliamo l'indirizzo di
+                   casa di nessuno, solo la città. Il browser suggerisce la
+                   cosa giusta e non compila un modulo di spedizione. */
+                autoComplete="address-level2"
+                aria-describedby={`${fid}-place-hint`}
+              />
+              <p className={s.hint} id={`${fid}-place-hint`}>
+                La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese —
+                e a farti trovare da chi ti sta vicino. Puoi lasciarlo vuoto.
+              </p>
             </div>
 
             <div className={s.field}>

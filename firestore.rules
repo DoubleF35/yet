@@ -115,8 +115,8 @@ service cloud.firestore {
       // pancia al database.
       function usersKeysOk() {
         return incoming().keys().hasOnly(
-          ['displayName', 'bio', 'photoURL', 'socials', 'role', 'status',
-           'createdAt', 'updatedAt']
+          ['displayName', 'location', 'bio', 'photoURL', 'socials', 'role',
+           'status', 'createdAt', 'updatedAt']
         );
       }
 
@@ -130,6 +130,21 @@ service cloud.firestore {
       // pagina Join: il contatore è un aiuto per chi scrive, non un controllo.
       // Chi scrive a mano una richiesta al database non lo incontra nemmeno.
       // Se cambi il numero, cambialo anche in BIO_MAX dentro src/lib/db.js.
+      // Da dove scrive un membro. Facoltativo in tutti i sensi: può essere la
+      // stringa vuota e può proprio non esserci.
+      //
+      // L'assenza va ammessa esplicitamente, e non è pignoleria: le scritture
+      // parziali (reconcileUserRole manda solo role, status e updatedAt)
+      // producono un documento fuso che, se il profilo è nato prima di questo
+      // campo, non lo contiene. Pretenderlo qui bloccherebbe quelle scritture
+      // con un permission-denied — lo stesso inciampo già visto con `status`,
+      // che allora costò un pomeriggio. Un campo aggiunto dopo si tratta come
+      // opzionale, sempre.
+      function locationOk() {
+        return !('location' in incoming())
+            || (incoming().location is string && incoming().location.size() <= 60);
+      }
+
       function bioOk() {
         return incoming().bio is string
             && incoming().bio.size() <= 300;
@@ -205,8 +220,8 @@ service cloud.firestore {
       }
 
       function usersShapeOk() {
-        return usersKeysOk() && displayNameOk() && bioOk() && photoOk()
-            && socialsOk() && roleOk() && statusValid();
+        return usersKeysOk() && displayNameOk() && locationOk() && bioOk()
+            && photoOk() && socialsOk() && roleOk() && statusValid();
       }
 
       // --- creazione --------------------------------------------------------

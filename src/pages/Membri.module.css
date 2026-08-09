@@ -349,3 +349,42 @@
   border: var(--border-strong);
   background-color: var(--surface-sunken);
 }
+
+/* Provenienza, sotto al nome. Piccola e attenuata: è un contesto, non il
+   contenuto della card. */
+.place {
+  margin: var(--space-1) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+  letter-spacing: var(--ls-wide);
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================================
+   7. CONTATORE
+   ====================================================================== */
+
+.tally {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: clamp(var(--space-6), 6vw, var(--space-8));
+}
+
+.tallyNumber {
+  font-size: var(--step-6);
+  font-weight: var(--weight-black);
+  line-height: 1;
+  letter-spacing: var(--ls-display);
+  color: var(--coral-dark);
+  /* Le cifre a larghezza fissa: quando il numero cambia (da 9 a 10, da 99 a
+     100) l'etichetta accanto non salta di lato. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tallyLabel {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  text-wrap: balance;
+}

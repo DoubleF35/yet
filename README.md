@@ -366,20 +366,41 @@ elemento». Regge lo stesso perché su `news` scrive **solo un admin in
 allowlist**: il rischio non è l'estraneo che inietta dati, è l'amministratore
 che sbaglia.
 
-### Caricare file veri (non ancora possibile)
+### Caricare file dal dispositivo
 
-Oggi si allega **l'indirizzo** di un file, non il file. Per caricarlo davvero
-serve Firebase Storage, che su questo progetto **non è attivo**: entrambi i
-bucket rispondono 404.
+Il codice c'è ed è collegato: nell'editor degli allegati, sotto il campo per
+l'indirizzo, c'è **«Carica un file»** con barra di avanzamento. Accetta
+immagini (JPEG, PNG, WebP, GIF, AVIF) e PDF fino a **10 MB**.
 
-Per attivarlo: console Firebase → **Storage** → «Inizia». Se la console chiede
-di passare al piano Blaze, è perché sui progetti creati di recente il bucket
-richiede un account di fatturazione — con questi volumi resterebbe comunque
-dentro la soglia gratuita, ma la carta va inserita.
+**Ma richiede Firebase Storage, che va acceso una volta sola:**
 
-Nel frattempo funziona bene appoggiarsi a quello che già usate: una foto su
-Instagram, un PDF su Drive con link pubblico, un'immagine su un qualsiasi
-host. Si incolla l'indirizzo e viene mostrato.
+1. Console Firebase → **Storage** → «Inizia» → stessa regione del database
+   (`eur3`). Se chiede il piano Blaze è perché sui progetti recenti il bucket
+   richiede un account di fatturazione: con questi volumi si resta dentro la
+   soglia gratuita, ma la carta va collegata.
+2. Storage → scheda **Regole** → incolla `storage.rules` → **Pubblica**.
+
+Il passo 2 è quello che si dimentica: `storage.rules` è un **file separato** da
+`firestore.rules` e vive in un'altra scheda della console. Saltarlo dà
+`storage/unauthorized` al primo caricamento, con un errore che non spiega
+perché.
+
+Finché Storage è spento il bottone **non compare**: al suo posto c'è la
+spiegazione di cosa attivare. Non è una scelta estetica — `getStorage()`
+riesce anche senza bucket, quindi il flag dell'SDK non dice la verità e un
+bottone mostrato in base a quello sarebbe un bottone che fallisce al clic. La
+verità la chiede `probeStorage()` con una richiesta sola, fatta solo quando un
+admin apre l'editor.
+
+> Onestà sul collaudo: il percorso di **caricamento** non è mai stato eseguito
+> contro un bucket vero, perché su questo progetto Storage non era attivo
+> mentre lo scrivevo. Segue l'SDK ufficiale, gli errori più probabili sono
+> tradotti nella mossa successiva, ma la prima prova falla tu. Se qualcosa non
+> torna, il sospetto numero uno è il passo 2.
+
+Resta comunque possibile allegare **l'indirizzo** di un file già online — una
+foto su Instagram, un PDF su Drive con link pubblico — che è la strada da usare
+se preferite non collegare una carta.
 
 ---
 
@@ -636,6 +657,8 @@ yet/
 │   └── restore.mjs            ripristino, dry-run di default (npm run restore)
 │
 ├── firestore.rules            la protezione VERA. Va pubblicata.
+├── storage.rules              regole dei file caricati. File SEPARATO,
+│                              si pubblica dalla scheda Regole di Storage.
 ├── .env.example               le chiavi da riempire
 └── .github/workflows/deploy.yml
 ```
