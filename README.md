@@ -109,10 +109,21 @@ Passo per passo, per chi non ha mai aperto la console Firebase.
 ### 4. Creare il database
 
 1. Menu di sinistra → **Build** → **Firestore Database** → **Crea database**.
-2. Scegli la posizione (`eur3 (europe-west)` per l'Italia). **Non si può
-   cambiare dopo.**
-3. Alla domanda sulle regole scegli **modalità di test**: le sostituiremo
-   subito al passo [Pubblicare le regole](#pubblicare-le-regole-di-sicurezza).
+2. Scegli la posizione (`eur3 (Europe)` per l'Italia). **Non si può cambiare
+   dopo.**
+3. Alla domanda sulle regole scegli **modalità di produzione**, non la modalità
+   di test.
+
+   La modalità di test lascia il database **scrivibile da chiunque per 30
+   giorni**. È comoda solo se pubblichi le regole vere nei minuti successivi —
+   e se lo fai, non ti è servita a niente. Se invece qualcosa ti distrae, hai
+   lasciato un database aperto su internet senza accorgertene.
+
+   Con la modalità di produzione tutto è negato in partenza. La conseguenza è
+   che il sito mostra `permission-denied` finché non pubblichi
+   `firestore.rules`: un errore visibile e innocuo, invece di una finestra
+   aperta e invisibile. Vai quindi subito al passo
+   [Pubblicare le regole](#pubblicare-le-regole-di-sicurezza).
 
 ### 5. Scrivere il `.env`
 
@@ -215,13 +226,17 @@ firebase init firestore     # solo la prima volta; scegli il progetto esistente
 firebase deploy --only firestore:rules
 ```
 
-> ### Se non pubblichi le regole, il sito smette di funzionare da solo.
+> ### Finché non le pubblichi, il sito non legge e non scrive niente.
 >
-> La "modalità di test" scelta alla creazione del database dura **30 giorni**:
-> dopo, ogni lettura e ogni scrittura vengono rifiutate, e il sito comincia a
-> mostrare "permission-denied" senza che tu abbia toccato niente. Nel frattempo,
-> per quei 30 giorni, **chiunque** può scrivere nel tuo database.
-> Fallo subito, non "quando c'è tempo".
+> Con il database creato in **modalità di produzione** (come consigliato sopra)
+> ogni operazione è negata in partenza: il feed resta vuoto, il login riesce ma
+> il profilo non si salva, e la console mostra `permission-denied`. È il
+> comportamento giusto — non un guasto.
+>
+> Se invece hai scelto la **modalità di test**, hai il problema opposto e
+> peggiore: per 30 giorni **chiunque** può scrivere nel tuo database, e allo
+> scadere tutto smette di funzionare da solo. In entrambi i casi la risposta è
+> la stessa: pubblica le regole adesso, non "quando c'è tempo".
 
 Cosa fanno le regole, in breve:
 

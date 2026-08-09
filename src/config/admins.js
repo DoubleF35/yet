@@ -36,10 +36,19 @@
  * persone fanno login (l'email del provider Google), non un alias.
  */
 export const ADMIN_EMAILS = [
-  'admin1@yetcommunity.it',
-  'admin2@yetcommunity.it',
-  'admin3@yetcommunity.it',
-  'admin4@yetcommunity.it',
+  // L'account con cui è stato creato il progetto Firebase. Se accedi al sito
+  // con un altro indirizzo, il link "Admin" non compare: è questo il valore
+  // che conta, non chi possiede il progetto.
+  'fedefas.210@gmail.com',
+
+  // TODO: le altre tre. Devono essere gli indirizzi degli ACCOUNT GOOGLE con
+  // cui quelle persone premono "Accedi con Google" — non un alias, non un
+  // indirizzo di posta che non sia un account Google.
+  // Ogni riga aggiunta qui va aggiunta ANCHE in firestore.rules, e le regole
+  // vanno ripubblicate: questa lista nasconde il bottone, non dà i permessi.
+  // 'seconda.persona@gmail.com',
+  // 'terza.persona@gmail.com',
+  // 'quarta.persona@gmail.com',
 ]
 
 /**

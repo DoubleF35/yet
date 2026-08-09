@@ -26,6 +26,14 @@
 # Authentication -> Settings -> Authorized domains -> aggiungi
 # <tuo-utente>.github.io. Senza, il login con Google funziona in locale e
 # fallisce in produzione con "auth/unauthorized-domain".
+#
+# -----------------------------------------------------------------------------
+# STATO DI QUESTO REPO (DoubleF35/yet), aggiornato all'8 agosto 2026:
+#   [x] Pages impostato su "GitHub Actions"
+#   [x] i sette secret creati
+#   [ ] doublef35.github.io fra i Domini autorizzati di Firebase
+#   [ ] firestore.rules pubblicate (il database è in modalità di produzione,
+#       quindi finché non lo fai ogni lettura e scrittura viene negata)
 # =============================================================================
 
 name: Deploy su GitHub Pages
@@ -59,7 +67,7 @@ jobs:
       - name: Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           # Sfrutta package-lock.json per non riscaricare tutto ogni volta.
           cache: npm
 
