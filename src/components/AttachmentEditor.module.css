@@ -217,3 +217,108 @@
   color: var(--muted);
   font-size: var(--step--1);
 }
+
+/* =========================================================================
+   CARICAMENTO DA DISPOSITIVO
+   ====================================================================== */
+
+.upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+/* L'input[type=file] nativo non si può impaginare in modo decente e ha un
+   testo diverso in ogni browser. Lo si nasconde e si usa la <label> come
+   bottone: essendo una label, il clic arriva comunque all'input e la tastiera
+   continua a funzionare senza tabIndex inventati. */
+.fileLabel {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.file {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fileButton {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: var(--space-5);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  border: var(--border-strong);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.fileLabel:hover .fileButton {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* L'input è nascosto, quindi il focus va mostrato sul bottone finto:
+   senza questa riga chi naviga da tastiera non vede dove si trova. */
+.file:focus-visible + .fileButton {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.file:disabled + .fileButton {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.uploadHint {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.progress {
+  inline-size: 100%;
+  block-size: 6px;
+  appearance: none;
+  border: var(--border);
+  background-color: var(--surface-sunken);
+}
+
+.progress::-webkit-progress-bar {
+  background-color: var(--surface-sunken);
+}
+
+.progress::-webkit-progress-value {
+  background-color: var(--coral);
+}
+
+.progress::-moz-progress-bar {
+  background-color: var(--coral);
+}
+
+.uploadOff {
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border);
+  border-left: 4px solid var(--coral);
+  background-color: var(--surface-sunken);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  max-inline-size: var(--measure);
+}
+
+.uploadOff code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+}

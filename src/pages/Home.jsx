@@ -5,9 +5,10 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { COMMUNITY } from '../config/socials.js'
 import { normalizeAttachments } from '../lib/attachments.js'
-import { formatDate, listenNews } from '../lib/db.js'
+import { countApprovedUsers, formatDate, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Home.module.css'
@@ -124,6 +125,11 @@ export default function Home() {
      location.reload() perderebbe scroll e stato per rifare la stessa cosa. */
   const [reloadKey, setReloadKey] = useState(0)
 
+  /* null = non lo sappiamo ancora (o non si è potuto sapere). Non 0, che
+     sarebbe un'affermazione: "non c'è nessuno" è una cosa diversa da "sto
+     contando", e sulla home di un club appena nato la differenza si vede. */
+  const [membri, setMembri] = useState(null)
+
   const logo = `${import.meta.env.BASE_URL}logo.png`
 
   /* Il listener può emettere dopo lo smontaggio (o dopo un retry che ne ha già
@@ -162,6 +168,21 @@ export default function Home() {
     }
   }, [reloadKey])
 
+  /* Il conteggio dei membri per la riga di apertura.
+     Query di aggregazione: il server risponde con un numero, senza spedire i
+     documenti. Se fallisce non si dice niente e non si mostra niente — un
+     contatore è un di più, e non deve poter rompere la home. */
+  useEffect(() => {
+    if (!isFirebaseConfigured) return undefined
+    let alive = true
+    countApprovedUsers()
+      .then((n) => alive && setMembri(n))
+      .catch(() => alive && setMembri(null))
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
 
   const [taglineText, taglineDot] = (() => {
@@ -189,6 +210,17 @@ export default function Home() {
           Dai {COMMUNITY.ageRange} anni — {COMMUNITY.reach}
         </p>
 
+        {membri !== null && membri > 0 && (
+          <p className={s.tally}>
+            <Link className={s.tallyLink} to="/membri">
+              <span className={s.tallyNumber}>{membri}</span>
+              <span className={s.tallyLabel}>
+                {membri === 1 ? 'persona sta costruendo con noi' : 'persone stanno costruendo con noi'}
+              </span>
+            </Link>
+          </p>
+        )}
+
         <p className={s.ctaRow}>
           <Link className={s.cta} to="/join">
             Entra in YET
@@ -196,6 +228,10 @@ export default function Home() {
               →
             </span>
           </Link>
+          {/* Le due porte d'ingresso, una accanto all'altra: il profilo passa
+              da un'approvazione, il gruppo no. Chi arriva sceglie quella che
+              gli somiglia invece di trovarne una sola. */}
+          <WhatsAppCta variant="button" />
         </p>
       </header>
 
@@ -292,6 +328,10 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Chiude la home: chi è arrivato in fondo ha letto tutto quel che
+          c'era da leggere, ed è il momento in cui l'invito serve davvero. */}
+      <WhatsAppCta />
     </div>
   )
 }

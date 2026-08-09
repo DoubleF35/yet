@@ -1,0 +1,118 @@
+.icon {
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  flex: 0 0 auto;
+}
+
+/* --- variante bottone ----------------------------------------------------- */
+
+/* Bordo e non riempimento: sta accanto a «Entra in YET», che è l'azione
+   principale. Due bottoni pieni uno di fianco all'altro non dicono più quale
+   sia la cosa da fare. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 3rem;
+  padding-inline: var(--space-5);
+
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  color: var(--ink);
+  background-color: transparent;
+  border: var(--border-strong);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.button:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- variante fascia ------------------------------------------------------ */
+
+.block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(var(--space-5), 5vw, var(--space-8));
+
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+  margin-block: clamp(var(--space-8), 9vw, var(--space-10));
+  padding: clamp(var(--space-6), 6vw, var(--space-8));
+
+  border: var(--border-strong);
+  background-color: var(--surface);
+}
+
+.blockText {
+  /* Cresce, ma non oltre la misura leggibile; a schermo stretto il bottone va
+     sotto invece di schiacciare il testo. */
+  flex: 1 1 22rem;
+  min-inline-size: 0;
+  max-inline-size: var(--measure);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--coral-dark);
+}
+
+.title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  text-wrap: balance;
+}
+
+.text {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* Qui il bottone è pieno: dentro la fascia è l'unica azione, quindi non c'è
+   nessuna gerarchia da rispettare. */
+.blockButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+
+  min-block-size: 3.25rem;
+  padding-inline: var(--space-6);
+
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  color: var(--on-coral);
+  background-color: var(--coral-dark);
+  border: 2px solid var(--coral-dark);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.blockButton:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Fondo scuro: l'anello coral scuro ci sparirebbe sopra. */
+.blockButton:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}

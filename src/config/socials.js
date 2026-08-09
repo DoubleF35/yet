@@ -100,6 +100,17 @@ export const SOCIALS = [
   },
 ]
 
+/**
+ * Il gruppo WhatsApp, cercato per id dentro SOCIALS.
+ *
+ * Cercarlo invece di duplicarne l'URL è il punto: il gruppo compare in cinque
+ * posti del sito (home, join, membri, contatti, footer) e un link cambiato in
+ * quattro su cinque sarebbe peggio che non averlo. Se un domani il gruppo
+ * sparisce o cambia id, restituisce undefined e i blocchi che lo usano non si
+ * mostrano — invece di puntare nel vuoto.
+ */
+export const WHATSAPP = SOCIALS.find((item) => item.id === 'whatsapp')
+
 /* ---------------------------------------------------------------------------
    Chi siamo, in forma di dato.
 
