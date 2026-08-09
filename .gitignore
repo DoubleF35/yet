@@ -35,3 +35,12 @@ pnpm-debug.log*
 .firebase/
 firebase-debug.log
 firestore-debug.log
+
+# --- backup e chiavi di servizio ---------------------------------------
+# I backup contengono dati personali dei membri: restano sul tuo computer.
+backups/
+# La chiave di servizio scavalca OGNI regola di sicurezza. Non deve mai
+# finire in un repo, nemmeno privato.
+*serviceaccount*.json
+*service-account*.json
+firebase-adminsdk-*.json
