@@ -209,10 +209,17 @@ export default function Home() {
         {status === 'error' && (
           <ErrorState
             title="Non riusciamo a caricare le notizie"
+            /* Ogni codice ha la sua causa tipica e la sua mossa successiva.
+               Il ramo generico è l'ultima spiaggia: quando ci finisce qualcosa
+               di ricorrente, gli si dà una riga sua invece di lasciarlo lì. */
             message={
               error?.code === 'permission-denied'
-                ? 'Il server ha rifiutato la lettura. Di solito vuol dire che le regole Firestore non sono ancora state pubblicate.'
-                : 'Qualcosa è andato storto nel leggere il feed. Può essere la connessione.'
+                ? 'Il server ha rifiutato la lettura: le regole Firestore non sono ancora state pubblicate, oppure quelle pubblicate sono più vecchie del sito.'
+                : error?.code === 'failed-precondition'
+                  ? 'Firestore chiede un indice per questa ricerca. Nella console del browser c’è un link che lo crea con un clic.'
+                  : error?.code === 'unavailable'
+                    ? 'Non riusciamo a raggiungere il server. Di solito è la connessione: riprova fra un momento.'
+                    : 'Qualcosa è andato storto nel leggere il feed. Il dettaglio è nella console del browser.'
             }
             onRetry={retry}
           />

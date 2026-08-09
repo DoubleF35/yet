@@ -686,9 +686,12 @@ Tre possibilità, in ordine di probabilità:
 - Sono salvate come **bozza**: apri `/admin` e usa "Pubblica".
 - Oppure le regole non sono pubblicate e la lettura viene rifiutata: guarda la
   console, l'errore lo dice.
-- Oppure Firestore chiede un **indice** per la query (`failed-precondition`): il
-  messaggio in console contiene un link diretto, aprilo e clicca "Crea indice".
-  Ci mette un minuto.
+- Non dovrebbe più essere un problema di **indici**: la query della home usa
+  solo `where('published','==',true)` e ordina lato client, apposta per non
+  dipendere da un indice composto che va creato a mano. Se rivedi
+  `failed-precondition`, qualcuno ha rimesso un `orderBy` o un secondo `where`
+  in `listenNews`: il messaggio in console contiene un link che crea l'indice
+  con un clic.
 
 ### Mi sono iscritto ma non compaio fra i membri
 
