@@ -144,7 +144,7 @@ export default function Home() {
         <p className={s.lead}>{COMMUNITY.description}</p>
 
         <p className={s.meta}>
-          {COMMUNITY.city} — dai {COMMUNITY.ageRange} anni
+          Dai {COMMUNITY.ageRange} anni — {COMMUNITY.reach}
         </p>
 
         <p className={s.ctaRow}>

@@ -295,15 +295,18 @@ export default function Contatti() {
         {/* ------------------------------------------------------------------
             Dove siamo. Città e nulla più: un indirizzo preciso non ce l'ha
             dato nessuno e inventarlo sarebbe peggio che ometterlo.
+            La città da sola, però, si legge come un filtro all'ingresso —
+            quindi il raggio va detto nella stessa schermata, non altrove.
             ------------------------------------------------------------------ */}
         <section className={s.place} aria-labelledby={placeHeadingId}>
           <h2 className={s.sectionTitle} id={placeHeadingId}>
             Dove siamo
           </h2>
-          <p className={s.placeCity}>{city}</p>
+          <p className={s.placeCity}>Sede a {city}, membri in tutta Italia</p>
           <p className={s.placeNote}>
-            Ci vediamo di persona in città e ci sentiamo online il resto del tempo. Se sei di
-            passaggio a {city}, scrivici: troviamo un caffè.
+            Gli incontri di persona capitano a {city}, il resto succede online: se stai a
+            Palermo o a Udine puoi entrare lo stesso e non ti perdi niente. E se sei di passaggio
+            a {city}, scrivici: troviamo un caffè.
           </p>
         </section>
       </div>

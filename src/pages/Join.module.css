@@ -427,3 +427,36 @@
     display: grid;
   }
 }
+
+/* =========================================================================
+   STATO DELLA RICHIESTA (in attesa / non approvata)
+   ====================================================================== */
+
+.statusBox {
+  margin-block-start: clamp(var(--space-7), 7vw, var(--space-9));
+  padding: clamp(var(--space-5), 5vw, var(--space-6));
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+}
+
+/* Il rifiuto non è un errore dell'utente: stesso peso grafico, colore diverso.
+   Un riquadro rosso acceso su una persona che voleva solo iscriversi sarebbe
+   fuori misura. */
+.statusBoxRejected {
+  border: 2px solid var(--line);
+  background-color: var(--surface-sunken);
+}
+
+.statusBoxTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+}
+
+.statusBoxText {
+  margin: 0;
+  max-width: var(--measure);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}

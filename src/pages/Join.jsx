@@ -184,7 +184,7 @@ function JoinPitch({ firebaseMissing }) {
     {
       n: '02',
       title: 'Per chi',
-      text: `Dai ${ageRange} anni. Ci si trova a ${city}, di persona: la chat serve fra un incontro e l'altro, non al posto dell'incontro.`,
+      text: `Dai ${ageRange} anni, da tutta Italia. La sede è a ${city} ed è lì che capitano gli incontri di persona, ma non è un requisito: chi è lontano partecipa online e conta esattamente quanto gli altri.`,
     },
     {
       n: '03',
@@ -196,7 +196,7 @@ function JoinPitch({ firebaseMissing }) {
       n: '04',
       title: 'Come si entra',
       text:
-        'Accedi con Google, scrivi due righe su di te e compari fra i membri. Non c’è selezione, non c’è quota di iscrizione.',
+        'Accedi con Google e scrivi due righe su di te. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione: il passaggio serve solo a tenere fuori gli account finti.',
     },
   ]
 
@@ -741,6 +741,31 @@ function ProfileForm({ firebaseMissing }) {
             {statusText}
           </p>
         </form>
+      )}
+
+      {/* Stato della richiesta.
+          Senza questo riquadro, chi si iscrive salva il profilo, va su /membri,
+          non si trova e pensa che il sito sia rotto. Dirglielo qui è metà del
+          lavoro dell'approvazione. */}
+      {profile?.status === 'pending' && (
+        <div className={s.statusBox}>
+          <p className={s.statusBoxTitle}>Richiesta inviata — in attesa di approvazione</p>
+          <p className={s.statusBoxText}>
+            Il tuo profilo è arrivato agli organizzatori. Finché non lo approvano non compare fra i
+            membri e non lo vede nessun altro: puoi comunque modificarlo quando vuoi da questa
+            pagina, e le modifiche restano.
+          </p>
+        </div>
+      )}
+
+      {profile?.status === 'rejected' && (
+        <div className={`${s.statusBox} ${s.statusBoxRejected}`}>
+          <p className={s.statusBoxTitle}>Richiesta non approvata</p>
+          <p className={s.statusBoxText}>
+            Al momento il tuo profilo non è pubblicato fra i membri. Se pensi che sia un errore, o
+            vuoi capire perché, scrivici: la decisione non è definitiva e si può rivedere.
+          </p>
+        </div>
       )}
 
       {/* Fuori dal <form>: è un'azione a sé, irreversibile, e non deve poter

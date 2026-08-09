@@ -109,8 +109,21 @@ export const SOCIALS = [
 export const COMMUNITY = {
   name: 'YET',
   tagline: 'Build ambition.',
+
+  /* La sede: dove sta il gruppo e dove capitano gli incontri di persona. */
   city: 'Torino',
+
+  /* Da dove si partecipa. Tenuti separati apposta: la sede è un fatto, il
+     raggio è un invito, e confonderli restringe la community senza motivo.
+     Ogni testo del sito che nomina Torino deve nominare anche questo — chi
+     legge da Bari deve capire alla prima riga che può entrare anche lui. */
+  scope: 'tutta Italia',
+
   ageRange: '14 ai 25',
+
   description:
-    'YET — Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Ci si trova a Torino, si mostra a che punto si è e si va avanti insieme. Nessuna selezione, nessuna quota: serve solo avere qualcosa in costruzione.',
+    'YET — Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Ci si mostra a che punto si è e si va avanti insieme. La sede è a Torino, ma si partecipa da tutta Italia: online ci si trova comunque. Nessuna selezione, nessuna quota: serve solo avere qualcosa in costruzione.',
+
+  /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera. */
+  reach: 'Sede a Torino, si partecipa da tutta Italia',
 }

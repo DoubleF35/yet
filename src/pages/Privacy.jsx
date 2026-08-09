@@ -115,12 +115,27 @@ export default function Privacy() {
             Sono campi facoltativi.
           </p>
 
+          <h3 className={s.h3}>L’iscrizione passa da un’approvazione</h3>
+          <p className={s.p}>
+            Quando crei il profilo, la richiesta arriva agli organizzatori e resta in attesa. Fino a
+            quel momento il tuo profilo è visibile <strong>solo a te e a loro</strong>: non compare
+            fra i membri e non lo vede nessun altro. Se la richiesta non viene approvata, i tuoi
+            dati restano privati allo stesso modo — e puoi cancellarli quando vuoi.
+          </p>
+          <p className={s.p}>
+            Il profilo porta anche due informazioni tecniche che non scrivi tu: lo{' '}
+            <strong>stato della richiesta</strong> (in attesa, approvata, non approvata) e un{' '}
+            <strong>ruolo</strong> che dice se sei fra gli organizzatori. Servono a far funzionare
+            l’approvazione e la sezione «Chi organizza» della pagina Membri.
+          </p>
+
           <h3 className={s.h3}>Cosa diventa pubblico</h3>
           <p className={s.p}>
-            Nome, foto, bio e link social sono <strong>visibili a chiunque</strong> visiti la pagina
-            Membri, anche senza account. È lo scopo della pagina. Il tuo{' '}
-            <strong>indirizzo email non viene mai mostrato</strong> sul sito e non compare fra i
-            dati pubblicati.
+            Una volta approvato, nome, foto, bio e link social sono{' '}
+            <strong>visibili a chiunque</strong> visiti la pagina Membri, anche senza account. È lo
+            scopo della pagina. Il tuo <strong>indirizzo email non viene mai mostrato</strong> sul
+            sito e non compare fra i dati pubblicati — nemmeno per gli organizzatori, che nella
+            lista delle richieste vedono il nome e la presentazione, non l’indirizzo.
           </p>
           <p className={s.p}>
             Detto onestamente: scrivi nella bio solo cose che ti va di rendere pubbliche su
@@ -154,6 +169,12 @@ export default function Privacy() {
                   <td>Riconoscerti all’accesso e distinguere gli amministratori</td>
                   <td>Esecuzione del servizio richiesto (art. 6.1.b)</td>
                   <td>Finché non cancelli l’account</td>
+                </tr>
+                <tr>
+                  <th scope="row">Stato della richiesta e ruolo</th>
+                  <td>Gestire l’approvazione delle iscrizioni ed evitare profili falsi</td>
+                  <td>Interesse legittimo (art. 6.1.f)</td>
+                  <td>Finché non cancelli il profilo</td>
                 </tr>
                 <tr>
                   <th scope="row">Testo delle notizie</th>

@@ -16,10 +16,11 @@ sta nel piano gratuito Spark di Firebase.
 4. [Impostare i 4 admin](#impostare-i-4-admin)
 5. [Pubblicare le regole di sicurezza](#pubblicare-le-regole-di-sicurezza)
 6. [Deploy su GitHub Pages](#deploy-su-github-pages)
-7. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-8. [Struttura delle cartelle](#struttura-delle-cartelle)
-9. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-10. [Problemi comuni](#problemi-comuni)
+7. [Iscrizione con approvazione](#iscrizione-con-approvazione)
+8. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+9. [Struttura delle cartelle](#struttura-delle-cartelle)
+10. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+11. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -314,6 +315,80 @@ cambiato un secret, che da solo non fa ripartire niente.
 
 ---
 
+## Iscrizione con approvazione
+
+Chi si iscrive **non compare subito** fra i membri: il profilo nasce in stato
+`pending` e resta invisibile finché uno dei quattro amministratori non lo
+approva da `/admin` → «Richieste di iscrizione».
+
+### Cosa lo rende una barriera vera e non una formalità
+
+Sono tre righe in `firestore.rules`, e vale la pena conoscerle perché ognuna
+chiude un modo diverso di aggirare l'approvazione:
+
+| Regola | Cosa impedisce |
+| ------ | -------------- |
+| in creazione `status == 'pending'` | auto-approvarsi al primo salvataggio |
+| in modifica `status == stored().status` | promuoversi da soli dopo, con una richiesta scritta a mano |
+| l'admin può cambiare `affectedKeys().hasOnly(['status','updatedAt'])` | che un admin riscriva la bio di qualcun altro mentre approva |
+
+E la lettura pubblica è concessa **solo** ai profili approvati: chi è in attesa
+lo vedono lui stesso e gli amministratori. Una richiesta rifiutata non lascia
+in giro il nome di chi l'aveva fatta.
+
+> Conseguenza tecnica da non dimenticare: `listUsers()` **deve** filtrare su
+> `where('status','==','approved')`. Firestore non filtra i risultati in base
+> alle regole — pretende che la query sia costruita in modo che ogni risultato
+> le soddisfi. Senza quel `where` la query viene rifiutata in blocco, non
+> ridotta. Se un giorno vedi `permission-denied` sulla pagina Membri, guarda
+> lì per primo.
+
+Gli **admin nascono già approvati**. Non è una scorciatoia: se dovessero passare
+dalla propria coda, al primo avvio non ci sarebbe nessuno ad approvare il primo
+di loro.
+
+### La notifica agli amministratori
+
+Quando arriva una richiesta, la vedete **aprendo `/admin`**: c'è il conteggio
+«N in attesa» accanto al titolo.
+
+Non arriva una mail, e non è una dimenticanza: **sul piano gratuito Spark non è
+possibile inviare email**. Serve del codice che giri su un server, e su Firebase
+quel codice sono le Cloud Functions, disponibili solo dal piano Blaze (a
+consumo). Le alternative, se un giorno la cosa diventa scomoda:
+
+1. **Passare al piano Blaze** e usare l'estensione *Trigger Email*, oppure una
+   Cloud Function di venti righe che parte quando nasce un documento `pending`.
+   È la strada pulita. Con questi volumi resterebbe dentro la soglia gratuita,
+   ma richiede una carta di credito sul progetto.
+2. **Un servizio esterno tipo EmailJS**, che manda la mail dal browser di chi si
+   iscrive. Funziona senza backend, ma introduce una terza parte che vede i
+   dati: andrebbe aggiunta all'informativa privacy, e forse comparirebbe la
+   necessità del banner cookie che oggi non c'è.
+3. **Lasciare così.** Con quattro amministratori e un volume di iscrizioni
+   basso, aprire il pannello ogni tanto è probabilmente sufficiente.
+
+Ho scelto la 3 di default perché è l'unica che non cambia né il piano tariffario
+né la storia della privacy. Dimmi se preferisci una delle altre due.
+
+### Il campo `role`
+
+Serve alla sezione «Chi organizza» della pagina Membri. È scritto dal client ma
+non deciso dal client: le regole pretendono che corrisponda esattamente
+all'esito del confronto fra l'email del token e la allowlist, quindi chi non è
+in lista e prova a salvarsi `role: 'admin'` si vede rifiutare l'intera
+scrittura.
+
+Esiste perché i documenti `users` **non contengono l'email** — l'informativa
+privacy promette che non venga mai pubblicata — e senza un campo apposta la
+pagina non avrebbe modo di distinguere gli organizzatori dagli altri.
+
+Se aggiungi qualcuno alla allowlist mesi dopo la sua iscrizione, il suo `role`
+viene riallineato da solo al primo accesso successivo (`reconcileUserRole` in
+`src/lib/db.js`).
+
+---
+
 ## Privacy, cookie e cosa devi compilare
 
 Il sito ha due informative, raggiungibili dal footer di ogni pagina:
@@ -579,6 +654,12 @@ Tre possibilità, in ordine di probabilità:
 - Oppure Firestore chiede un **indice** per la query (`failed-precondition`): il
   messaggio in console contiene un link diretto, aprilo e clicca "Crea indice".
   Ci mette un minuto.
+
+### Mi sono iscritto ma non compaio fra i membri
+
+È il comportamento previsto: la richiesta è in attesa di approvazione. Un
+amministratore la trova in `/admin` → «Richieste di iscrizione». Nel frattempo
+la pagina Join mostra un riquadro che lo dice.
 
 ### "Firebase non è configurato"
 

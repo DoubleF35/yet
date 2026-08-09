@@ -12,7 +12,7 @@ rules_version = '2';
 //
 // Da cui la conseguenza pratica: cambiare la lista degli admin in
 // src/config/admins.js NON cambia i permessi. Vanno modificate entrambe le
-// liste e va ri-pubblicato questo file (istruzioni nel README).
+// liste e va ri-pubblicato questo file.
 //
 // COME PUBBLICARLE
 //   console Firebase -> Firestore Database -> scheda "Regole" -> incolla -> Pubblica
@@ -39,11 +39,10 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     function adminEmails() {
       return [
-        'fedefas.210@gmail.com'
-        // TODO: le altre tre, precedute da una virgola.
-        // , 'seconda.persona@gmail.com'
-        // , 'terza.persona@gmail.com'
-        // , 'quarta.persona@gmail.com'
+        'fedefas.210@gmail.com',
+        'greta.dal19@gmail.com',
+        'lucafrancesco.rollino@gmail.com',
+        'mattiapapa.075@gmail.com'
       ];
     }
 
@@ -76,17 +75,39 @@ service cloud.firestore {
       return request.resource.data;
     }
 
+    // Il documento com'è ADESSO sul server, prima della scrittura.
+    function stored() {
+      return resource.data;
+    }
+
     // =========================================================================
     // users/{uid} — i profili dei membri
     //
-    // Lettura pubblica: la pagina /membri deve funzionare anche per chi non ha
-    // fatto login, ed è tutto contenuto che i membri scrivono per essere letto.
-    // Scrittura solo sul proprio documento, con l'uid come chiave: è l'uid del
-    // token, quindi non è falsificabile.
+    // ISCRIZIONE CON APPROVAZIONE.
+    // Un profilo nasce `status: 'pending'` e resta invisibile finché un admin
+    // non lo approva. Le tre regole che reggono tutto il meccanismo:
+    //
+    //   1. in creazione lo status DEVE essere 'pending' — non ci si
+    //      auto-approva;
+    //   2. il proprietario può modificare i propri dati ma NON il proprio
+    //      status — altrimenti gli basterebbe una richiesta scritta a mano;
+    //   3. un admin può cambiare lo status e SOLO quello — non può riscrivere
+    //      la bio di qualcun altro.
+    //
+    // LETTURA: pubblica solo per i profili approvati. Chi è in attesa lo
+    // vedono lui stesso e gli admin, e nessun altro: una richiesta rifiutata
+    // non deve lasciare in giro il nome di chi l'aveva fatta.
     // =========================================================================
     match /users/{uid} {
 
-      allow read: if true;
+      // Attenzione al funzionamento su QUERY: Firestore non valuta la regola
+      // documento per documento, ma pretende che la query sia costruita in
+      // modo che ogni risultato la soddisfi per forza. Ecco perché
+      // listUsers() in src/lib/db.js filtra su status == 'approved': senza
+      // quel where la query verrebbe rifiutata in blocco, non "filtrata".
+      allow read: if resource.data.status == 'approved'
+                  || isOwner(uid)
+                  || isAdmin();
 
       // Le sole chiavi ammesse. hasOnly() è la metà che conta: senza,
       // chiunque potrebbe attaccare al proprio profilo campi arbitrari
@@ -94,7 +115,8 @@ service cloud.firestore {
       // pancia al database.
       function usersKeysOk() {
         return incoming().keys().hasOnly(
-          ['displayName', 'bio', 'photoURL', 'socials', 'createdAt', 'updatedAt']
+          ['displayName', 'bio', 'photoURL', 'socials', 'role', 'status',
+           'createdAt', 'updatedAt']
         );
       }
 
@@ -134,25 +156,69 @@ service cloud.firestore {
                 || (incoming().socials.other is string && incoming().socials.other.size() <= 200));
       }
 
-      function usersShapeOk() {
-        return usersKeysOk() && displayNameOk() && bioOk() && photoOk() && socialsOk();
+      // `role` è scritto dal client ma NON è deciso dal client.
+      //
+      // Serve alla pagina Membri per separare la sezione "Chi organizza" da
+      // quella dei membri: i documenti users non contengono l'email (l'
+      // informativa privacy promette che non venga mai pubblicata), quindi
+      // senza questo campo non ci sarebbe modo di distinguerli.
+      //
+      // La riga che lo rende sicuro è l'uguaglianza: il valore deve
+      // corrispondere ESATTAMENTE all'esito del confronto fra l'email del
+      // token e la allowlist. Chi non è in lista e prova a salvarsi
+      // `role: 'admin'` non ottiene un campo ignorato — si vede rifiutare
+      // l'intera scrittura. E chi È in lista non può nascondersi mettendo
+      // 'member': la pagina resta onesta in entrambe le direzioni.
+      function roleOk() {
+        return incoming().role == (isAdmin() ? 'admin' : 'member');
       }
 
+      function statusValid() {
+        return incoming().status in ['pending', 'approved', 'rejected'];
+      }
+
+      function usersShapeOk() {
+        return usersKeysOk() && displayNameOk() && bioOk() && photoOk()
+            && socialsOk() && roleOk() && statusValid();
+      }
+
+      // --- creazione --------------------------------------------------------
+      // Gli admin entrano già approvati: farli passare dalla loro stessa coda
+      // sarebbe solo un giro a vuoto, e al primo avvio non ci sarebbe nessuno
+      // ad approvare il primo di loro.
       allow create: if isOwner(uid)
                     && usersShapeOk()
-                    && incoming().createdAt == request.time;
+                    && incoming().createdAt == request.time
+                    && incoming().status == (isAdmin() ? 'approved' : 'pending');
 
+      // --- modifica da parte del proprietario -------------------------------
       // createdAt non deve poter cambiare: è il campo su cui /membri ordina
       // l'elenco, e senza questo vincolo chiunque potrebbe riscriverlo per
-      // mettersi in cima. Il confronto con resource.data (il documento com'è
-      // ADESSO sul server) è ciò che rende il vincolo non aggirabile.
+      // mettersi in cima. Il confronto con stored() (il documento com'è ADESSO
+      // sul server) è ciò che rende il vincolo non aggirabile.
+      //
+      // E soprattutto: lo status resta quello che era. È la riga che rende
+      // l'approvazione una cosa seria invece che una formalità.
       allow update: if isOwner(uid)
                     && usersShapeOk()
-                    && incoming().createdAt == resource.data.createdAt
+                    && incoming().createdAt == stored().createdAt
+                    && incoming().status == stored().status
+                    && incoming().updatedAt == request.time;
+
+      // --- approvazione o rifiuto da parte di un admin ----------------------
+      // diff().affectedKeys() elenca i campi che la scrittura cambia davvero.
+      // Limitarlo a status e updatedAt fa sì che un admin possa decidere chi
+      // entra ma non riscrivere la presentazione di qualcun altro: un potere
+      // che non serve a niente e che tanto vale non concedere.
+      allow update: if isAdmin()
+                    && incoming().diff(stored()).affectedKeys()
+                         .hasOnly(['status', 'updatedAt'])
+                    && statusValid()
                     && incoming().updatedAt == request.time;
 
       // Solo il proprietario può cancellarsi. Nemmeno un admin: cancellare il
-      // profilo di un altro non è un'operazione che deve esistere da qui.
+      // profilo di un altro non è un'operazione che deve esistere da qui —
+      // per tenere qualcuno fuori c'è il rifiuto, che è reversibile.
       allow delete: if isOwner(uid);
     }
 
@@ -201,8 +267,8 @@ service cloud.firestore {
       // storia del feed, che è il senso di avere una data.
       allow update: if isAdmin()
                     && newsShapeOk()
-                    && incoming().authorUid == resource.data.authorUid
-                    && incoming().createdAt == resource.data.createdAt;
+                    && incoming().authorUid == stored().authorUid
+                    && incoming().createdAt == stored().createdAt;
 
       allow delete: if isAdmin();
     }

@@ -25,7 +25,12 @@ import {
 } from 'firebase/auth'
 
 import { auth, isFirebaseConfigured } from './firebase.js'
-import { createUserProfileFromGoogle, deleteUserProfile, getUserProfile } from './db.js'
+import {
+  createUserProfileFromGoogle,
+  deleteUserProfile,
+  getUserProfile,
+  reconcileUserRole,
+} from './db.js'
 import { isAdminEmail } from '../config/admins.js'
 
 const AuthContext = createContext(null)
@@ -105,6 +110,17 @@ export function AuthProvider({ children }) {
       if (!data) {
         await createUserProfileFromGoogle(currentUser)
         data = await getUserProfile(uid)
+      }
+
+      /* Se la allowlist è cambiata da quando questa persona si è iscritta, il
+         suo `role` è vecchio: lo correggiamo qui, una volta, in silenzio.
+         Se fallisce non è grave — al massimo la sezione Admin della pagina
+         Membri non la mostra — quindi non deve impedire il login. */
+      try {
+        const fixed = await reconcileUserRole(uid, data?.role)
+        if (fixed) data = { ...data, role: fixed }
+      } catch (roleErr) {
+        console.warn('[YET] Non riesco ad allineare il ruolo del profilo.', roleErr)
       }
 
       if (pendingUidRef.current === uid) setProfile(data)

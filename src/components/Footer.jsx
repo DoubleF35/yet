@@ -16,7 +16,9 @@ export default function Footer() {
             <img className={s.logo} src={logo} alt="YET" width="486" height="291" />
           </Link>
           <p className={s.tagline}>{COMMUNITY.tagline}</p>
-          <p className={s.city}>{COMMUNITY.city}</p>
+          {/* Non la sola città: da sola suggerirebbe che se non sei a Torino
+              la cosa non ti riguarda. */}
+          <p className={s.city}>{COMMUNITY.reach}</p>
         </div>
 
         <nav className={s.linksBlock} aria-label="Canali social">
@@ -69,7 +71,7 @@ export default function Footer() {
 
       <div className={s.bottom}>
         <p className={s.copy}>
-          © {year} {COMMUNITY.name} — {COMMUNITY.city}
+          © {year} {COMMUNITY.name}
         </p>
 
         {/* Privacy e cookie stanno qui e non fra le pagine principali: è il

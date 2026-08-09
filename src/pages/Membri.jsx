@@ -165,7 +165,7 @@ function splitBio(bio) {
   return { text, preview: `${head.trimEnd()}…`, truncated: true }
 }
 
-function MemberCard({ member, isMe }) {
+function MemberCard({ member, isMe, isAdmin = false }) {
   const [open, setOpen] = useState(false)
   const reactId = useId()
   const bioId = `${reactId}-bio`
@@ -182,14 +182,23 @@ function MemberCard({ member, isMe }) {
           browser non sa quale dei due attivare con Invio). L'espansione della
           bio è affidata a un vero <button> interno, così i link social
           restano attivabili da soli e non serve nessuno stopPropagation. */}
-      <article className={isMe ? `${s.card} ${s.cardMe}` : s.card} aria-labelledby={nameId}>
+      <article
+        className={[s.card, isMe && s.cardMe, isAdmin && s.cardAdmin].filter(Boolean).join(' ')}
+        aria-labelledby={nameId}
+      >
         <header className={s.head}>
           <Avatar src={member.photoURL} name={name} size={56} />
           <div className={s.identity}>
             <h2 className={s.name} id={nameId}>
               {name}
             </h2>
-            {isMe && <p className={s.badge}>Il tuo profilo</p>}
+            {/* Un distintivo solo per card: "Il tuo profilo" ha la precedenza
+                perché è l'informazione che serve a te che stai guardando. */}
+            {isMe ? (
+              <p className={s.badge}>Il tuo profilo</p>
+            ) : isAdmin ? (
+              <p className={`${s.badge} ${s.badgeAdmin}`}>Organizza</p>
+            ) : null}
           </div>
         </header>
 
@@ -313,6 +322,14 @@ export default function Membri() {
 
   const retry = useCallback(() => setAttempt((value) => value + 1), [])
 
+  /* Due elenchi invece di uno. Il campo `role` è scritto nel profilo ma
+     verificato dalle regole (vedi roleOk() in firestore.rules), quindi
+     fidarsene qui è legittimo: nessuno può auto-promuoversi.
+     Il fallback su 'member' copre i profili creati prima che il campo
+     esistesse — senza, finirebbero in un limbo e sparirebbero dalla pagina. */
+  const admins = members.filter((m) => m.role === 'admin')
+  const regulars = members.filter((m) => m.role !== 'admin')
+
   const count = members.length
   const liveMessage =
     status === 'loading'
@@ -330,8 +347,9 @@ export default function Membri() {
           <p className={s.eyebrow}>La community</p>
           <h1 className={s.title}>Membri</h1>
           <p className={s.lead}>
-            Chi costruisce qualcosa dentro YET: studenti, autodidatti, fondatori alle prime armi.
-            Apri un profilo per leggere la presentazione completa e trovare i suoi contatti.
+            Chi costruisce qualcosa dentro YET: studenti, autodidatti, fondatori alle prime armi,
+            da Torino e dal resto d’Italia. Apri un profilo per leggere la presentazione completa e
+            trovare i suoi contatti.
           </p>
         </div>
       </section>
@@ -398,18 +416,57 @@ export default function Membri() {
 
           {status === 'ready' && count > 0 && (
             <>
-              <p className={s.count}>
-                {count} {count === 1 ? 'profilo' : 'profili'}
-              </p>
-              <ul className={s.grid}>
-                {members.map((member) => (
-                  <MemberCard
-                    key={member.uid}
-                    member={member}
-                    isMe={!!user && user.uid === member.uid}
-                  />
-                ))}
-              </ul>
+              {/* --- Chi organizza -------------------------------------------
+                  Compare solo se c'è davvero qualcuno: un'intestazione sopra
+                  una griglia vuota fa sembrare che manchi del contenuto.
+                  Va per prima perché è la domanda che si fa chi arriva da
+                  fuori — "chi c'è dietro?" — prima ancora di sfogliare i
+                  membri. */}
+              {admins.length > 0 && (
+                <section className={s.group} aria-labelledby="chi-organizza">
+                  <div className={s.groupHead}>
+                    <h2 className={s.groupTitle} id="chi-organizza">
+                      Chi organizza
+                    </h2>
+                    <p className={s.groupNote}>
+                      Tengono in piedi la community e pubblicano le notizie del sito.
+                    </p>
+                  </div>
+                  <ul className={s.grid}>
+                    {admins.map((member) => (
+                      <MemberCard
+                        key={member.uid}
+                        member={member}
+                        isMe={!!user && user.uid === member.uid}
+                        isAdmin
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {/* --- Tutti gli altri ---------------------------------------- */}
+              {regulars.length > 0 && (
+                <section className={s.group} aria-labelledby="i-membri">
+                  <div className={s.groupHead}>
+                    <h2 className={s.groupTitle} id="i-membri">
+                      {admins.length > 0 ? 'I membri' : 'La community'}
+                    </h2>
+                    <p className={s.groupNote}>
+                      {regulars.length} {regulars.length === 1 ? 'profilo' : 'profili'}
+                    </p>
+                  </div>
+                  <ul className={s.grid}>
+                    {regulars.map((member) => (
+                      <MemberCard
+                        key={member.uid}
+                        member={member}
+                        isMe={!!user && user.uid === member.uid}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )}
             </>
           )}
         </div>

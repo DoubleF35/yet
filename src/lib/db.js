@@ -25,7 +25,8 @@ import {
   where,
 } from 'firebase/firestore'
 
-import { db, isFirebaseConfigured } from './firebase.js'
+import { auth, db, isFirebaseConfigured } from './firebase.js'
+import { isAdminEmail } from '../config/admins.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
  *  della pagina Join sia — soprattutto — le regole in firestore.rules, che
@@ -34,6 +35,24 @@ export const BIO_MAX = 300
 
 const USERS = 'users'
 const NEWS = 'news'
+
+/**
+ * Il ruolo da scrivere nel profilo dell'utente collegato.
+ *
+ * Perché un campo e non un confronto lato client: i documenti `users` non
+ * contengono l'email — è una promessa esplicita dell'informativa privacy — e
+ * quindi la pagina Membri non ha alcun modo di sapere chi è amministratore.
+ *
+ * Perché è sicuro nonostante lo scriva il client: le regole in
+ * firestore.rules pretendono che `role` corrisponda ESATTAMENTE all'esito del
+ * confronto fra l'email del token e la allowlist. Un utente che provasse a
+ * salvarsi `role: 'admin'` senza essere in lista si vedrebbe rifiutare
+ * l'intera scrittura. Il campo è quindi un'informazione derivata, verificata
+ * dal server, che non espone l'indirizzo di nessuno.
+ */
+function currentRole() {
+  return isAdminEmail(auth?.currentUser?.email) ? 'admin' : 'member'
+}
 
 /* Errore usato quando qualcuno chiama una funzione di scrittura con Firebase
    non configurato. Meglio un messaggio esplicito che un "cannot read property
@@ -205,10 +224,21 @@ export async function deleteNews(id) {
    Profili
 -------------------------------------------------------------------------- */
 
+/**
+ * I profili APPROVATI. È l'elenco pubblico della pagina Membri.
+ *
+ * Il `where` non è un filtro di comodo: le regole concedono la lettura
+ * pubblica solo ai documenti approvati, e Firestore non filtra i risultati —
+ * pretende che la query sia costruita in modo che ogni risultato soddisfi la
+ * regola. Senza questo where l'intera query verrebbe rifiutata con
+ * `permission-denied`, non "filtrata".
+ */
 export async function listUsers() {
   if (!isFirebaseConfigured) throw notConfigured()
 
-  const snapshot = await getDocs(collection(db, USERS))
+  const snapshot = await getDocs(
+    query(collection(db, USERS), where('status', '==', 'approved')),
+  )
   return snapshot.docs
     .map((d) => ({ uid: d.id, ...d.data() }))
     .sort((a, b) => {
@@ -261,9 +291,19 @@ export async function saveUserProfile(uid, data) {
       instagram: String(data.socials?.instagram ?? '').trim().slice(0, 200),
       other: String(data.socials?.other ?? '').trim().slice(0, 200),
     },
+    role: currentRole(),
     updatedAt: serverTimestamp(),
   }
-  if (!existing.exists()) payload.createdAt = serverTimestamp()
+
+  /* Lo status si scrive SOLO alla creazione: in modifica le regole pretendono
+     che resti identico a quello sul server, quindi rimandarlo farebbe fallire
+     ogni salvataggio successivo al primo. Gli admin nascono approvati — farli
+     passare dalla loro stessa coda sarebbe un giro a vuoto, e al primo avvio
+     non ci sarebbe nessuno ad approvare il primo di loro. */
+  if (!existing.exists()) {
+    payload.createdAt = serverTimestamp()
+    payload.status = currentRole() === 'admin' ? 'approved' : 'pending'
+  }
 
   // merge: true perché un domani il documento potrebbe avere campi scritti
   // altrove; un set secco li cancellerebbe in silenzio.
@@ -306,9 +346,73 @@ export async function createUserProfileFromGoogle(user) {
     bio: '',
     photoURL: (user.photoURL || '').slice(0, 500),
     socials: { linkedin: '', instagram: '', other: '' },
+    role: currentRole(),
+    status: currentRole() === 'admin' ? 'approved' : 'pending',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   }
   await setDoc(doc(db, USERS, user.uid), payload, { merge: true })
   return payload
+}
+
+/**
+ * Riallinea `role` se la allowlist è cambiata dopo l'iscrizione.
+ *
+ * Il caso vero: qualcuno viene aggiunto (o tolto) da ADMIN_EMAILS mesi dopo
+ * essersi registrato. Il suo documento continuerebbe a dire `member`, e la
+ * sezione Admin della pagina Membri non lo mostrerebbe — pur vedendo lui il
+ * pannello /admin, perché quello guarda l'email e non il documento. Due verità
+ * diverse per la stessa persona: il tipo di incoerenza che poi nessuno capisce.
+ *
+ * Scrive solo se il valore è diverso da quello atteso, quindi al login normale
+ * non costa nulla.
+ */
+export async function reconcileUserRole(uid, existingRole) {
+  if (!isFirebaseConfigured || !uid) return null
+  const expected = currentRole()
+  if (existingRole === expected) return null
+
+  await updateDoc(doc(db, USERS, uid), { role: expected, updatedAt: serverTimestamp() })
+  return expected
+}
+
+/* --------------------------------------------------------------------------
+   Coda delle richieste di iscrizione
+-------------------------------------------------------------------------- */
+
+/**
+ * Le richieste in attesa. Solo gli admin possono leggerle: le regole
+ * concedono la lettura di un profilo non approvato al proprietario e agli
+ * amministratori, e a nessun altro.
+ *
+ * In ordine di arrivo, non inverso: una coda si smaltisce dal più vecchio,
+ * altrimenti chi ha chiesto per primo resta in fondo per sempre.
+ */
+export async function listPendingUsers() {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const snapshot = await getDocs(
+    query(collection(db, USERS), where('status', '==', 'pending')),
+  )
+  return snapshot.docs
+    .map((d) => ({ uid: d.id, ...d.data() }))
+    .sort((a, b) => sortKey(a.createdAt) - sortKey(b.createdAt))
+}
+
+/**
+ * Approva o rifiuta una richiesta.
+ *
+ * Scrive solo `status` e `updatedAt`: le regole rifiutano qualsiasi altra
+ * modifica fatta da un admin sul documento di un altro. Un rifiuto non
+ * cancella niente — resta reversibile, e il diretto interessato continua a
+ * vedere il proprio profilo (nessun altro lo vede).
+ */
+export async function setUserStatus(uid, status) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) throw new Error('Manca l’identificativo dell’utente.')
+  if (!['pending', 'approved', 'rejected'].includes(status)) {
+    throw new Error(`Stato non valido: ${status}`)
+  }
+
+  await updateDoc(doc(db, USERS, uid), { status, updatedAt: serverTimestamp() })
 }
