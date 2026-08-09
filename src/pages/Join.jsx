@@ -82,7 +82,18 @@ function saveErrorText(err) {
   const code = err && typeof err === 'object' ? err.code : ''
   switch (code) {
     case 'permission-denied':
-      return 'Firestore ha rifiutato la scrittura: le regole di sicurezza non permettono questa operazione.'
+      /* Messaggio lungo di proposito. "Le regole non permettono questa
+         operazione" è vero e inutile: chi lo legge non sa da dove cominciare.
+         In pratica la causa è quasi sempre una sola — le regole pubblicate sul
+         database sono una versione più vecchia di quelle nel repo, e non
+         conoscono i campi che il sito scrive adesso. Dirlo qui fa risparmiare
+         mezz'ora a chiunque incontri l'errore. */
+      return (
+        'Firestore ha rifiutato il salvataggio. Quasi sempre vuol dire che le regole ' +
+        'pubblicate sul database sono più vecchie di quelle del progetto: apri la console ' +
+        'Firebase → Firestore Database → Regole e incolla il contenuto aggiornato di ' +
+        'firestore.rules, poi premi Pubblica.'
+      )
     case 'unavailable':
     case 'deadline-exceeded':
       return 'Firestore non ha risposto in tempo. Probabilmente è la connessione: riprova fra un momento.'

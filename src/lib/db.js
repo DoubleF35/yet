@@ -36,6 +36,31 @@ export const BIO_MAX = 300
 const USERS = 'users'
 const NEWS = 'news'
 
+/** Limite del corpo di una notizia. Come BIO_MAX: il valore vero è nelle
+ *  regole, questo serve a non far scoprire il limite all'utente dopo che ha
+ *  scritto ventimila caratteri. Se lo cambi qui, cambialo in firestore.rules. */
+export const BODY_MAX = 20000
+
+/**
+ * Abbassa SOLO lo schema di un URL.
+ *
+ * Il motivo è una divergenza sottile fra due validazioni che sembravano
+ * d'accordo. Il client controlla l'URL con `new URL(v).protocol`, e l'API URL
+ * normalizza lo schema a minuscolo: `HTTPS://esempio.it/x.jpg` viene quindi
+ * accettato. Ma poi salvavamo la stringa GREZZA, e la regola la controlla con
+ * `matches('https?://.*')`, che è RE2 e case-sensitive: `HTTPS://` non
+ * corrisponde e la scrittura viene respinta con un permission-denied che non
+ * c'entra niente con i permessi. Capita davvero, incollando da certi client di
+ * posta o da Word con l'autocorrezione.
+ *
+ * Si tocca solo lo schema: il resto di un URL è case-sensitive, e abbassare
+ * tutto romperebbe i percorsi delle immagini.
+ */
+function normalizeUrlScheme(value) {
+  const raw = String(value ?? '').trim()
+  return raw.replace(/^([A-Za-z][A-Za-z0-9+.-]*):/, (m, scheme) => `${scheme.toLowerCase()}:`)
+}
+
 /**
  * Il ruolo da scrivere nel profilo dell'utente collegato.
  *
@@ -184,6 +209,12 @@ export async function createNews({ title, body, published }, author) {
   const cleanBody = String(body ?? '').trim()
   if (!cleanTitle) throw new Error('Il titolo non può essere vuoto.')
   if (!cleanBody) throw new Error('Il corpo non può essere vuoto.')
+  if (cleanBody.length > BODY_MAX) {
+    throw new Error(
+      `Il corpo supera i ${BODY_MAX.toLocaleString('it-IT')} caratteri consentiti ` +
+        `(ne hai ${cleanBody.length.toLocaleString('it-IT')}).`,
+    )
+  }
 
   const ref = await addDoc(collection(db, NEWS), {
     title: cleanTitle,
@@ -205,7 +236,12 @@ export async function updateNews(id, patch) {
 
   const allowed = {}
   if (typeof patch.title === 'string') allowed.title = patch.title.trim()
-  if (typeof patch.body === 'string') allowed.body = patch.body.trim()
+  if (typeof patch.body === 'string') {
+    allowed.body = patch.body.trim()
+    if (allowed.body.length > BODY_MAX) {
+      throw new Error(`Il corpo supera i ${BODY_MAX.toLocaleString('it-IT')} caratteri consentiti.`)
+    }
+  }
   if (typeof patch.published === 'boolean') allowed.published = patch.published
 
   if (Object.keys(allowed).length === 0) return
@@ -285,7 +321,7 @@ export async function saveUserProfile(uid, data) {
   const payload = {
     displayName: displayName.slice(0, 80),
     bio,
-    photoURL: String(data.photoURL ?? '').trim().slice(0, 500),
+    photoURL: normalizeUrlScheme(data.photoURL).slice(0, 500),
     socials: {
       linkedin: String(data.socials?.linkedin ?? '').trim().slice(0, 200),
       instagram: String(data.socials?.instagram ?? '').trim().slice(0, 200),
@@ -295,15 +331,28 @@ export async function saveUserProfile(uid, data) {
     updatedAt: serverTimestamp(),
   }
 
-  /* Lo status si scrive SOLO alla creazione: in modifica le regole pretendono
-     che resti identico a quello sul server, quindi rimandarlo farebbe fallire
-     ogni salvataggio successivo al primo. Gli admin nascono approvati — farli
-     passare dalla loro stessa coda sarebbe un giro a vuoto, e al primo avvio
-     non ci sarebbe nessuno ad approvare il primo di loro. */
+  /* Lo status iniziale: approvato per gli admin, in attesa per tutti gli altri.
+     Gli admin nascono approvati perché farli passare dalla loro stessa coda
+     sarebbe un giro a vuoto — e al primo avvio non ci sarebbe nessuno ad
+     approvare il primo di loro. */
+  const initialStatus = currentRole() === 'admin' ? 'approved' : 'pending'
+
   if (!existing.exists()) {
     payload.createdAt = serverTimestamp()
-    payload.status = currentRole() === 'admin' ? 'approved' : 'pending'
+    payload.status = initialStatus
+  } else if (existing.data()?.status === undefined) {
+    /* Documento nato prima che l'approvazione esistesse.
+       Va migrato QUI, al primo salvataggio, perché le regole non possono
+       leggere un campo che non c'è: `stored().status` su una chiave assente
+       non vale "vuoto", fa fallire l'intera condizione, e il salvataggio
+       verrebbe respinto con un permission-denied che non spiega niente.
+       Il valore deve combaciare con il ripiego di storedStatus() in
+       firestore.rules — se cambi uno, cambia anche l'altro. */
+    payload.status = initialStatus
   }
+  /* Negli altri casi lo status NON si tocca: le regole pretendono che resti
+     identico a quello sul server, ed è la riga che impedisce di auto-approvarsi
+     salvando di nuovo il proprio profilo. */
 
   // merge: true perché un domani il documento potrebbe avere campi scritti
   // altrove; un set secco li cancellerebbe in silenzio.
@@ -344,7 +393,7 @@ export async function createUserProfileFromGoogle(user) {
   const payload = {
     displayName: (user.displayName || user.email?.split('@')[0] || 'Membro YET').slice(0, 80),
     bio: '',
-    photoURL: (user.photoURL || '').slice(0, 500),
+    photoURL: normalizeUrlScheme(user.photoURL).slice(0, 500),
     socials: { linkedin: '', instagram: '', other: '' },
     role: currentRole(),
     status: currentRole() === 'admin' ? 'approved' : 'pending',
@@ -367,13 +416,24 @@ export async function createUserProfileFromGoogle(user) {
  * Scrive solo se il valore è diverso da quello atteso, quindi al login normale
  * non costa nulla.
  */
-export async function reconcileUserRole(uid, existingRole) {
+export async function reconcileUserRole(uid, existing) {
   if (!isFirebaseConfigured || !uid) return null
-  const expected = currentRole()
-  if (existingRole === expected) return null
 
-  await updateDoc(doc(db, USERS, uid), { role: expected, updatedAt: serverTimestamp() })
-  return expected
+  const expected = currentRole()
+  const roleOutdated = existing?.role !== expected
+  // Un profilo nato prima dell'approvazione non ha status: va sanato adesso,
+  // perché senza quel campo TUTTI i salvataggi successivi verrebbero respinti
+  // (le regole non possono leggere una chiave assente — vedi storedStatus()
+  // in firestore.rules).
+  const statusMissing = existing?.status === undefined
+
+  if (!roleOutdated && !statusMissing) return null
+
+  const patch = { role: expected, updatedAt: serverTimestamp() }
+  if (statusMissing) patch.status = expected === 'admin' ? 'approved' : 'pending'
+
+  await updateDoc(doc(db, USERS, uid), patch)
+  return { role: expected, status: patch.status ?? existing?.status }
 }
 
 /* --------------------------------------------------------------------------

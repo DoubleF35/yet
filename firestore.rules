@@ -142,7 +142,14 @@ service cloud.firestore {
       function photoOk() {
         return incoming().photoURL is string
             && incoming().photoURL.size() <= 500
-            && (incoming().photoURL == '' || incoming().photoURL.matches('https?://.*'));
+            // (?i) = confronto senza distinzione fra maiuscole e minuscole.
+            // matches() è RE2 e di suo È case-sensitive: senza il flag, un
+            // 'HTTPS://' salvato da un documento più vecchio (o incollato da
+            // un client di posta) verrebbe respinto per sempre, con un errore
+            // che parla di permessi e non di formato. Il client normalizza già
+            // lo schema in scrittura; questo serve a non restare bloccati su
+            // quello che è stato scritto prima.
+            && (incoming().photoURL == '' || incoming().photoURL.matches('(?i)https?://.*'));
       }
 
       function socialsOk() {
@@ -177,6 +184,26 @@ service cloud.firestore {
         return incoming().status in ['pending', 'approved', 'rejected'];
       }
 
+      // Lo status che il documento ha ADESSO, con una risposta sensata anche
+      // quando il campo non c'è.
+      //
+      // Serve ai profili nati prima che l'approvazione esistesse. Su di loro
+      // `stored().status` non è "vuoto": è un accesso a una chiave assente, e
+      // in Security Rules quello fa fallire l'INTERA espressione. Senza questa
+      // funzione, chi si era iscritto prima non riuscirebbe più a salvare il
+      // proprio profilo — e l'errore direbbe solo "permission-denied", senza
+      // lasciar capire che il colpevole è un campo che non c'è.
+      //
+      // Il valore di ripiego è quello che il profilo avrebbe avuto se fosse
+      // nato oggi, e il client scrive esattamente lo stesso (vedi
+      // saveUserProfile in src/lib/db.js): la migrazione avviene al primo
+      // salvataggio, senza uno script e senza toccare il database a mano.
+      function storedStatus() {
+        return 'status' in stored()
+             ? stored().status
+             : (isAdmin() ? 'approved' : 'pending');
+      }
+
       function usersShapeOk() {
         return usersKeysOk() && displayNameOk() && bioOk() && photoOk()
             && socialsOk() && roleOk() && statusValid();
@@ -202,7 +229,7 @@ service cloud.firestore {
       allow update: if isOwner(uid)
                     && usersShapeOk()
                     && incoming().createdAt == stored().createdAt
-                    && incoming().status == stored().status
+                    && incoming().status == storedStatus()
                     && incoming().updatedAt == request.time;
 
       // --- approvazione o rifiuto da parte di un admin ----------------------
