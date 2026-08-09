@@ -17,7 +17,6 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -158,13 +157,26 @@ function sortKey(value) {
  *          dell'effetto: un listener lasciato aperto continua a consumare
  *          quota e a chiamare setState su un componente smontato.
  *
- * Sul `createdAt` nullo: quando l'admin crea una notizia, il documento arriva
- * subito in locale con createdAt a null (serverTimestamp si risolve solo dopo
- * il round-trip). Con `orderBy('createdAt', 'desc')` Firestore mette quel
- * documento in fondo, e per un istante la notizia appena scritta compare in
- * coda invece che in cima. Teniamo l'orderBy nella query — serve a Firestore
- * per usare l'indice e a limitare i dati — e riordiniamo lato client, dove il
- * null lo possiamo trattare come "adesso".
+ * PERCHÉ L'ORDINAMENTO È LATO CLIENT E NON NELLA QUERY.
+ *
+ * La versione naturale — `where('published','==',true)` più
+ * `orderBy('createdAt','desc')` — è una query COMPOSTA, e Firestore per quelle
+ * pretende un indice creato a mano. Finché non lo crei risponde
+ * `failed-precondition` e il feed resta vuoto: un sito appena installato
+ * sembra rotto, e l'errore non dice a nessuno che deve aprire la console e
+ * cliccare un link. Il filtro da solo, invece, usa l'indice automatico su
+ * campo singolo e funziona sempre.
+ *
+ * Il riordino ci serviva comunque, e questo è il secondo motivo per farlo qui:
+ * una notizia appena creata arriva in locale con `createdAt` a null, perché
+ * `serverTimestamp()` si risolve solo dopo il giro sul server. Firestore la
+ * metterebbe in fondo; noi trattiamo il null come "adesso" e la mettiamo in
+ * cima, che è dove l'admin si aspetta di vederla.
+ *
+ * Il prezzo è che scarichiamo tutte le notizie pubblicate invece delle prime
+ * N. Con un feed da club va benissimo. QUANDO RIVEDERE QUESTA SCELTA: se le
+ * notizie superano qualche centinaio, crea l'indice composto (published ASC,
+ * createdAt DESC) e rimetti l'orderBy qui insieme a un limit().
  */
 export function listenNews({ onlyPublished = true } = {}, onData, onError) {
   if (!isFirebaseConfigured) {
@@ -174,7 +186,6 @@ export function listenNews({ onlyPublished = true } = {}, onData, onError) {
 
   const constraints = []
   if (onlyPublished) constraints.push(where('published', '==', true))
-  constraints.push(orderBy('createdAt', 'desc'))
 
   const q = query(collection(db, NEWS), ...constraints)
 
@@ -190,10 +201,14 @@ export function listenNews({ onlyPublished = true } = {}, onData, onError) {
       // Il caso quasi certo alla prima esecuzione: le regole non sono state
       // deployate, oppure manca l'indice composto (published + createdAt).
       // Firestore in quel caso mette in console un link per crearlo: diciamolo.
+      // Non dovrebbe più capitare, ora che la query non è composta. Se
+      // ricapita vuol dire che qualcuno ha rimesso un orderBy o un secondo
+      // where: il messaggio di Firestore contiene un link che crea l'indice
+      // giusto con un clic, quindi conviene farlo vedere invece di inghiottirlo.
       if (error?.code === 'failed-precondition') {
         console.error(
-          '[YET] Firestore chiede un indice per questa query. Apri il link che ' +
-            'trova qui sotto e clicca "Crea indice": ci mette un minuto.',
+          '[YET] Firestore chiede un indice composto per questa query. Il link qui ' +
+            'sotto lo crea: aprilo e premi "Crea indice".',
           error,
         )
       }
