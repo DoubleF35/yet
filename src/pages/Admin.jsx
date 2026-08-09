@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
+import PendingRequests from '../components/PendingRequests.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { createNews, deleteNews, formatDate, listenNews, updateNews } from '../lib/db.js'
@@ -328,7 +329,15 @@ export default function Admin() {
           </p>
         )}
 
-        {/* 1. Nuova notizia --------------------------------------------- */}
+        {/* 1. Richieste di iscrizione -----------------------------------
+            Prima delle notizie di proposito: è l'unica cosa in questa pagina
+            in cui qualcuno sta aspettando una risposta. Una notizia può
+            attendere domani, una persona in coda no. */}
+        {isFirebaseConfigured && <PendingRequests />}
+
+        <HandsDivider />
+
+        {/* 2. Nuova notizia --------------------------------------------- */}
         <section className={s.section} aria-labelledby="nuova-notizia">
           <h2 id="nuova-notizia" className={s.sectionTitle}>
             Nuova notizia
@@ -457,7 +466,7 @@ export default function Admin() {
 
         <HandsDivider />
 
-        {/* 2. Tutte le notizie ------------------------------------------ */}
+        {/* 3. Tutte le notizie ------------------------------------------ */}
         <section className={s.section} aria-labelledby="tutte-le-notizie">
           <div className={s.sectionHead}>
             <h2 id="tutte-le-notizie" className={s.sectionTitle}>

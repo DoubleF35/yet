@@ -302,3 +302,50 @@
 .noticeText + .noticeText {
   margin-top: var(--space-3);
 }
+
+/* =========================================================================
+   6. GRUPPI (chi organizza / i membri)
+   ====================================================================== */
+
+.group + .group {
+  margin-block-start: clamp(var(--space-8), 8vw, var(--space-10));
+  padding-block-start: clamp(var(--space-7), 7vw, var(--space-9));
+  border-block-start: var(--border);
+}
+
+.groupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  margin-block-end: var(--space-5);
+}
+
+.groupTitle {
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  margin: 0;
+}
+
+.groupNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  /* Su schermo stretto la nota va sotto al titolo invece di stringerlo. */
+  flex: 1 1 18ch;
+}
+
+/* Le card di chi organizza si distinguono con un bordo pieno, lo stesso
+   trattamento della notizia in evidenza in home: è la gerarchia del sito,
+   non un'eccezione inventata qui. Il coral resta al proprio profilo, che è
+   l'informazione più utile a chi guarda. */
+.cardAdmin {
+  border: var(--border-strong);
+}
+
+.badgeAdmin {
+  border: var(--border-strong);
+  background-color: var(--surface-sunken);
+}
