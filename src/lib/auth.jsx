@@ -117,10 +117,14 @@ export function AuthProvider({ children }) {
          Se fallisce non è grave — al massimo la sezione Admin della pagina
          Membri non la mostra — quindi non deve impedire il login. */
       try {
-        const fixed = await reconcileUserRole(uid, data?.role)
-        if (fixed) data = { ...data, role: fixed }
+        const fixed = await reconcileUserRole(uid, data)
+        if (fixed) data = { ...data, ...fixed }
       } catch (roleErr) {
-        console.warn('[YET] Non riesco ad allineare il ruolo del profilo.', roleErr)
+        console.warn(
+          '[YET] Non riesco ad allineare ruolo e stato del profilo. Di solito le regole ' +
+            'pubblicate sul database sono più vecchie di quelle in firestore.rules.',
+          roleErr,
+        )
       }
 
       if (pendingUidRef.current === uid) setProfile(data)

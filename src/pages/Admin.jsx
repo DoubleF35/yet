@@ -6,13 +6,17 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
-import { createNews, deleteNews, formatDate, listenNews, updateNews } from '../lib/db.js'
+import { BODY_MAX, createNews, deleteNews, formatDate, listenNews, updateNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Admin.module.css'
 
 /* Limite del titolo: non è una regola di Firestore, è una scelta editoriale.
    Un titolo più lungo di così va a capo tre volte nella card della home. */
 const TITLE_MAX = 120
+
+/* Il limite del corpo vive in lib/db.js accanto a quello delle regole. Lo
+   rispecchiamo nel form perché scoprirlo DOPO aver scritto ventimila caratteri,
+   sotto forma di "permission-denied", sarebbe crudele. */
 
 const EMPTY_DRAFT = { title: '', body: '', published: false }
 
@@ -50,6 +54,15 @@ function validateDraft(draft) {
   const errors = {}
   if (!draft.title.trim()) errors.title = 'Il titolo è obbligatorio.'
   if (!draft.body.trim()) errors.body = 'Il corpo della notizia è obbligatorio.'
+  /* maxLength sulla textarea ferma la digitazione ma NON un incolla da
+     programma, e non vale per il testo già presente in una notizia vecchia.
+     Il controllo esplicito è quello che evita di scoprire il limite come
+     "permission-denied" dopo aver premuto Salva. */
+  if (draft.body.trim().length > BODY_MAX) {
+    errors.body = `Il corpo supera i ${BODY_MAX.toLocaleString('it-IT')} caratteri: accorcialo di ${(
+      draft.body.trim().length - BODY_MAX
+    ).toLocaleString('it-IT')}.`
+  }
   return errors
 }
 
@@ -388,6 +401,7 @@ export default function Admin() {
                 value={form.body}
                 aria-invalid={formErrors.body ? 'true' : undefined}
                 aria-describedby={formErrors.body ? 'news-body-error news-body-hint' : 'news-body-hint'}
+                maxLength={BODY_MAX}
                 onChange={(e) => {
                   updateForm({ body: e.target.value })
                   if (formErrors.body) setFormErrors((prev) => ({ ...prev, body: undefined }))
@@ -583,6 +597,7 @@ export default function Admin() {
                               aria-describedby={
                                 editErrors.body ? `edit-body-error-${item.id}` : undefined
                               }
+                                maxLength={BODY_MAX}
                               onChange={(e) => {
                                 setEditDraft((prev) => ({ ...prev, body: e.target.value }))
                                 if (editErrors.body)

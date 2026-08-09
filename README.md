@@ -212,6 +212,22 @@ minuscolo (il confronto normalizza comunque, ma tenerle pulite aiuta).
 Le regole stanno in [`firestore.rules`](firestore.rules). Vanno **pubblicate**:
 il file nel repo, da solo, non ha alcun effetto.
 
+> ### L'ordine conta: PRIMA le regole, POI il sito.
+>
+> Regole e codice del sito devono conoscere gli stessi campi. Se sfasi i due
+> rilasci ottieni un `permission-denied` che non parla di permessi:
+>
+> - **regole vecchie + sito nuovo** → il sito scrive `role` e `status`, che le
+>   regole vecchie non ammettono in `hasOnly()`: **ogni salvataggio di ogni
+>   utente viene rifiutato**;
+> - **regole nuove + sito vecchio** (o semplicemente non ancora ricaricato dal
+>   browser) → il sito non manda `status`, e le regole non possono leggerlo dal
+>   documento perché non c'è.
+>
+> Pubblicare **prima le regole** è l'ordine sicuro: è strettamente non
+> regressivo, nessun documento che funzionava smette di funzionare. L'inverso
+> lascia aperta una finestra in cui il sito è rotto.
+
 **Modo semplice — dalla console:**
 
 1. Console Firebase → **Firestore Database** → scheda **Regole**.
@@ -635,6 +651,25 @@ La `base` non corrisponde al nome del repo. Apri la console del browser: se vedi
 `auth/unauthorized-domain`. Manca il dominio in **Authentication → Settings →
 Authorized domains**: aggiungi `<tuo-utente>.github.io`. `localhost` è
 autorizzato in automatico, ed è il motivo per cui in locale non te ne accorgi.
+
+### "permission-denied" quando salvo il profilo
+
+Nel 99% dei casi le regole pubblicate sul database sono più vecchie di
+`firestore.rules`. Per accertarlo in trenta secondi invece di dedurlo: console
+Firebase → Firestore Database → **Regole**, e guarda il testo pubblicato.
+
+- Se dentro `usersKeysOk()` **non compare `'role'`**, sono vecchie: incolla il
+  file aggiornato e premi Pubblica.
+- Se le regole sono aggiornate ma l'errore resta, apri il documento
+  `users/{uid}` di chi non riesce a salvare: se **non ha il campo `status`** è
+  un profilo nato prima dell'approvazione. Si sana da solo al primo accesso
+  successivo (`reconcileUserRole`), a patto che le regole pubblicate contengano
+  `storedStatus()`.
+
+Il sintomo secondario che distingue i due casi senza aprire niente: con le
+regole vecchie **nemmeno un iscritto nuovo** riesce a creare il profilo, e la
+pagina Join continua a mostrare «Crea il mio profilo». Con le regole nuove i
+nuovi funzionano e falliscono solo i preesistenti.
 
 ### "permission-denied" quando salvo una notizia
 
