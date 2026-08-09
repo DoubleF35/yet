@@ -25,16 +25,25 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     // ALLOWLIST DEGLI AMMINISTRATORI
     //
-    // TODO: sostituisci queste quattro email con quelle vere, e tieni la lista
-    // identica a quella in src/config/admins.js. Vanno scritte in MINUSCOLO:
-    // il confronto qui sotto abbassa la mail del token, non queste costanti.
+    // Questa lista deve restare IDENTICA a ADMIN_EMAILS in
+    // src/config/admins.js. Le due non sono collegate da nulla: se le fai
+    // divergere, il sito mostrerà il pannello a qualcuno che poi si vedrà
+    // rifiutare ogni salvataggio con "permission-denied".
+    //
+    // Vanno scritte in MINUSCOLO: il confronto qui sotto abbassa la mail del
+    // token, non queste costanti.
+    //
+    // ⚠️  Dopo ogni modifica le regole vanno RIPUBBLICATE (console Firebase →
+    //     Firestore → Regole → Pubblica). Cambiare il file nel repo non ha
+    //     alcun effetto sul database.
     // -------------------------------------------------------------------------
     function adminEmails() {
       return [
-        'admin1@yetcommunity.it',
-        'admin2@yetcommunity.it',
-        'admin3@yetcommunity.it',
-        'admin4@yetcommunity.it'
+        'fedefas.210@gmail.com'
+        // TODO: le altre tre, precedute da una virgola.
+        // , 'seconda.persona@gmail.com'
+        // , 'terza.persona@gmail.com'
+        // , 'quarta.persona@gmail.com'
       ];
     }
 
