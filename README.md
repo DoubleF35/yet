@@ -1,6 +1,6 @@
-# YET — Young Entrepreneurs Together
+# YET; Young Entrepreneurs Together
 
-Sito della community YET: giovani builder dai 14 ai 25 anni, con base a Torino.
+Sito della community YET: giovani builder dai 14 ai 23 anni, con base a Torino.
 
 Sito statico in React, servito da GitHub Pages, con Firebase (Auth + Firestore)
 per il login e per i contenuti. **Niente backend, niente Cloud Functions**: tutto
@@ -65,7 +65,7 @@ npm run preview   # serve dist/ come in produzione, per un controllo finale
 ```
 
 Senza il file `.env` (passo successivo) il sito **si apre lo stesso**: le pagine
-mostrano un avviso al posto dei dati, invece di restare bianche. È voluto — così
+mostrano un avviso al posto dei dati, invece di restare bianche. È voluto, così
 si vede subito cosa manca.
 
 ---
@@ -118,7 +118,7 @@ Passo per passo, per chi non ha mai aperto la console Firebase.
    di test.
 
    La modalità di test lascia il database **scrivibile da chiunque per 30
-   giorni**. È comoda solo se pubblichi le regole vere nei minuti successivi —
+   giorni**. È comoda solo se pubblichi le regole vere nei minuti successivi
    e se lo fai, non ti è servita a niente. Se invece qualcosa ti distrae, hai
    lasciato un database aperto su internet senza accorgertene.
 
@@ -148,7 +148,7 @@ VITE_FIREBASE_APP_ID=1:123456789012:web:abc123…
 Poi **riavvia `npm run dev`**: le variabili d'ambiente non hanno hot reload, e
 finché non riavvii continuerai a vedere l'avviso "Firebase non è configurato".
 
-### 6. Autorizzare il dominio di produzione — non saltarlo
+### 6. Autorizzare il dominio di produzione, non saltarlo
 
 **Authentication** → **Settings** → **Authorized domains** → **Add domain** →
 `<tuo-utente>.github.io`.
@@ -230,7 +230,7 @@ il file nel repo, da solo, non ha alcun effetto.
 > regressivo, nessun documento che funzionava smette di funzionare. L'inverso
 > lascia aperta una finestra in cui il sito è rotto.
 
-**Modo semplice — dalla console:**
+**Modo semplice, dalla console:**
 
 1. Console Firebase → **Firestore Database** → scheda **Regole**.
 2. Cancella tutto quello che c'è e incolla il contenuto di `firestore.rules`.
@@ -250,7 +250,7 @@ firebase deploy --only firestore:rules
 > Con il database creato in **modalità di produzione** (come consigliato sopra)
 > ogni operazione è negata in partenza: il feed resta vuoto, il login riesce ma
 > il profilo non si salva, e la console mostra `permission-denied`. È il
-> comportamento giusto — non un guasto.
+> comportamento giusto, non un guasto.
 >
 > Se invece hai scelto la **modalità di test**, hai il problema opposto e
 > peggiore: per 30 giorni **chiunque** può scrivere nel tuo database, e allo
@@ -349,7 +349,7 @@ incolla un indirizzo e si aggiunge. Massimo 8 per notizia.
 ### Sono ammessi solo `http` e `https`
 
 Un URL finisce dentro un attributo `href` o `src`. Uno schema come
-`javascript:` in un href è codice che parte al clic — è il classico XSS.
+`javascript:` in un href è codice che parte al clic, è il classico XSS.
 Vengono quindi rifiutati `javascript:`, `data:`, `file:` e gli indirizzi senza
 schema.
 
@@ -366,65 +366,57 @@ elemento». Regge lo stesso perché su `news` scrive **solo un admin in
 allowlist**: il rischio non è l'estraneo che inietta dati, è l'amministratore
 che sbaglia.
 
-### Caricare file dal dispositivo
+### Caricare foto e file dal dispositivo
 
-Il codice c'è ed è collegato: nell'editor degli allegati, sotto il campo per
-l'indirizzo, c'è **«Carica un file»** con barra di avanzamento. Accetta
-immagini (JPEG, PNG, WebP, GIF, AVIF) e PDF fino a **10 MB**.
+Nell'editor degli allegati c'è **«Carica una foto o un file»**: si sceglie dal
+telefono o dal computer e finisce dentro la notizia. Immagini (JPEG, PNG, WebP,
+AVIF) e PDF. Nessuna configurazione, nessun costo, nessuna carta.
 
-> ### ⚠️ Storage NON è disponibile sul piano Spark
->
-> Non è una soglia di consumo da superare: **dal 3 febbraio 2026 un progetto
-> Spark non ha accesso a nessun bucket**, nemmeno quello predefinito, e le
-> chiamate rispondono `402` o `403`. Serve il piano **Blaze**, cioè una carta
-> collegata al progetto, anche solo per caricare un file da 50 KB.
->
-> Blaze è a consumo senza minimi: se resti nella soglia gratuita non paghi
-> nulla. Ma la soglia dipende dalla regione, ed è la parte che si scopre tardi.
+#### Come funziona, e perché così
 
-**I tre passaggi, una volta sola:**
+Firebase Storage, il posto naturale per i file, **non è disponibile sul piano
+Spark**: dal 3 febbraio 2026 un progetto senza carta collegata non ha accesso a
+nessun bucket. Quindi i file finiscono in Firestore.
 
-1. Passa il progetto al piano **Blaze** (serve una carta). Conviene subito
-   impostare un avviso di budget da qualche euro: non blocca la spesa, ma ti
-   avvisa se qualcosa va storto.
-2. Console Firebase → **Storage** → «Inizia» → **scegli la regione con cura**:
+Ma un documento Firestore non può superare **1 MiB**, e una foto da telefono ne
+pesa dieci. Da qui le due scelte che reggono tutto:
 
-   | Regione | Costo | Dove stanno i file |
-   | ------- | ----- | ------------------ |
-   | `us-central1`, `us-east1`, `us-west1` | **zero** (soglia Always Free: 5 GB) | Stati Uniti |
-   | `eur3` o altre europee | pochi centesimi al mese | Europa |
+1. **Le immagini vengono compresse nel browser** prima di partire
+   (`src/lib/imageCompress.js`): ridimensionate a 2000px di lato lungo e
+   riesportate in WebP, abbassando la qualità solo se serve.
 
-   La soglia «Always Free» dei bucket `.firebasestorage.app` vale **solo per
-   quelle tre regioni statunitensi**. In Europa si paga dal primo byte: con i
-   volumi di un club sono cifre trascurabili, ma non zero.
+   Misurato: una foto da **12 MP (2 MB) diventa 279 KB** mantenendo 2000×1500,
+   in mezzo secondo.
 
-   È un compromesso vero, non una formalità: gli Stati Uniti costano zero ma
-   spostano i file fuori dall'Europa, e in quel caso va aggiornata la sezione
-   «Dove finiscono i dati» dell'informativa privacy. **La regione non si può
-   cambiare dopo.**
-3. Storage → scheda **Regole** → incolla `storage.rules` → **Pubblica**.
+2. **Ogni file sta in un documento suo**, nella collection `media`. Se stessero
+   dentro la notizia, quel megabyte andrebbe diviso fra il testo e tutte le
+   foto, una sola immagine grande non lascerebbe posto nemmeno al titolo.
+   Separandoli, **ognuna ha il suo megabyte** e una notizia può averne quante
+   ne servono. In più la home scarica l'elenco delle notizie senza tirarsi
+   dietro le immagini: il testo compare subito, le foto un attimo dopo.
 
-Il passo 3 è quello che si dimentica: `storage.rules` è un **file separato** da
-`firestore.rules` e vive in un'altra scheda della console. Saltarlo dà
-`storage/unauthorized` al primo caricamento, con un errore che non spiega
-perché.
+#### Cosa ci perdi, detto chiaro
 
-Finché Storage è spento il bottone **non compare**: al suo posto c'è la
-spiegazione di cosa attivare. Non è una scelta estetica — `getStorage()`
-riesce anche senza bucket, quindi il flag dell'SDK non dice la verità e un
-bottone mostrato in base a quello sarebbe un bottone che fallisce al clic. La
-verità la chiede `probeStorage()` con una richiesta sola, fatta solo quando un
-admin apre l'editor.
+Le immagini sono ricodificate **con perdita**: quello che si carica non è più
+l'originale e non si recupera. Per le foto di un incontro va benissimo. Per
+un'immagine che deve restare nitida a schermo intero, no, in quel caso conviene
+ospitarla altrove e allegarne l'indirizzo, che continua a funzionare.
 
-> Onestà sul collaudo: il percorso di **caricamento** non è mai stato eseguito
-> contro un bucket vero, perché su questo progetto Storage non era attivo
-> mentre lo scrivevo. Segue l'SDK ufficiale, gli errori più probabili sono
-> tradotti nella mossa successiva, ma la prima prova falla tu. Se qualcosa non
-> torna, il sospetto numero uno è il passo 2.
+I **PDF non si comprimono**: passano solo se stanno sotto circa 650 KB. Sopra,
+il messaggio lo dice con il numero in mano e suggerisce Drive.
 
-Resta comunque possibile allegare **l'indirizzo** di un file già online — una
-foto su Instagram, un PDF su Drive con link pubblico — che è la strada da usare
-se preferite non collegare una carta.
+#### Se un giorno colleghi una carta
+
+Con il piano Blaze, Firebase Storage toglie ogni limite: PDF di qualsiasi peso,
+immagini a piena risoluzione, CDN. Il codice per usarlo **non è nel repo**: era
+stato scritto, ma non essendo più collegato a nulla sarebbe rimasto lì a
+marcire senza che nessuno lo eseguisse mai. Si trova nella storia di git
+(`git log --diff-filter=D -- src/lib/storage.js`) e comunque riscriverlo è
+mezz'ora.
+
+Attenzione, se lo fai: la soglia gratuita dei bucket `.firebasestorage.app` vale
+**solo per `us-central1`, `us-east1`, `us-west1`**. In Europa si paga dal primo
+byte, e la regione non si cambia dopo.
 
 ---
 
@@ -451,7 +443,7 @@ in giro il nome di chi l'aveva fatta.
 
 > Conseguenza tecnica da non dimenticare: `listUsers()` **deve** filtrare su
 > `where('status','==','approved')`. Firestore non filtra i risultati in base
-> alle regole — pretende che la query sia costruita in modo che ogni risultato
+> alle regole, pretende che la query sia costruita in modo che ogni risultato
 > le soddisfi. Senza quel `where` la query viene rifiutata in blocco, non
 > ridotta. Se un giorno vedi `permission-denied` sulla pagina Membri, guarda
 > lì per primo.
@@ -492,8 +484,8 @@ all'esito del confronto fra l'email del token e la allowlist, quindi chi non è
 in lista e prova a salvarsi `role: 'admin'` si vede rifiutare l'intera
 scrittura.
 
-Esiste perché i documenti `users` **non contengono l'email** — l'informativa
-privacy promette che non venga mai pubblicata — e senza un campo apposta la
+Esiste perché i documenti `users` **non contengono l'email**, l'informativa
+privacy promette che non venga mai pubblicata, e senza un campo apposta la
 pagina non avrebbe modo di distinguere gli organizzatori dagli altri.
 
 Se aggiungi qualcuno alla allowlist mesi dopo la sua iscrizione, il suo `role`
@@ -515,7 +507,7 @@ Apri `src/config/legal.js` e compila `ownerName` (e, se esistono,
 
 Il **titolare del trattamento** è chi si assume la responsabilità dei dati: se
 YET è un'associazione costituita, il suo nome; altrimenti il nome e cognome di
-una persona fisica. Non l'ho inventato di proposito — un nome sbagliato in
+una persona fisica. Non l'ho inventato di proposito, un nome sbagliato in
 un'informativa è peggio di un campo vuoto.
 
 Finché il campo resta al segnaposto, la pagina `/privacy` mostra un riquadro
@@ -546,7 +538,7 @@ passi. Lo permettono già le regole (`allow delete: if isOwner(uid)`).
 
 Un dettaglio: Firebase rifiuta di cancellare un account con un accesso vecchio
 di ore (`auth/requires-recent-login`). In quel caso il profilo pubblico viene
-comunque rimosso — la parte che conta — e all'utente viene detto di rientrare e
+comunque rimosso, la parte che conta, e all'utente viene detto di rientrare e
 ripetere l'operazione per togliere anche l'account.
 
 ---
@@ -564,7 +556,7 @@ Sono due posti separati, ed è la cosa più utile da sapere:
 
 Puoi ripubblicare il sito cento volte, tornare a un commit vecchio, sbagliare
 un merge: i dati restano dove sono. Il codice non li contiene e non li
-sovrascrive. L'unica cosa che agisce sui dati sono le **regole** — e anche
+sovrascrive. L'unica cosa che agisce sui dati sono le **regole**, e anche
 quelle possono al massimo bloccare l'accesso, non cancellare.
 
 ### Quello che invece può andare perso
@@ -585,7 +577,7 @@ Per questo c'è l'export.
 npm run backup
 ```
 
-Scrive un JSON in `backups/`, che è già in `.gitignore` — contiene dati
+Scrive un JSON in `backups/`, che è già in `.gitignore`, contiene dati
 personali dei membri e non deve finire nel repo.
 
 Lo script funziona in due modi e **dice sempre quale ha usato**, perché un
@@ -620,7 +612,7 @@ npm run restore -- backups/yet-2026-08-09T06-37-23.json --scrivi   # applica
 ```
 
 Senza `--scrivi` non scrive niente: elenca soltanto cosa verrebbe ricreato e
-cosa sovrascritto. È voluto — è lo strumento che si usa quando qualcosa è già
+cosa sovrascritto. È voluto, è lo strumento che si usa quando qualcosa è già
 andato storto, cioè nel momento in cui si sbaglia più facilmente.
 
 Il ripristino **non cancella** i documenti creati dopo il backup: chi ha
@@ -681,8 +673,6 @@ yet/
 │   └── restore.mjs            ripristino, dry-run di default (npm run restore)
 │
 ├── firestore.rules            la protezione VERA. Va pubblicata.
-├── storage.rules              regole dei file caricati. File SEPARATO,
-│                              si pubblica dalla scheda Regole di Storage.
 ├── .env.example               le chiavi da riempire
 └── .github/workflows/deploy.yml
 ```
@@ -719,7 +709,7 @@ attorno una cornice **bianca** che non è il beige del sito. Andava tolta.
 Non ho ri-codificato il file (`ffmpeg` non è disponibile su questa macchina):
 il video resta l'originale e il ritaglio lo fa il CSS, mostrando solo la parte
 buona. Il vantaggio è che non c'è perdita di qualità e non serve rifare il file
-se un giorno cambia l'inquadratura — si cambiano cinque numeri.
+se un giorno cambia l'inquadratura, si cambiano cinque numeri.
 
 I numeri **sono misurati sul file vero**, non stimati: il video è stato
 disegnato su una canvas a sette istanti diversi, cercando per ognuno dove il
@@ -733,7 +723,7 @@ bordo superiore y = 10    bordo inferiore y = 711 ->  702 px
 Una cosa che si vede solo misurando: i bordi laterali sono identici per tutti i
 5 secondi, ma **fino a circa 1 s il pannello beige è alto 702 px e dopo si
 allarga a 720**. Il ritaglio giusto è l'intersezione, cioè i 702 px del primo
-secondo — tagliare di meno farebbe comparire la cornice bianca nei primi
+secondo, tagliare di meno farebbe comparire la cornice bianca nei primi
 fotogrammi.
 
 Le variabili tengono 4 px di margine interno per lato, contro la frangia di un
@@ -776,7 +766,7 @@ servito dallo stesso dominio del sito. Non è una scelta di prestazioni: chieder
 il font al CDN di Google significa che il browser di ogni visitatore consegna il
 proprio indirizzo IP a un server di Google prima ancora che la pagina sia
 disegnata, e senza poter dire di no. È il trasferimento che rende necessario il
-banner di consenso — toglierlo lo rende superfluo.
+banner di consenso, toglierlo lo rende superfluo.
 
 Sono importati solo il sottoinsieme latino e i cinque pesi che il tema usa
 davvero: spedire cirillico, greco e vietnamita in nove pesi a chi legge italiano
@@ -804,8 +794,8 @@ Il flag viene scritto **quando l'intro parte**, non quando finisce: altrimenti
 chi ricarica a metà video se la rivedrebbe da capo ogni volta.
 
 L'intro ha tre vie d'uscita, perché il video può non partire per motivi che non
-dipendono da noi: il bottone **Skip**, la fine del video, e — se l'autoplay
-viene bloccato dal browser o il file non carica — il poster con il bottone
+dipendono da noi: il bottone **Skip**, la fine del video, e, se l'autoplay
+viene bloccato dal browser o il file non carica, il poster con il bottone
 **Entra**. Con "riduci le animazioni" attivo il video non parte proprio.
 
 ### 8. Le email admin sono segnaposto
@@ -821,8 +811,8 @@ viene bloccato dal browser o il file non carica — il poster con il bottone
   in `socials.js`, in `COMMUNITY`, perché li usano sia la Home sia la Join e non
   devono poter divergere.
 - **Il feed viene riordinato anche lato client.** Una notizia appena creata ha
-  `createdAt` nullo per un istante — `serverTimestamp()` si risolve solo dopo il
-  giro sul server — e finirebbe in fondo alla lista invece che in cima.
+  `createdAt` nullo per un istante - `serverTimestamp()` si risolve solo dopo il
+  giro sul server, e finirebbe in fondo alla lista invece che in cima.
 - **La conferma di eliminazione non usa `window.confirm`**: il bottone diventa
   "Sicuro? Sì / No". Un dialogo di sistema si può bloccare a livello di browser,
   e stona con il resto.

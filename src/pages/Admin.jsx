@@ -307,8 +307,8 @@ export default function Admin() {
       await deleteNews(item.id)
       setConfirmId(null)
       if (editingId === item.id) setEditingId(null)
-      // Nessun setBusy(null) in caso di successo servirebbe — la riga sparisce
-      // dallo snapshot — ma lo facciamo nel finally per non lasciare voci
+      // Nessun setBusy(null) in caso di successo servirebbe, la riga sparisce
+      // dallo snapshot, ma lo facciamo nel finally per non lasciare voci
       // orfane nella mappa se il documento tornasse (undo lato server).
     } catch (error) {
       setRowError(item.id, describeError(error))
@@ -336,7 +336,7 @@ export default function Admin() {
               sono due, e solo uno protegge davvero i dati. */}
           <p className={s.note}>
             Gli admin si impostano in <code>src/config/admins.js</code> <strong>e</strong> in{' '}
-            <code>firestore.rules</code> — le regole sono la protezione vera. Il primo file decide
+            <code>firestore.rules</code>, le regole sono la protezione vera. Il primo file decide
             solo chi vede questa pagina; senza la mail nella allowlist delle regole ogni scrittura
             viene rifiutata.
           </p>
@@ -481,9 +481,9 @@ export default function Admin() {
             </div>
 
             {/* Due live region distinte: `status` non interrompe la lettura in
-                corso, `alert` sì. La region del successo è sempre nel DOM —
+                corso, `alert` sì. La region del successo è sempre nel DOM
                 se comparisse solo al momento del successo alcuni screen reader
-                non la annuncerebbero — e si nasconde da sola quando è vuota. */}
+                non la annuncerebbero, e si nasconde da sola quando è vuota. */}
             <p className={s.statusLine} role="status">
               {formSuccess ? <span className={s.success}>{formSuccess}</span> : null}
             </p>

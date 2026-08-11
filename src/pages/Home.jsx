@@ -7,8 +7,14 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { COMMUNITY } from '../config/socials.js'
-import { normalizeAttachments } from '../lib/attachments.js'
-import { countApprovedUsers, formatDate, listenNews } from '../lib/db.js'
+import {
+  mediaIdsOf,
+  normalizeAttachments,
+  safeFileSrc,
+  safeImageSrc,
+  safeUrl,
+} from '../lib/attachments.js'
+import { countApprovedUsers, formatDate, getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Home.module.css'
@@ -21,14 +27,31 @@ const CLAMP_OVER = 420
 /* --------------------------------------------------------------------------
    Una notizia
 -------------------------------------------------------------------------- */
-function NewsCard({ item, featured }) {
+function NewsCard({ item, featured, media }) {
   const [expanded, setExpanded] = useState(false)
   const body = String(item.body ?? '')
   const isLong = body.length > CLAMP_OVER
 
-  const allegati = normalizeAttachments(item.attachments)
-  const immagini = allegati.filter((a) => a.type === 'image')
-  const link = allegati.filter((a) => a.type === 'link')
+  /* Un allegato può essere un indirizzo incollato oppure un file caricato, e
+     nel secondo caso il contenuto arriva da media/{id}. `sorgente` appiattisce
+     i due casi in una cosa sola, così il rendering più sotto non deve sapere
+     da dove viene niente.
+     safeImageSrc / safeFileSrc ricontrollano SEMPRE, anche sul contenuto che
+     arriva dal nostro database: è il controllo che protegge dai dati scritti
+     prima che questa validazione esistesse, o messi a mano dalla console. */
+  const allegati = normalizeAttachments(item.attachments).map((a) => {
+    if (!a.mediaId) return { ...a, src: a.type === 'image' ? safeImageSrc(a.url) : safeUrl(a.url) }
+    const m = media?.[a.mediaId]
+    if (!m) return { ...a, src: null }
+    return {
+      ...a,
+      src: a.type === 'image' ? safeImageSrc(m.dataUrl) : safeFileSrc(m.dataUrl),
+      name: m.name,
+    }
+  })
+
+  const immagini = allegati.filter((a) => a.type === 'image' && a.src)
+  const link = allegati.filter((a) => a.type !== 'image' && a.src)
 
   return (
     <article className={`${s.card} ${featured ? s.featured : ''}`.trim()}>
@@ -70,29 +93,49 @@ function NewsCard({ item, featured }) {
           l'URL viene usato. */}
       {immagini.length > 0 && (
         <div className={s.gallery}>
-          {immagini.map((a) => (
-            <a
-              className={s.shot}
-              key={a.url}
-              href={a.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img src={a.url} alt={a.label} loading="lazy" decoding="async" />
-              <span className="sr-only"> (apri a dimensione piena in una nuova scheda)</span>
-            </a>
-          ))}
+          {immagini.map((a) =>
+            /* Le immagini ospitate altrove si aprono a dimensione piena in una
+               scheda nuova. Quelle caricate da noi no: il loro `src` è un data
+               URL, e un data URL dentro un href è una PAGINA che si apre con i
+               permessi del nostro dominio. In un <img> è innocuo, in un link
+               no, quindi lì il link non si mette proprio. */
+            a.mediaId ? (
+              <span className={s.shot} key={`media:${a.mediaId}`}>
+                <img src={a.src} alt={a.label} loading="lazy" decoding="async" />
+              </span>
+            ) : (
+              <a
+                className={s.shot}
+                key={a.src}
+                href={a.src}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={a.src} alt={a.label} loading="lazy" decoding="async" />
+                <span className="sr-only"> (apri a dimensione piena in una nuova scheda)</span>
+              </a>
+            ),
+          )}
         </div>
       )}
 
       {link.length > 0 && (
         <ul className={s.links}>
           {link.map((a) => (
-            <li key={a.url}>
-              <a className={s.link} href={a.url} target="_blank" rel="noopener noreferrer">
+            <li key={a.mediaId ? `media:${a.mediaId}` : a.src}>
+              <a
+                className={s.link}
+                href={a.src}
+                /* Un file caricato si scarica invece di aprirsi: `download`
+                   suggerisce il nome giusto al posto di una stringa base64
+                   lunga un chilometro. */
+                {...(a.mediaId
+                  ? { download: a.name || a.label }
+                  : { target: '_blank', rel: 'noopener noreferrer' })}
+              >
                 <span className={s.linkIcon} aria-hidden="true" />
                 <span className={s.linkLabel}>{a.label}</span>
-                <span className="sr-only"> (si apre in una nuova scheda)</span>
+                {!a.mediaId && <span className="sr-only"> (si apre in una nuova scheda)</span>}
               </a>
             </li>
           ))}
@@ -129,6 +172,11 @@ export default function Home() {
      sarebbe un'affermazione: "non c'è nessuno" è una cosa diversa da "sto
      contando", e sulla home di un club appena nato la differenza si vede. */
   const [membri, setMembri] = useState(null)
+
+  /* I contenuti dei file caricati, per id. Stanno qui e non dentro le card
+     perché una lettura sola serve a tutte: due notizie che allegano la stessa
+     foto non devono scaricarla due volte. */
+  const [media, setMedia] = useState({})
 
   const logo = `${import.meta.env.BASE_URL}logo.png`
 
@@ -170,7 +218,7 @@ export default function Home() {
 
   /* Il conteggio dei membri per la riga di apertura.
      Query di aggregazione: il server risponde con un numero, senza spedire i
-     documenti. Se fallisce non si dice niente e non si mostra niente — un
+     documenti. Se fallisce non si dice niente e non si mostra niente, un
      contatore è un di più, e non deve poter rompere la home. */
   useEffect(() => {
     if (!isFirebaseConfigured) return undefined
@@ -182,6 +230,21 @@ export default function Home() {
       alive = false
     }
   }, [])
+
+  /* I media arrivano dopo l'elenco delle notizie, ed è voluto: il testo si
+     legge subito e le immagini compaiono un attimo dopo, invece di far
+     aspettare tutto il megabyte prima di mostrare una parola. */
+  useEffect(() => {
+    const ids = news.flatMap((n) => mediaIdsOf(n.attachments))
+    if (ids.length === 0) return undefined
+    let alive = true
+    getMedia(ids)
+      .then((m) => alive && setMedia((prec) => ({ ...prec, ...m })))
+      .catch((err) => console.warn('[YET] Non riesco a leggere gli allegati.', err))
+    return () => {
+      alive = false
+    }
+  }, [news])
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
 
@@ -207,7 +270,10 @@ export default function Home() {
         <p className={s.lead}>{COMMUNITY.description}</p>
 
         <p className={s.meta}>
-          Dai {COMMUNITY.ageRange} anni — {COMMUNITY.reach}
+          {/* Punto mediano e non un trattino: questa riga è tutta maiuscola e
+              spaziata, e un trattino in mezzo a delle maiuscole si legge come
+              un segno meno. Il punto separa senza pretendere di collegare. */}
+          Dai {COMMUNITY.ageRange} anni <span aria-hidden="true">·</span> {COMMUNITY.reach}
         </p>
 
         {membri !== null && membri > 0 && (
@@ -323,7 +389,12 @@ export default function Home() {
         {status === 'ready' && (
           <div className={s.grid}>
             {news.map((item, index) => (
-              <NewsCard key={item.id} item={item} featured={index === 0 && news.length > 1} />
+              <NewsCard
+                key={item.id}
+                item={item}
+                media={media}
+                featured={index === 0 && news.length > 1}
+              />
             ))}
           </div>
         )}

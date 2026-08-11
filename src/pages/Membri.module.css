@@ -219,8 +219,8 @@
    5. STATI
    ====================================================================== */
 
-/* Lo scheletro ricalca la card vera — stesso bordo, stesso padding, stesso
-   ordine di blocchi — così quando i dati arrivano nulla si sposta. */
+/* Lo scheletro ricalca la card vera, stesso bordo, stesso padding, stesso
+   ordine di blocchi, così quando i dati arrivano nulla si sposta. */
 .ghost {
   display: flex;
   flex-direction: column;
@@ -387,4 +387,15 @@
   font-weight: var(--weight-medium);
   color: var(--muted);
   text-wrap: balance;
+}
+
+/* Seconda riga del sommario: stesso stile della prima ma staccata, così le due
+   idee restano distinte a qualsiasi larghezza. */
+.leadSecond {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
 }

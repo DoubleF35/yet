@@ -2,7 +2,7 @@
  * Inizializzazione di Firebase.
  *
  * Regola di questo file: NON deve mai lanciare a import-time. Se la config
- * manca, il sito si apre lo stesso — le pagine leggono `isFirebaseConfigured`
+ * manca, il sito si apre lo stesso, le pagine leggono `isFirebaseConfigured`
  * e mostrano un avviso che dice cosa fare. La pagina bianca senza spiegazioni
  * è il modo più veloce per far arenare chi clona il repo.
  */
@@ -70,7 +70,7 @@ if (hasAllKeys) {
     // bundle: l'utente vede un avviso, non una schermata vuota.
     console.error(
       '[YET] Firebase è configurato ma l’inizializzazione è fallita. ' +
-        'Controlla i valori in .env — di solito è una chiave incollata male.',
+        'Controlla i valori in .env, di solito è una chiave incollata male.',
       error,
     )
     app = null

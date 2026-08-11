@@ -1,5 +1,5 @@
 /* =========================================================================
-   Admin — area riservata (redazione delle notizie)
+   Admin, area riservata (redazione delle notizie)
    -------------------------------------------------------------------------
    Solo token di theme.css: nessun colore, nessuna dimensione tipografica
    hardcodata. I bordi sono l'unico mezzo di separazione (niente ombre).
@@ -187,7 +187,7 @@
 }
 
 /* Checkbox: nativa, con accent-color. Una finta casella fatta di <span> avrebbe
-   richiesto di riscrivere focus, stato indeterminato e alto contrasto — la
+   richiesto di riscrivere focus, stato indeterminato e alto contrasto, la
    nativa li ha già. */
 .check {
   display: flex;

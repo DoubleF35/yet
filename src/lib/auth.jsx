@@ -114,8 +114,8 @@ export function AuthProvider({ children }) {
 
       /* Se la allowlist è cambiata da quando questa persona si è iscritta, il
          suo `role` è vecchio: lo correggiamo qui, una volta, in silenzio.
-         Se fallisce non è grave — al massimo la sezione Admin della pagina
-         Membri non la mostra — quindi non deve impedire il login. */
+         Se fallisce non è grave, al massimo la sezione Admin della pagina
+         Membri non la mostra, quindi non deve impedire il login. */
       try {
         const fixed = await reconcileUserRole(uid, data)
         if (fixed) data = { ...data, ...fixed }
@@ -227,13 +227,13 @@ export function AuthProvider({ children }) {
    * L'ordine conta. Prima il documento Firestore, poi l'account: le regole
    * concedono la cancellazione del profilo solo al proprietario autenticato,
    * quindi se sparisse prima l'account resterebbe un documento orfano che
-   * nessuno può più togliere — nemmeno un admin, per come sono scritte le
+   * nessuno può più togliere, nemmeno un admin, per come sono scritte le
    * regole. Facendo il contrario, se il secondo passo fallisce resta al più un
    * account senza dati, che è il modo giusto di sbagliare.
    *
    * `deleteUser` pretende un login recente: Firebase non lascia cancellare un
    * account con un token vecchio di ore. Non è un errore da nascondere, è una
-   * cosa che l'utente può risolvere da solo — quindi la traduciamo in
+   * cosa che l'utente può risolvere da solo, quindi la traduciamo in
    * un'istruzione invece che in un codice.
    */
   const deleteAccount = useCallback(async () => {

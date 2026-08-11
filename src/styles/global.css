@@ -1,5 +1,5 @@
 /* =========================================================================
-   YET — reset e stili di base
+   YET, reset e stili di base
    -------------------------------------------------------------------------
    Questo è l'UNICO foglio di stile globale del progetto insieme a theme.css.
    Tutto il resto vive nei CSS Modules accanto ai componenti.
@@ -93,7 +93,7 @@ body {
      `clip` e NON `hidden`: hidden trasformerebbe il body in uno scroll
      container, e da quel momento qualunque `position: sticky` in una pagina
      smetterebbe di funzionare (si aggancerebbe al body invece che al
-     viewport) — un guasto invisibile finché qualcuno non scrive un componente
+     viewport), un guasto invisibile finché qualcuno non scrive un componente
      sticky. `clip` taglia e basta. Dove non è supportato la riga viene
      semplicemente ignorata, e l'eventuale overflow torna visibile: meglio un
      bug che si vede di uno sticky rotto che non si spiega. */

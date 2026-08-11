@@ -1,5 +1,5 @@
 /* =========================================================================
-   YET — chi è admin
+   YET, chi è admin
 
    ATTENZIONE, LEGGERE PRIMA DI TOCCARE QUESTO FILE.
 
@@ -23,7 +23,7 @@
    `firebase deploy --only firestore:rules`). Modificare le regole in locale
    senza ripubblicarle non ha alcun effetto: è l'errore più facile da fare.
 
-   Cambiare solo questo file produce il bug più fastidioso possibile — un
+   Cambiare solo questo file produce il bug più fastidioso possibile, un
    admin che vede la pagina, compila il form e si becca "permission-denied"
    al salvataggio.
    ========================================================================= */

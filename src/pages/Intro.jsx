@@ -13,7 +13,7 @@ const FADE_MS = 450
 /* localStorage può LANCIARE, non solo restituire null: succede in Safari
    privato, in alcuni webview e con i cookie di terze parti bloccati. Un
    accesso non protetto qui aprirebbe il sito bianco proprio sui browser più
-   restrittivi — cioè sull'iPhone di qualcuno, non su un caso di laboratorio. */
+   restrittivi, cioè sull'iPhone di qualcuno, non su un caso di laboratorio. */
 function hasSeenIntro() {
   try {
     return window.localStorage.getItem(SEEN_KEY) === '1'
@@ -47,7 +47,7 @@ export default function Intro() {
   /* Le decisioni che non devono cambiare durante la vita del componente si
      calcolano una volta sola, con l'inizializzatore pigro di useState. Se le
      mettessimo in un effect, il primo render mostrerebbe il video anche a chi
-     ha chiesto meno movimento — un lampo, ma proprio a chi non lo vuole. */
+     ha chiesto meno movimento, un lampo, ma proprio a chi non lo vuole. */
   const [alreadySeen] = useState(hasSeenIntro)
   const [reduced] = useState(prefersReducedMotion)
 
@@ -83,7 +83,7 @@ export default function Intro() {
 
   /* Avvio del video.
      `play()` restituisce una Promise che viene RIFIUTATA quando il browser
-     blocca l'autoplay — la norma su iOS in risparmio energetico e con certe
+     blocca l'autoplay, la norma su iOS in risparmio energetico e con certe
      impostazioni desktop, non un caso limite. Se non la intercettiamo, chi la
      subisce resta davanti a un fotogramma fermo senza capire come proseguire. */
   useEffect(() => {

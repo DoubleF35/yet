@@ -93,7 +93,7 @@ function memberName(member) {
 /* Ordine alfabetico e NON per createdAt: un documento appena creato ha
    createdAt null per qualche istante (serverTimestamp torna dal server solo
    dopo), quindi ordinare per data farebbe saltare quel profilo in cima o in
-   fondo fra un caricamento e l'altro — e un ordine che cambia da solo sembra
+   fondo fra un caricamento e l'altro, e un ordine che cambia da solo sembra
    un bug. Lo spareggio sull'uid rende l'ordine totalmente deterministico
    anche fra due omonimi o fra due profili senza nome. */
 function sortMembers(list) {
@@ -211,7 +211,7 @@ function MemberCard({ member, isMe, isAdmin = false }) {
         ) : (
           /* Niente card mezza vuota: una riga di riserva discreta, che dice
              cosa manca senza sembrare un errore di caricamento. */
-          <p className={s.bioEmpty}>Bio in arrivo — {name} non si è ancora presentato.</p>
+          <p className={s.bioEmpty}>Bio in arrivo - {name} non si è ancora presentato.</p>
         )}
 
         {/* Il bottone compare solo se c'è davvero altro da leggere. */}
@@ -328,7 +328,7 @@ export default function Membri() {
      verificato dalle regole (vedi roleOk() in firestore.rules), quindi
      fidarsene qui è legittimo: nessuno può auto-promuoversi.
      Il fallback su 'member' copre i profili creati prima che il campo
-     esistesse — senza, finirebbero in un limbo e sparirebbero dalla pagina. */
+     esistesse, senza, finirebbero in un limbo e sparirebbero dalla pagina. */
   const admins = members.filter((m) => m.role === 'admin')
   const regulars = members.filter((m) => m.role !== 'admin')
 
@@ -348,10 +348,17 @@ export default function Membri() {
         <div className="container">
           <p className={s.eyebrow}>La community</p>
           <h1 className={s.title}>Membri</h1>
+          {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
+              cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
+              sembrava attaccata alla parte sbagliata. Separare le due idee
+              risolve il problema alla radice, invece di sperare in un
+              text-wrap che dipende dalla larghezza dello schermo. */}
           <p className={s.lead}>
             Chi costruisce qualcosa dentro YET: studenti, autodidatti, fondatori alle prime armi,
-            da Torino e dal resto d’Italia. Apri un profilo per leggere la presentazione completa e
-            trovare i suoi contatti.
+            da Torino e dal resto d’Italia.
+          </p>
+          <p className={s.leadSecond}>
+            Apri un profilo per leggere la presentazione completa e trovare i contatti.
           </p>
 
           {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
@@ -434,7 +441,7 @@ export default function Membri() {
                   Compare solo se c'è davvero qualcuno: un'intestazione sopra
                   una griglia vuota fa sembrare che manchi del contenuto.
                   Va per prima perché è la domanda che si fa chi arriva da
-                  fuori — "chi c'è dietro?" — prima ancora di sfogliare i
+                  fuori, "chi c'è dietro?", prima ancora di sfogliare i
                   membri. */}
               {admins.length > 0 && (
                 <section className={s.group} aria-labelledby="chi-organizza">

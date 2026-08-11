@@ -4,7 +4,7 @@
  * QUESTO È IL FILE DA MODIFICARE per aggiungere, togliere o rinominare un
  * social: le pagine iterano su `SOCIALS` e non conoscono nessun canale per
  * nome. Aggiungere Telegram vuol dire aggiungere un oggetto all'array qui
- * sotto e basta — nessun componente va toccato.
+ * sotto e basta, nessun componente va toccato.
  */
 
 /* ---------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 
    Sono path scritti a mano e volutamente semplici: geometrie pulite che si
    leggono bene a 24px. Se un domani vuoi i loghi ufficiali, sostituisci solo
-   queste costanti — la forma del dato non cambia.
+   queste costanti, la forma del dato non cambia.
 --------------------------------------------------------------------------- */
 
 const ICON_LINKEDIN =
@@ -85,8 +85,8 @@ export const SOCIALS = [
     // questa pagina può entrare nel gruppo senza passare da nessuno.
     // Se un domani serve chiudere il rubinetto (spam, o gruppo diventato
     // troppo grande), NON basta togliere la riga da qui: il vecchio link
-    // resta valido per chi l'ha salvato. Va invalidato da WhatsApp —
-    // Info gruppo → Invita tramite link → Reimposta link — e poi va
+    // resta valido per chi l'ha salvato. Va invalidato da WhatsApp
+    // Info gruppo → Invita tramite link → Reimposta link, e poi va
     // incollato qui quello nuovo.
     href: 'https://chat.whatsapp.com/KgpSEPKBuP712TN9XhjEIH',
     icon: ICON_WHATSAPP,
@@ -107,7 +107,7 @@ export const SOCIALS = [
  * posti del sito (home, join, membri, contatti, footer) e un link cambiato in
  * quattro su cinque sarebbe peggio che non averlo. Se un domani il gruppo
  * sparisce o cambia id, restituisce undefined e i blocchi che lo usano non si
- * mostrano — invece di puntare nel vuoto.
+ * mostrano, invece di puntare nel vuoto.
  */
 export const WHATSAPP = SOCIALS.find((item) => item.id === 'whatsapp')
 
@@ -126,15 +126,17 @@ export const COMMUNITY = {
 
   /* Da dove si partecipa. Tenuti separati apposta: la sede è un fatto, il
      raggio è un invito, e confonderli restringe la community senza motivo.
-     Ogni testo del sito che nomina Torino deve nominare anche questo — chi
+     Ogni testo del sito che nomina Torino deve nominare anche questo, chi
      legge da Bari deve capire alla prima riga che può entrare anche lui. */
   scope: 'tutta Italia',
 
-  ageRange: '14 ai 25',
+  ageRange: '14 ai 23',
 
   description:
-    'YET — Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Ci si mostra a che punto si è e si va avanti insieme. La sede è a Torino, ma si partecipa da tutta Italia: online ci si trova comunque. Nessuna selezione, nessuna quota: serve solo avere qualcosa in costruzione.',
+    'YET; Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Ci si mostra a che punto si è e si va avanti insieme. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota: serve solo avere qualcosa in costruzione.',
 
-  /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera. */
-  reach: 'Sede a Torino, si partecipa da tutta Italia',
+  /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera.
+     "I primi eventi" e non "la sede": dice da dove si parte senza suonare come
+     un requisito d'ingresso per chi sta altrove. */
+  reach: 'I primi eventi a Torino, l’obiettivo è tutta Italia',
 }

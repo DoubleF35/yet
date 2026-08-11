@@ -9,12 +9,13 @@ import Skeleton from '../components/Skeleton.jsx'
 import { COMMUNITY } from '../config/socials.js'
 import { useAuth } from '../lib/auth.jsx'
 import { BIO_MAX, LOCATION_MAX, saveUserProfile } from '../lib/db.js'
+import { AVATAR_MAX_BYTES, compressAvatar, humanBytes } from '../lib/imageCompress.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Join.module.css'
 
 /* =========================================================================
-   /join — due facce sulla stessa rotta.
+   /join, due facce sulla stessa rotta.
 
    Non loggato: cos'è YET e un solo bottone.
    Loggato:     il form del proprio profilo (è ciò che finisce in /membri).
@@ -85,7 +86,7 @@ function saveErrorText(err) {
     case 'permission-denied':
       /* Messaggio lungo di proposito. "Le regole non permettono questa
          operazione" è vero e inutile: chi lo legge non sa da dove cominciare.
-         In pratica la causa è quasi sempre una sola — le regole pubblicate sul
+         In pratica la causa è quasi sempre una sola, le regole pubblicate sul
          database sono una versione più vecchia di quelle nel repo, e non
          conoscono i campi che il sito scrive adesso. Dirlo qui fa risparmiare
          mezz'ora a chiunque incontri l'errore. */
@@ -169,7 +170,7 @@ function JoinLoading() {
 
 /* ------------------------------------------------------------------------- */
 
-/** Faccia A — visitatore non autenticato. */
+/** Faccia A, visitatore non autenticato. */
 function JoinPitch({ firebaseMissing }) {
   const { signIn, error } = useAuth()
   const [pending, setPending] = useState(false)
@@ -181,7 +182,7 @@ function JoinPitch({ firebaseMissing }) {
     name = 'YET',
     tagline = '',
     city = 'Torino',
-    ageRange = '14-25',
+    ageRange = '14 ai 23',
     description = '',
   } = COMMUNITY || {}
 
@@ -196,7 +197,7 @@ function JoinPitch({ firebaseMissing }) {
     {
       n: '02',
       title: 'Per chi',
-      text: `Dai ${ageRange} anni, da tutta Italia. La sede è a ${city} ed è lì che capitano gli incontri di persona, ma non è un requisito: chi è lontano partecipa online e conta esattamente quanto gli altri.`,
+      text: `Dai ${ageRange} anni, da tutta Italia. I primi eventi saranno a ${city}, ma l’obiettivo è espandersi: se vivi a Palermo o a Udine puoi trovare gente della tua città e contribuire a farne proprio dove sei tu.`,
     },
     {
       n: '03',
@@ -321,7 +322,7 @@ function formFromProfile(profile, user) {
   }
 }
 
-/** Faccia B — utente autenticato: crea o aggiorna il proprio profilo. */
+/** Faccia B, utente autenticato: crea o aggiorna il proprio profilo. */
 function ProfileForm({ firebaseMissing }) {
   const { user, profile, profileLoading, refreshProfile } = useAuth()
   const fid = useId()
@@ -331,6 +332,32 @@ function ProfileForm({ firebaseMissing }) {
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved | error
   const [saveError, setSaveError] = useState(null)
   const [savedNow, setSavedNow] = useState(false)
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState(null)
+
+  /* Comprime la foto scelta e la mette nel campo come data URL.
+     Il ridimensionamento non è un vezzo: la foto profilo finisce DENTRO il
+     documento dell'utente, e la pagina Membri scarica tutti i profili in una
+     volta. Una foto da telefono non compressa vorrebbe dire decine di megabyte
+     su un elenco di trenta persone, sulla connessione di chi lo apre in giro. */
+  async function caricaAvatar(file, input) {
+    if (!file) return
+    setAvatarError(null)
+    setAvatarBusy(true)
+    try {
+      const esito = await compressAvatar(file)
+      setForm((prev) => ({ ...prev, photoURL: esito.dataUrl }))
+      setErrors((prev) => ({ ...prev, photoURL: undefined }))
+    } catch (err) {
+      setAvatarError(err?.message || 'Non riesco a usare questa immagine.')
+    } finally {
+      setAvatarBusy(false)
+      // Senza azzerare, riscegliere lo STESSO file non fa scattare onChange e
+      // sembra che il bottone si sia rotto.
+      if (input) input.value = ''
+    }
+  }
+
   const [photoCheck, setPhotoCheck] = useState('idle') // idle | badUrl | checking | ok | error
 
   const nameRef = useRef(null)
@@ -376,6 +403,12 @@ function ProfileForm({ firebaseMissing }) {
   useEffect(() => {
     if (!photoValue) {
       setPhotoCheck('idle')
+      return
+    }
+    if (photoValue.startsWith('data:')) {
+      // Foto appena compressa da noi: è già stata decodificata per comprimerla,
+      // quindi sondarla di nuovo sarebbe lavoro inutile.
+      setPhotoCheck('ok')
       return
     }
     if (!isHttpUrl(photoValue)) {
@@ -443,7 +476,7 @@ function ProfileForm({ firebaseMissing }) {
     if (bioOver) {
       nextErrors.bio = `La bio supera ${BIO_MAX} caratteri: togline ${Math.abs(bioRemaining)}.`
     }
-    if (photoURL && !isHttpUrl(photoURL)) {
+    if (photoURL && !photoURL.startsWith('data:') && !isHttpUrl(photoURL)) {
       nextErrors.photoURL = 'Il link della foto deve iniziare con http:// o https://.'
     }
 
@@ -601,7 +634,7 @@ function ProfileForm({ firebaseMissing }) {
                 aria-describedby={`${fid}-place-hint`}
               />
               <p className={s.hint} id={`${fid}-place-hint`}>
-                La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese —
+                La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese
                 e a farti trovare da chi ti sta vicino. Puoi lasciarlo vuoto.
               </p>
             </div>
@@ -659,12 +692,46 @@ function ProfileForm({ firebaseMissing }) {
               <div className={s.photoRow}>
                 <div className={s.photoPreview}>
                   <Avatar
-                    src={isHttpUrl(photoValue) ? photoValue : ''}
+                    src={photoValue.startsWith('data:') || isHttpUrl(photoValue) ? photoValue : ''}
                     name={form.displayName || (user && user.displayName) || 'Tu'}
                     size={80}
                   />
                 </div>
                 <div className={s.photoCol}>
+                  {/* Il caricamento viene PRIMA del campo indirizzo, perché è
+                      quello che quasi tutti vogliono fare: incollare il link di
+                      una foto è il ripiego, non il percorso principale. */}
+                  <div className={s.photoUpload}>
+                    <label className={s.photoFileLabel}>
+                      <input
+                        className={s.photoFile}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        disabled={saving || avatarBusy}
+                        onChange={(e) => caricaAvatar(e.target.files?.[0], e.target)}
+                      />
+                      <span className={s.photoFileButton}>
+                        {avatarBusy ? 'Preparo la foto…' : 'Carica una foto'}
+                      </span>
+                    </label>
+                    {form.photoURL && (
+                      <button
+                        type="button"
+                        className={s.photoRemove}
+                        onClick={() => setForm((prev) => ({ ...prev, photoURL: '' }))}
+                        disabled={saving || avatarBusy}
+                      >
+                        Togli
+                      </button>
+                    )}
+                  </div>
+
+                  {avatarError && (
+                    <p className={s.fieldError} role="alert">
+                      {avatarError}
+                    </p>
+                  )}
+
                   <input
                     className={cx(s.input, errors.photoURL && s.inputInvalid)}
                     id={`${fid}-photo`}
@@ -684,7 +751,10 @@ function ProfileForm({ firebaseMissing }) {
                     )}
                   />
                   <p className={s.hint} id={`${fid}-photo-hint`}>
-                    Facoltativo. Se lo lasci vuoto usiamo le tue iniziali.
+                    Facoltativo: se non metti niente usiamo le tue iniziali. Puoi caricare una foto
+                    dal dispositivo oppure incollare qui sopra l’indirizzo di una già online. Le
+                    foto caricate vengono ritagliate quadrate e rimpicciolite a{' '}
+                    {humanBytes(AVATAR_MAX_BYTES)}.
                   </p>
                   {photoMessage && (
                     <p className={s.photoNote} id={`${fid}-photo-note`}>
@@ -749,7 +819,7 @@ function ProfileForm({ firebaseMissing }) {
                 type="text"
                 value={form.other}
                 onChange={update('other')}
-                placeholder="https://ilmiosito.it — o GitHub, o TikTok"
+                placeholder="https://ilmiosito.it, o GitHub, o TikTok"
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -793,7 +863,7 @@ function ProfileForm({ firebaseMissing }) {
           lavoro dell'approvazione. */}
       {profile?.status === 'pending' && (
         <div className={s.statusBox}>
-          <p className={s.statusBoxTitle}>Richiesta inviata — in attesa di approvazione</p>
+          <p className={s.statusBoxTitle}>Richiesta inviata, in attesa di approvazione</p>
           <p className={s.statusBoxText}>
             Il tuo profilo è arrivato agli organizzatori. Finché non lo approvano non compare fra i
             membri e non lo vede nessun altro: puoi comunque modificarlo quando vuoi da questa
@@ -814,7 +884,7 @@ function ProfileForm({ firebaseMissing }) {
 
       {/* Fuori dal <form>: è un'azione a sé, irreversibile, e non deve poter
           partire per un Invio premuto dentro un campo del profilo. Compare
-          solo a chi un profilo ce l'ha già — a chi non l'ha ancora creato non
+          solo a chi un profilo ce l'ha già, a chi non l'ha ancora creato non
           serve un bottone per cancellarlo. */}
       {profile && !firebaseMissing && <DeleteAccount />}
     </div>

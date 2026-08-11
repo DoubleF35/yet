@@ -5,8 +5,8 @@
  * `firebase/firestore`. Così se domani cambia il modello dati (o il database),
  * il punto da toccare è uno solo.
  *
- * Le funzioni che scrivono lasciano risalire l'errore al chiamante — sono le
- * pagine a sapere dove mostrarlo — ma lo rivestono con un messaggio leggibile.
+ * Le funzioni che scrivono lasciano risalire l'errore al chiamante, sono le
+ * pagine a sapere dove mostrarlo, ma lo rivestono con un messaggio leggibile.
  */
 
 import {
@@ -30,17 +30,24 @@ import { isAdminEmail } from '../config/admins.js'
 import { normalizeAttachments } from './attachments.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
- *  della pagina Join sia — soprattutto — le regole in firestore.rules, che
+ *  della pagina Join sia, soprattutto, le regole in firestore.rules, che
  *  sono la validazione vera. Se lo cambi qui, cambialo anche nelle rules. */
 export const BIO_MAX = 300
 
 /** Da dove scrive un membro: "Torino", "Bari", "Provincia di Cuneo".
- *  Corto apposta — è un'informazione da riga sotto il nome, non un indirizzo.
+ *  Corto apposta, è un'informazione da riga sotto il nome, non un indirizzo.
  *  Se lo cambi qui, cambialo anche in firestore.rules. */
 export const LOCATION_MAX = 60
 
+/** Quanto può essere lunga la stringa della foto profilo.
+ *  Copre sia un indirizzo incollato (poche centinaia di caratteri) sia una
+ *  foto caricata e compressa (un data URL da qualche decina di migliaia).
+ *  Allineato a firestore.rules: se lo cambi qui, cambialo anche là. */
+export const PHOTO_MAX_CHARS = 100000
+
 const USERS = 'users'
 const NEWS = 'news'
+const MEDIA = 'media'
 
 /** Limite del corpo di una notizia. Come BIO_MAX: il valore vero è nelle
  *  regole, questo serve a non far scoprire il limite all'utente dopo che ha
@@ -71,7 +78,7 @@ function normalizeUrlScheme(value) {
  * Il ruolo da scrivere nel profilo dell'utente collegato.
  *
  * Perché un campo e non un confronto lato client: i documenti `users` non
- * contengono l'email — è una promessa esplicita dell'informativa privacy — e
+ * contengono l'email, è una promessa esplicita dell'informativa privacy, e
  * quindi la pagina Membri non ha alcun modo di sapere chi è amministratore.
  *
  * Perché è sicuro nonostante lo scriva il client: le regole in
@@ -166,8 +173,8 @@ function sortKey(value) {
  *
  * PERCHÉ L'ORDINAMENTO È LATO CLIENT E NON NELLA QUERY.
  *
- * La versione naturale — `where('published','==',true)` più
- * `orderBy('createdAt','desc')` — è una query COMPOSTA, e Firestore per quelle
+ * La versione naturale - `where('published','==',true)` più
+ * `orderBy('createdAt','desc')`, è una query COMPOSTA, e Firestore per quelle
  * pretende un indice creato a mano. Finché non lo crei risponde
  * `failed-precondition` e il feed resta vuoto: un sito appena installato
  * sembra rotto, e l'errore non dice a nessuno che deve aprire la console e
@@ -295,7 +302,7 @@ export async function deleteNews(id) {
  * I profili APPROVATI. È l'elenco pubblico della pagina Membri.
  *
  * Il `where` non è un filtro di comodo: le regole concedono la lettura
- * pubblica solo ai documenti approvati, e Firestore non filtra i risultati —
+ * pubblica solo ai documenti approvati, e Firestore non filtra i risultati
  * pretende che la query sia costruita in modo che ogni risultato soddisfi la
  * regola. Senza questo where l'intera query verrebbe rifiutata con
  * `permission-denied`, non "filtrata".
@@ -341,6 +348,14 @@ export async function saveUserProfile(uid, data) {
   const displayName = String(data.displayName ?? '').trim()
   if (!displayName) throw new Error('Il nome non può essere vuoto.')
 
+  const photo = String(data.photoURL ?? '').trim().startsWith('data:')
+    ? String(data.photoURL).trim()
+    : normalizeUrlScheme(data.photoURL).slice(0, 500)
+
+  if (photo.length > PHOTO_MAX_CHARS) {
+    throw new Error('La foto profilo è troppo grande. Caricane una più piccola.')
+  }
+
   const location = String(data.location ?? '').trim()
   if (location.length > LOCATION_MAX) {
     throw new Error(`La provenienza supera i ${LOCATION_MAX} caratteri.`)
@@ -358,7 +373,11 @@ export async function saveUserProfile(uid, data) {
     displayName: displayName.slice(0, 80),
     location,
     bio,
-    photoURL: normalizeUrlScheme(data.photoURL).slice(0, 500),
+    /* Una foto caricata è un data URL lungo decine di migliaia di caratteri:
+       il vecchio slice(0, 500) l'avrebbe troncata a metà, producendo
+       un'immagine rotta e, peggio, nessun errore. Il tetto vero è
+       PHOTO_MAX_CHARS, e viene fatto rispettare prima, con un messaggio. */
+    photoURL: photo,
     socials: {
       linkedin: String(data.socials?.linkedin ?? '').trim().slice(0, 200),
       instagram: String(data.socials?.instagram ?? '').trim().slice(0, 200),
@@ -370,7 +389,7 @@ export async function saveUserProfile(uid, data) {
 
   /* Lo status iniziale: approvato per gli admin, in attesa per tutti gli altri.
      Gli admin nascono approvati perché farli passare dalla loro stessa coda
-     sarebbe un giro a vuoto — e al primo avvio non ci sarebbe nessuno ad
+     sarebbe un giro a vuoto, e al primo avvio non ci sarebbe nessuno ad
      approvare il primo di loro. */
   const initialStatus = currentRole() === 'admin' ? 'approved' : 'pending'
 
@@ -384,7 +403,7 @@ export async function saveUserProfile(uid, data) {
        non vale "vuoto", fa fallire l'intera condizione, e il salvataggio
        verrebbe respinto con un permission-denied che non spiega niente.
        Il valore deve combaciare con il ripiego di storedStatus() in
-       firestore.rules — se cambi uno, cambia anche l'altro. */
+       firestore.rules, se cambi uno, cambia anche l'altro. */
     payload.status = initialStatus
   }
   /* Negli altri casi lo status NON si tocca: le regole pretendono che resti
@@ -400,7 +419,7 @@ export async function saveUserProfile(uid, data) {
 /**
  * Cancella users/{uid}.
  *
- * Le regole permettono la cancellazione solo al proprietario del documento —
+ * Le regole permettono la cancellazione solo al proprietario del documento
  * nemmeno un admin può togliere di mezzo il profilo di un altro. Serve al
  * diritto di cancellazione (art. 17 GDPR) e alla pagina Join, che espone il
  * bottone: una privacy policy che promette la cancellazione senza un modo per
@@ -447,7 +466,7 @@ export async function createUserProfileFromGoogle(user) {
  *
  * Il caso vero: qualcuno viene aggiunto (o tolto) da ADMIN_EMAILS mesi dopo
  * essersi registrato. Il suo documento continuerebbe a dire `member`, e la
- * sezione Admin della pagina Membri non lo mostrerebbe — pur vedendo lui il
+ * sezione Admin della pagina Membri non lo mostrerebbe, pur vedendo lui il
  * pannello /admin, perché quello guarda l'email e non il documento. Due verità
  * diverse per la stessa persona: il tipo di incoerenza che poi nessuno capisce.
  *
@@ -461,7 +480,7 @@ export async function reconcileUserRole(uid, existing) {
   const roleOutdated = existing?.role !== expected
   // Un profilo nato prima dell'approvazione non ha status: va sanato adesso,
   // perché senza quel campo TUTTI i salvataggi successivi verrebbero respinti
-  // (le regole non possono leggere una chiave assente — vedi storedStatus()
+  // (le regole non possono leggere una chiave assente, vedi storedStatus()
   // in firestore.rules).
   const statusMissing = existing?.status === undefined
 
@@ -502,7 +521,7 @@ export async function listPendingUsers() {
  *
  * Scrive solo `status` e `updatedAt`: le regole rifiutano qualsiasi altra
  * modifica fatta da un admin sul documento di un altro. Un rifiuto non
- * cancella niente — resta reversibile, e il diretto interessato continua a
+ * cancella niente, resta reversibile, e il diretto interessato continua a
  * vedere il proprio profilo (nessun altro lo vede).
  */
 export async function setUserStatus(uid, status) {
@@ -521,7 +540,7 @@ export async function setUserStatus(uid, status) {
  * `getCountFromServer` e non un getDocs seguito da .length: l'aggregazione la
  * calcola il server e ci rimanda un numero, senza spedire i documenti. Costa
  * una lettura ogni mille documenti invece di una per documento, e non scarica
- * bio e foto di tutti per poi buttarle via — il che conta, perché questo
+ * bio e foto di tutti per poi buttarle via, il che conta, perché questo
  * numero sta sulla home e la home la apre chiunque.
  *
  * Il filtro su status è obbligatorio, non estetico: le regole concedono la
@@ -535,4 +554,84 @@ export async function countApprovedUsers() {
     query(collection(db, USERS), where('status', '==', 'approved')),
   )
   return snap.data().count
+}
+
+/* --------------------------------------------------------------------------
+   media/, i file caricati, uno per documento
+
+   Perché una collection a parte e non un campo dentro la notizia: un documento
+   Firestore non può superare 1 MiB, e quel megabyte dovrebbe bastare al testo
+   E a tutte le foto insieme. Separandoli, ogni immagine ha il suo megabyte e
+   la notizia resta piccola, il che si sente anche in lettura, perché la home
+   scarica l'elenco delle notizie senza tirarsi dietro le foto.
+-------------------------------------------------------------------------- */
+
+/** Salva un file già compresso e restituisce l'id del documento. */
+export async function createMedia({ dataUrl, contentType, name, width, height, bytes }, author) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+    throw new Error('Contenuto del file non valido.')
+  }
+
+  const ref = await addDoc(collection(db, MEDIA), {
+    dataUrl,
+    contentType: String(contentType || 'application/octet-stream'),
+    name: String(name || 'file').slice(0, 120),
+    width: Number(width) || 0,
+    height: Number(height) || 0,
+    bytes: Number(bytes) || dataUrl.length,
+    authorUid: author?.uid ?? null,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+/**
+ * Legge più media in un colpo solo, saltando quelli già in memoria.
+ *
+ * La cache non è un'ottimizzazione prematura: la stessa immagine compare nella
+ * card e poi di nuovo se la notizia viene riletta dopo un aggiornamento del
+ * listener, e senza cache la rileggeremmo ogni volta, con documenti da
+ * quasi un megabyte, si vedrebbe.
+ */
+const mediaCache = new Map()
+
+export async function getMedia(ids) {
+  if (!isFirebaseConfigured) return {}
+
+  const daLeggere = [...new Set(ids.filter((id) => id && !mediaCache.has(id)))]
+  await Promise.all(
+    daLeggere.map(async (id) => {
+      try {
+        const snap = await getDoc(doc(db, MEDIA, id))
+        // Anche l'assenza va messa in cache: un id rimasto in una notizia
+        // vecchia il cui file è stato cancellato verrebbe altrimenti richiesto
+        // a ogni render, per sempre.
+        mediaCache.set(id, snap.exists() ? { id: snap.id, ...snap.data() } : null)
+      } catch (error) {
+        console.warn('[YET] Non riesco a leggere il media', id, error)
+        mediaCache.set(id, null)
+      }
+    }),
+  )
+
+  const out = {}
+  for (const id of ids) {
+    if (id && mediaCache.get(id)) out[id] = mediaCache.get(id)
+  }
+  return out
+}
+
+/** Cancella un file caricato. Non lancia: chi lo chiama sta già togliendo
+ *  l'allegato, e un errore qui sarebbe rumore su un'operazione riuscita. */
+export async function deleteMedia(id) {
+  if (!isFirebaseConfigured || !id) return false
+  try {
+    await deleteDoc(doc(db, MEDIA, id))
+    mediaCache.delete(id)
+    return true
+  } catch (error) {
+    console.warn('[YET] Non riesco a cancellare il media', id, error)
+    return false
+  }
 }

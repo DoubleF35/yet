@@ -9,13 +9,13 @@ import {
 } from '../lib/attachments.js'
 
 import {
-  ACCEPT_ATTR,
-  MAX_UPLOAD_BYTES,
-  deleteUploadedFile,
-  humanSize,
-  probeStorage,
-  uploadNewsFile,
-} from '../lib/storage.js'
+  COMPRESSIBLE,
+  MAX_INLINE_BYTES,
+  compressImage,
+  humanBytes,
+  readAsDataUrl,
+} from '../lib/imageCompress.js'
+import { createMedia, deleteMedia } from '../lib/db.js'
 import { useAuth } from '../lib/auth.jsx'
 
 import s from './AttachmentEditor.module.css'
@@ -43,18 +43,10 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
   const [progress, setProgress] = useState(null)
   const fileRef = useRef(null)
 
-  /* null = non lo sappiamo ancora. Finché non sappiamo, non mostriamo né il
-     bottone né l'avviso: far comparire «non è attivo» per mezzo secondo a chi
-     ce l'ha attivo sarebbe peggio di aspettare. */
-  const [storageOk, setStorageOk] = useState(null)
-
-  useEffect(() => {
-    let alive = true
-    probeStorage().then((ok) => alive && setStorageOk(ok))
-    return () => {
-      alive = false
-    }
-  }, [])
+  /* Testo dello stato durante il caricamento: la compressione di una foto da
+     dodici megapixel dura qualche secondo, e senza una parola a schermo sembra
+     che il sito si sia piantato. */
+  const [fase, setFase] = useState(null)
 
   const reactId = useId()
   const urlId = `${reactId}-url`
@@ -93,14 +85,16 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
     setError(null)
   }
 
-  function rimuovi(target) {
-    const tolto = value.find((a) => a.url === target)
-    onChange(value.filter((a) => a.url !== target))
-    /* Se il file l'avevamo caricato noi, va tolto anche dal bucket: senza,
-       ogni ripensamento lascerebbe un file pagato e mai mostrato. Non si
-       aspetta l'esito — l'allegato è già sparito dalla notizia, che è quello
-       che l'utente ha chiesto. */
-    if (tolto?.storagePath) deleteUploadedFile(tolto.storagePath)
+  const chiaveDi = (a) => (a.mediaId ? `media:${a.mediaId}` : a.url)
+
+  function rimuovi(chiave) {
+    const tolto = value.find((a) => chiaveDi(a) === chiave)
+    onChange(value.filter((a) => chiaveDi(a) !== chiave))
+    /* Se il file l'avevamo caricato noi, il documento va cancellato: senza,
+       ogni ripensamento lascerebbe in giro fino a un megabyte mai mostrato.
+       Non si aspetta l'esito, l'allegato è già sparito dalla notizia, che è
+       quello che l'utente ha chiesto. */
+    if (tolto?.mediaId) deleteMedia(tolto.mediaId)
   }
 
   async function carica(file) {
@@ -112,19 +106,46 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       return
     }
 
+    const isImmagine = COMPRESSIBLE.includes(file.type)
+    if (!isImmagine && file.type !== 'application/pdf') {
+      setError(
+        `Tipo di file non ammesso (${file.type || 'sconosciuto'}). ` +
+          'Puoi caricare immagini JPEG, PNG, WebP, AVIF oppure un PDF.',
+      )
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
     setProgress(0)
     try {
-      const caricato = await uploadNewsFile(file, { uid: user?.uid, onProgress: setProgress })
+      setFase(isImmagine ? 'Comprimo l’immagine…' : 'Leggo il file…')
+      const esito = isImmagine ? await compressImage(file) : await readAsDataUrl(file)
+      setProgress(50)
+
+      setFase('Salvo…')
+      const mediaId = await createMedia(
+        {
+          dataUrl: esito.dataUrl,
+          contentType: esito.mime || file.type,
+          name: file.name,
+          width: esito.width,
+          height: esito.height,
+          bytes: esito.bytes,
+        },
+        user,
+      )
+      setProgress(100)
+
       onChange([
         ...value,
         {
-          type: caricato.contentType.startsWith('image/') ? 'image' : 'link',
-          url: caricato.url,
-          label: label.trim().slice(0, LABEL_MAX) || caricato.name,
-          // Serve solo a noi, per poter cancellare il file se l'allegato viene
-          // tolto. normalizeAttachments lo scarta prima di salvare su
-          // Firestore: le regole ammettono solo type/url/label.
-          storagePath: caricato.path,
+          type: isImmagine ? 'image' : 'file',
+          mediaId,
+          label: label.trim().slice(0, LABEL_MAX) || file.name,
+          /* Solo per l'anteprima qui nell'editor: normalizeAttachments lo
+             scarta prima di salvare, così il documento della notizia non si
+             porta dietro il megabyte che sta già in media/{id}. */
+          previewUrl: esito.dataUrl,
         },
       ])
       setLabel('')
@@ -132,6 +153,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       setError(err?.message || 'Caricamento non riuscito.')
     } finally {
       setProgress(null)
+      setFase(null)
       // Azzerare l'input è necessario, non cosmesi: senza, scegliere DI NUOVO
       // lo stesso file non fa scattare onChange e sembra che il bottone si sia
       // rotto.
@@ -160,40 +182,51 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
 
       {value.length > 0 && (
         <ul className={s.list}>
-          {value.map((a) => (
-            <li className={s.item} key={a.url}>
-              {a.type === 'image' ? (
-                <img className={s.thumb} src={a.url} alt="" aria-hidden="true" loading="lazy" />
-              ) : (
-                <span className={s.thumbFallback} aria-hidden="true" />
-              )}
+          {value.map((a) => {
+            const chiave = chiaveDi(a)
+            const anteprima = a.previewUrl || (a.mediaId ? null : a.url)
+            return (
+              <li className={s.item} key={chiave}>
+                {a.type === 'image' && anteprima ? (
+                  <img className={s.thumb} src={anteprima} alt="" aria-hidden="true" loading="lazy" />
+                ) : (
+                  <span className={s.thumbFallback} aria-hidden="true" />
+                )}
 
-              <span className={s.info}>
-                <span className={s.label}>{a.label}</span>
-                <span className={s.url}>{a.url}</span>
-              </span>
+                <span className={s.info}>
+                  <span className={s.label}>{a.label}</span>
+                  <span className={s.url}>
+                    {a.mediaId ? 'file caricato sul sito' : a.url}
+                  </span>
+                </span>
 
-              <span className={s.itemActions}>
-                <button
-                  type="button"
-                  className={s.small}
-                  onClick={() => cambiaTipo(a.url)}
-                  disabled={disabled}
-                >
-                  {a.type === 'image' ? 'Tratta come link' : 'Tratta come immagine'}
-                </button>
-                <button
-                  type="button"
-                  className={`${s.small} ${s.remove}`}
-                  onClick={() => rimuovi(a.url)}
-                  disabled={disabled}
-                  aria-label={`Togli l’allegato ${a.label}`}
-                >
-                  Togli
-                </button>
-              </span>
-            </li>
-          ))}
+                <span className={s.itemActions}>
+                  {/* Il cambio di tipo ha senso solo per gli indirizzi
+                      incollati: di un file caricato sappiamo già con certezza
+                      se è un'immagine o no. */}
+                  {!a.mediaId && (
+                    <button
+                      type="button"
+                      className={s.small}
+                      onClick={() => cambiaTipo(a.url)}
+                      disabled={disabled}
+                    >
+                      {a.type === 'image' ? 'Tratta come link' : 'Tratta come immagine'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={`${s.small} ${s.remove}`}
+                    onClick={() => rimuovi(chiave)}
+                    disabled={disabled}
+                    aria-label={`Togli l’allegato ${a.label}`}
+                  >
+                    Togli
+                  </button>
+                </span>
+              </li>
+            )
+          })}
         </ul>
       )}
 
@@ -256,39 +289,27 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       </div>
 
       <div className={s.upload}>
-        {storageOk === null ? null : storageOk ? (
-          <>
-            <label className={s.fileLabel}>
-              <input
-                ref={fileRef}
-                className={s.file}
-                type="file"
-                accept={ACCEPT_ATTR}
-                onChange={(e) => carica(e.target.files?.[0])}
-                disabled={disabled || pieno || progress !== null}
-              />
-              <span className={s.fileButton}>
-                {progress !== null ? `Caricamento ${progress}%` : 'Carica un file'}
-              </span>
-            </label>
-            <span className={s.uploadHint}>
-              Immagini o PDF, fino a {humanSize(MAX_UPLOAD_BYTES)}.
-            </span>
+        <label className={s.fileLabel}>
+          <input
+            ref={fileRef}
+            className={s.file}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
+            onChange={(e) => carica(e.target.files?.[0])}
+            disabled={disabled || pieno || progress !== null}
+          />
+          <span className={s.fileButton}>{fase ?? 'Carica una foto o un file'}</span>
+        </label>
+        <span className={s.uploadHint}>
+          Le foto vengono rimpicciolite e compresse qui nel browser, fino a{' '}
+          {humanBytes(MAX_INLINE_BYTES)} ciascuna. Puoi caricarne quante ne vuoi: ognuna viene
+          salvata a parte.
+        </span>
 
-            {progress !== null && (
-              <progress className={s.progress} value={progress} max="100">
-                {progress}%
-              </progress>
-            )}
-          </>
-        ) : (
-          /* Spiegare invece di nascondere: un bottone che sparisce senza dire
-             niente sembra una funzione che non esiste, non una da attivare. */
-          <p className={s.uploadOff}>
-            <strong>Il caricamento di file non è attivo.</strong> Serve Firebase Storage: console
-            Firebase → Storage → «Inizia», poi pubblica <code>storage.rules</code>. Nel frattempo
-            puoi incollare qui sopra l’indirizzo di un file già online.
-          </p>
+        {progress !== null && (
+          <progress className={s.progress} value={progress} max="100">
+            {progress}%
+          </progress>
         )}
       </div>
 

@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // =============================================================================
-// YET — regole di sicurezza Firestore
+// YET, regole di sicurezza Firestore
 //
 // QUESTE REGOLE SONO L'UNICA PROTEZIONE VERA.
 //
@@ -81,17 +81,17 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // users/{uid} — i profili dei membri
+    // users/{uid}, i profili dei membri
     //
     // ISCRIZIONE CON APPROVAZIONE.
     // Un profilo nasce `status: 'pending'` e resta invisibile finché un admin
     // non lo approva. Le tre regole che reggono tutto il meccanismo:
     //
-    //   1. in creazione lo status DEVE essere 'pending' — non ci si
+    //   1. in creazione lo status DEVE essere 'pending', non ci si
     //      auto-approva;
     //   2. il proprietario può modificare i propri dati ma NON il proprio
-    //      status — altrimenti gli basterebbe una richiesta scritta a mano;
-    //   3. un admin può cambiare lo status e SOLO quello — non può riscrivere
+    //      status, altrimenti gli basterebbe una richiesta scritta a mano;
+    //   3. un admin può cambiare lo status e SOLO quello, non può riscrivere
     //      la bio di qualcun altro.
     //
     // LETTURA: pubblica solo per i profili approvati. Chi è in attesa lo
@@ -137,7 +137,7 @@ service cloud.firestore {
       // parziali (reconcileUserRole manda solo role, status e updatedAt)
       // producono un documento fuso che, se il profilo è nato prima di questo
       // campo, non lo contiene. Pretenderlo qui bloccherebbe quelle scritture
-      // con un permission-denied — lo stesso inciampo già visto con `status`,
+      // con un permission-denied, lo stesso inciampo già visto con `status`,
       // che allora costò un pomeriggio. Un campo aggiunto dopo si tratta come
       // opzionale, sempre.
       function locationOk() {
@@ -154,17 +154,29 @@ service cloud.firestore {
       // essere un URL http/https: senza questo controllo si potrebbe salvare
       // un `javascript:` che diventerebbe pericoloso il giorno in cui qualcuno
       // usasse quel valore come href invece che come src.
+      // La foto profilo, nelle sue due forme.
+      //
+      // 1. un indirizzo http(s) incollato, poche centinaia di caratteri;
+      // 2. una foto caricata dall'utente e compressa dal browser, che arriva
+      //    come data URL, cioè una stringa da qualche decina di migliaia di
+      //    caratteri.
+      //
+      // I data URL ammessi sono SOLO jpeg, png e webp. Niente svg: un SVG è
+      // XML e può contenere <script>. Qui finisce dentro un <img>, dove non
+      // partirebbe, ma basta che un domani qualcuno lo apra in una scheda
+      // perché parta. Un elenco chiuso costa meno di quel rischio.
+      //
+      // Il tetto di 100.000 caratteri non è arbitrario: il client comprime
+      // l'avatar a 320px e circa 70 KB, e questo lascia margine senza aprire
+      // la porta a un documento utente da mezzo megabyte, che verrebbe poi
+      // scaricato per intero dalla pagina Membri per ogni singolo iscritto.
+      // Se cambi il numero, cambia PHOTO_MAX_CHARS in src/lib/db.js.
       function photoOk() {
         return incoming().photoURL is string
-            && incoming().photoURL.size() <= 500
-            // (?i) = confronto senza distinzione fra maiuscole e minuscole.
-            // matches() è RE2 e di suo È case-sensitive: senza il flag, un
-            // 'HTTPS://' salvato da un documento più vecchio (o incollato da
-            // un client di posta) verrebbe respinto per sempre, con un errore
-            // che parla di permessi e non di formato. Il client normalizza già
-            // lo schema in scrittura; questo serve a non restare bloccati su
-            // quello che è stato scritto prima.
-            && (incoming().photoURL == '' || incoming().photoURL.matches('(?i)https?://.*'));
+            && incoming().photoURL.size() <= 100000
+            && (incoming().photoURL == ''
+                || incoming().photoURL.matches('(?i)https?://.*')
+                || incoming().photoURL.matches('data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+'));
       }
 
       function socialsOk() {
@@ -188,7 +200,7 @@ service cloud.firestore {
       // La riga che lo rende sicuro è l'uguaglianza: il valore deve
       // corrispondere ESATTAMENTE all'esito del confronto fra l'email del
       // token e la allowlist. Chi non è in lista e prova a salvarsi
-      // `role: 'admin'` non ottiene un campo ignorato — si vede rifiutare
+      // `role: 'admin'` non ottiene un campo ignorato, si vede rifiutare
       // l'intera scrittura. E chi È in lista non può nascondersi mettendo
       // 'member': la pagina resta onesta in entrambe le direzioni.
       function roleOk() {
@@ -206,7 +218,7 @@ service cloud.firestore {
       // `stored().status` non è "vuoto": è un accesso a una chiave assente, e
       // in Security Rules quello fa fallire l'INTERA espressione. Senza questa
       // funzione, chi si era iscritto prima non riuscirebbe più a salvare il
-      // proprio profilo — e l'errore direbbe solo "permission-denied", senza
+      // proprio profilo, e l'errore direbbe solo "permission-denied", senza
       // lasciar capire che il colpevole è un campo che non c'è.
       //
       // Il valore di ripiego è quello che il profilo avrebbe avuto se fosse
@@ -259,13 +271,13 @@ service cloud.firestore {
                     && incoming().updatedAt == request.time;
 
       // Solo il proprietario può cancellarsi. Nemmeno un admin: cancellare il
-      // profilo di un altro non è un'operazione che deve esistere da qui —
+      // profilo di un altro non è un'operazione che deve esistere da qui
       // per tenere qualcuno fuori c'è il rifiuto, che è reversibile.
       allow delete: if isOwner(uid);
     }
 
     // =========================================================================
-    // news/{id} — le notizie
+    // news/{id}, le notizie
     //
     // Lettura pubblica, comprese le bozze.
     //
@@ -299,7 +311,7 @@ service cloud.firestore {
       // Regge lo stesso, perché su news il modello di minaccia è diverso da
       // quello su users: scrivere qui può SOLO un admin autenticato e nella
       // allowlist. Il rischio non è l'estraneo che inietta dati, è
-      // l'amministratore che sbaglia — e per quello bastano la validazione del
+      // l'amministratore che sbaglia, e per quello bastano la validazione del
       // form e normalizeAttachments in lib/db.js.
       //
       // La difesa che conta davvero è comunque un'altra e sta altrove: gli URL
@@ -337,6 +349,61 @@ service cloud.firestore {
                     && newsShapeOk()
                     && incoming().authorUid == stored().authorUid
                     && incoming().createdAt == stored().createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // media/{id}, i file caricati dentro le notizie
+    //
+    // Un documento per file, e il motivo è il limite di 1 MiB per documento:
+    // dentro la notizia quel megabyte andrebbe diviso fra il testo e tutte le
+    // foto, qui invece ogni immagine ce l'ha tutto per sé.
+    //
+    // LETTURA PUBBLICA, ed è voluto: questi file compaiono dentro notizie
+    // pubbliche, quindi chiunque veda la notizia deve poter vedere l'allegato.
+    // Regola pratica per chi carica: qui dentro va solo roba destinata a
+    // diventare pubblica.
+    //
+    // SCRITTURA SOLO AGLI ADMIN, come per le notizie: sono la stessa azione.
+    //
+    // Sulla DIMENSIONE non c'è una regola, e non è una dimenticanza: il tetto
+    // di 1 MiB lo impone Firestore stesso, su ogni documento, e una scrittura
+    // che lo supera viene rifiutata dal server prima ancora di arrivare qui.
+    // Riscriverlo nelle regole aggiungerebbe un numero da tenere allineato
+    // senza aggiungere protezione.
+    // =========================================================================
+    match /media/{mediaId} {
+
+      allow read: if true;
+
+      function mediaShapeOk() {
+        return incoming().keys().hasOnly(
+          ['dataUrl', 'contentType', 'name', 'width', 'height', 'bytes',
+           'authorUid', 'createdAt']
+        )
+            && incoming().dataUrl is string
+            // Elenco chiuso dei tipi, e NIENTE svg: un SVG può contenere
+            // <script>, e questi file finiscono dentro un tag <img> di una
+            // pagina pubblica. È la ragione per cui l'elenco è scritto a mano
+            // invece di accettare 'image/*'.
+            && incoming().dataUrl.matches(
+                 'data:(image/(jpeg|png|webp|gif|avif)|application/pdf);base64,.*')
+            && incoming().contentType is string
+            && incoming().name is string
+            && incoming().name.size() <= 120
+            && incoming().bytes is int;
+      }
+
+      allow create: if isAdmin()
+                    && mediaShapeOk()
+                    && incoming().authorUid == request.auth.uid
+                    && incoming().createdAt == request.time;
+
+      // Nessun update: un file non si modifica, si sostituisce. Non
+      // permetterlo toglie di mezzo una classe intera di domande su cosa possa
+      // cambiare e cosa no.
+      allow update: if false;
 
       allow delete: if isAdmin();
     }

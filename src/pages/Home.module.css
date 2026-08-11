@@ -1,5 +1,5 @@
 /* =========================================================================
-   Home — pagina principale (rotta "/home")
+   Home, pagina principale (rotta "/home")
    -------------------------------------------------------------------------
    Solo token da theme.css: nessun colore, nessuna misura arbitraria.
    Nessuna ombra, nessun gradiente, nessun raggio: la gerarchia la fanno
@@ -14,7 +14,7 @@
   /* Il padding-top da solo copre l'altezza della navbar fissa: --space-11 va
      da 64 a 96px, --nav-h da 56 a 72px, quindi il logo non finisce sotto la
      barra nemmeno se il Layout non aggiungesse spazio suo. Se invece lo
-     aggiunge, il risultato è solo più aria — che qui è quello che vogliamo. */
+     aggiunge, il risultato è solo più aria, che qui è quello che vogliamo. */
   padding-top: var(--space-11);
   padding-bottom: var(--space-10);
 }

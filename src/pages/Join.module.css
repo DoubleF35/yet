@@ -1,5 +1,5 @@
 /* =========================================================================
-   /join — stili della pagina.
+   /join, stili della pagina.
 
    Solo token di theme.css: nessun colore, nessuna dimensione tipografica
    scritta a mano. Le uniche misure in px/rem letterali sono geometrie locali
@@ -257,9 +257,13 @@
 }
 
 .groupHint {
-  /* Il gap del .group vale già come distacco: qui serve solo togliere il
-     doppio spazio fra legend e primo campo. */
-  margin-top: calc(-1 * var(--space-4));
+  /* NIENTE margine negativo qui.
+     C'era, e sovrapponeva il testo al bordo inferiore della legend: a schermo
+     sembrava barrato. L'errore di partenza è credere che <legend> sia una
+     cella della griglia, non lo è: il browser la impagina a parte, come
+     didascalia del fieldset, quindi sopra questo paragrafo il `gap` non c'è
+     mai stato e il margine negativo non compensava nulla, toglieva soltanto. */
+  margin-top: var(--space-3);
   font-size: var(--step--1);
   color: var(--muted);
   max-inline-size: var(--measure);
@@ -316,7 +320,7 @@
 
 /* Solo il colore del bordo cambia, non lo spessore: 1px -> 2px farebbe
    saltare il layout di mezzo pixel a ogni errore. La distinzione non è
-   affidata al colore da solo — c'è sempre un messaggio di testo legato con
+   affidata al colore da solo, c'è sempre un messaggio di testo legato con
    aria-describedby. */
 .inputInvalid {
   border-color: var(--danger);
@@ -459,4 +463,77 @@
   max-width: var(--measure);
   line-height: var(--lh-relaxed);
   text-wrap: pretty;
+}
+
+/* =========================================================================
+   FOTO PROFILO: caricamento dal dispositivo
+   ====================================================================== */
+
+.photoUpload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+/* L'input[type=file] nativo non si impagina e cambia testo in ogni browser.
+   Lo si nasconde e si usa la <label> come bottone: essendo una label il clic
+   arriva comunque all'input, e la tastiera continua a funzionare senza
+   tabIndex inventati. */
+.photoFileLabel {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.photoFile {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.photoFileButton,
+.photoRemove {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-5);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  border: var(--border-strong);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.photoFileLabel:hover .photoFileButton,
+.photoRemove:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* L'input è nascosto: il focus va mostrato sul bottone finto, altrimenti chi
+   naviga da tastiera non vede dove si trova. */
+.photoFile:focus-visible + .photoFileButton {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.photoFile:disabled + .photoFileButton {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.photoRemove {
+  color: var(--ink);
+  background: none;
+  cursor: pointer;
+}
+
+.photoRemove:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
