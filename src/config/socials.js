@@ -133,7 +133,7 @@ export const COMMUNITY = {
   ageRange: '14 ai 23',
 
   description:
-    'YET; Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Ci si mostra a che punto si è e si va avanti insieme. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota: serve solo avere qualcosa in costruzione.',
+    'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',
 
   /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera.
      "I primi eventi" e non "la sede": dice da dove si parte senza suonare come

@@ -211,6 +211,12 @@ function JoinPitch({ firebaseMissing }) {
       text:
         'Accedi con Google e scrivi due righe su di te. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione: il passaggio serve solo a tenere fuori gli account finti.',
     },
+    {
+      n: '05',
+      title: 'Se non hai ancora niente',
+      text:
+        'Va bene lo stesso. Non serve un progetto avviato, né un’idea già chiara: quello che cerchiamo è l’attitudine. Se ti viene voglia di costruire qualcosa e non sai da dove partire, questo è esattamente il posto giusto in cui trovarti.',
+    },
   ]
 
   async function handleSignIn() {

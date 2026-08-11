@@ -19,7 +19,7 @@ export const LEGAL = {
   /** TODO: nome della persona fisica o dell'associazione che gestisce il sito.
    *  Se YET non è (ancora) un ente costituito, va il nome e cognome di chi si
    *  assume la responsabilità del trattamento. */
-  ownerName: 'YET; Young Entrepreneurs Together',
+  ownerName: 'YET, Young Entrepreneurs Together',
 
   /** TODO: se esiste un'associazione registrata, mettere qui la sede legale.
    *  Se non esiste, si può indicare la sola città e togliere l'indirizzo. */
