@@ -9,20 +9,20 @@ import s from './Legal.module.css'
 /**
  * Informativa privacy (art. 13 GDPR).
  *
- * Descrive quello che il codice fa davvero — non un modello copiato. Se un
+ * Descrive quello che il codice fa davvero, non un modello copiato. Se un
  * domani aggiungi un servizio (analytics, newsletter, un embed di YouTube),
  * questa pagina va aggiornata insieme al codice, non dopo.
  */
 export default function Privacy() {
   useEffect(() => {
     const previous = document.title
-    document.title = 'Privacy — YET'
+    document.title = 'Privacy; YET'
     return () => {
       document.title = previous
     }
   }, [])
 
-  const ownerIncomplete = LEGAL.ownerName.startsWith('YET —')
+  const ownerIncomplete = LEGAL.ownerName.startsWith('YET -')
 
   return (
     <div className={`${s.page} container`}>
@@ -42,7 +42,7 @@ export default function Privacy() {
             <p className={s.todoTitle}>Da completare prima di pubblicare</p>
             <p className={s.todoText}>
               Il titolare del trattamento in <code className={s.code}>src/config/legal.js</code> è
-              ancora il segnaposto. Va indicato chi si assume la responsabilità dei dati — l’
+              ancora il segnaposto. Va indicato chi si assume la responsabilità dei dati, l’
               associazione, se costituita, altrimenti una persona fisica con nome e cognome. Questo
               riquadro sparisce da solo quando il campo è compilato.
             </p>
@@ -75,14 +75,14 @@ export default function Privacy() {
         <section className={s.section}>
           <h2 className={s.h2}>Se navighi e basta, non raccogliamo niente</h2>
           <p className={s.p}>
-            Le pagine pubbliche — home, membri, contatti — non richiedono alcun account e non
+            Le pagine pubbliche, home, membri, contatti, non richiedono alcun account e non
             attivano nessuna statistica. Non usiamo Google Analytics né strumenti equivalenti. Non
             c’è alcun cookie di profilazione e non c’è alcuna pubblicità.
           </p>
           <p className={s.p}>
             Anche i caratteri tipografici sono serviti dal nostro stesso sito e non dal CDN di
             Google: aprire questa pagina non comunica il tuo indirizzo IP a terzi. È il motivo per
-            cui non trovi un banner che ti chiede il consenso — non c’è nulla per cui chiederlo.
+            cui non trovi un banner che ti chiede il consenso, non c’è nulla per cui chiederlo.
             I dettagli sono nella <Link className={s.link} to="/cookie">pagina sui cookie</Link>.
           </p>
           <p className={s.p}>
@@ -120,7 +120,7 @@ export default function Privacy() {
             Quando crei il profilo, la richiesta arriva agli organizzatori e resta in attesa. Fino a
             quel momento il tuo profilo è visibile <strong>solo a te e a loro</strong>: non compare
             fra i membri e non lo vede nessun altro. Se la richiesta non viene approvata, i tuoi
-            dati restano privati allo stesso modo — e puoi cancellarli quando vuoi.
+            dati restano privati allo stesso modo, e puoi cancellarli quando vuoi.
           </p>
           <p className={s.p}>
             Il profilo porta anche due informazioni tecniche che non scrivi tu: lo{' '}
@@ -134,7 +134,7 @@ export default function Privacy() {
             Una volta approvato, nome, foto, bio e link social sono{' '}
             <strong>visibili a chiunque</strong> visiti la pagina Membri, anche senza account. È lo
             scopo della pagina. Il tuo <strong>indirizzo email non viene mai mostrato</strong> sul
-            sito e non compare fra i dati pubblicati — nemmeno per gli organizzatori, che nella
+            sito e non compare fra i dati pubblicati, nemmeno per gli organizzatori, che nella
             lista delle richieste vedono il nome e la presentazione, non l’indirizzo.
           </p>
           <p className={s.p}>
@@ -240,7 +240,7 @@ export default function Privacy() {
               <strong>sapere</strong> quali dati abbiamo e ottenerne una copia;
             </li>
             <li>
-              <strong>correggerli</strong> se sono sbagliati — per nome, bio, foto e link puoi farlo
+              <strong>correggerli</strong> se sono sbagliati, per nome, bio, foto e link puoi farlo
               da solo dalla pagina Join, in qualsiasi momento;
             </li>
             <li>
@@ -277,7 +277,7 @@ export default function Privacy() {
             In Italia un minore può acconsentire da solo al trattamento dei propri dati per i
             servizi online <strong>a partire dai 14 anni</strong> (art. 2-<em>quinquies</em> del
             Codice privacy). Sotto quella soglia serve il consenso di chi esercita la
-            responsabilità genitoriale — ed è il motivo per cui l’età minima della community
+            responsabilità genitoriale, ed è il motivo per cui l’età minima della community
             coincide con quella soglia.
           </p>
           <p className={s.p}>
@@ -294,7 +294,7 @@ export default function Privacy() {
           <h2 className={s.h2}>Se questa informativa cambia</h2>
           <p className={s.p}>
             La data in cima dice da quando vale la versione che stai leggendo. Se cambierà qualcosa
-            di sostanziale — un servizio nuovo, una finalità nuova — lo scriveremo qui e, se serve,
+            di sostanziale, un servizio nuovo, una finalità nuova, lo scriveremo qui e, se serve,
             ti chiederemo di nuovo il consenso.
           </p>
         </section>

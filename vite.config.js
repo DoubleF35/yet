@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// TODO — DEPLOY SU GITHUB PAGES: sostituisci 'yet' con il nome ESATTO del repo.
+// TODO, DEPLOY SU GITHUB PAGES: sostituisci 'yet' con il nome ESATTO del repo.
 //
 //   repo  https://github.com/<utente>/yet        ->  base = '/yet/'
 //   repo  https://github.com/<utente>/yet-site   ->  base = '/yet-site/'

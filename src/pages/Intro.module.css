@@ -19,7 +19,7 @@
    blocco "RITAGLIO DEL VIDEO" in theme.css). Quindi:
 
    1. .frame è la regione utile, con il suo rapporto, dimensionata per
-      COPRIRE il viewport — il max() sceglie il lato che comanda a seconda che
+      COPRIRE il viewport, il max() sceglie il lato che comanda a seconda che
       lo schermo sia più largo o più alto della regione.
    2. .video ci sta dentro sovradimensionato, spostato in negativo di quanto
       vale il bordo che vogliamo tagliare.
@@ -56,7 +56,7 @@
 
   /* SERVE, e il motivo è tutt'altro che ovvio: il reset di global.css mette
      `max-width: 100%` su img/video perché non sfondino il contenitore. Qui
-     però il video DEVE sfondare — è tutto il senso del ritaglio, sta dentro
+     però il video DEVE sfondare, è tutto il senso del ritaglio, sta dentro
      una finestra più piccola di lui. Senza questa riga la larghezza calcolata
      sopra (178% della finestra) viene ricondotta a 100%, il taglio laterale
      sparisce e si vede la cornice bianca ai lati. Il bug è invisibile in
@@ -78,7 +78,7 @@
      sorgente in scala, quindi il riquadro ha per costruzione il rapporto del
      video: `fill` lo appoggia dentro senza deformarlo. `cover` invece
      ri-scalerebbe il contenuto per coprire il riquadro e ritaglierebbe una
-     seconda volta, in modo simmetrico — cioè annullando proprio lo
+     seconda volta, in modo simmetrico, cioè annullando proprio lo
      spostamento asimmetrico che stiamo calcolando. */
   object-fit: fill;
 }

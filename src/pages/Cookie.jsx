@@ -25,7 +25,7 @@ import s from './Legal.module.css'
 export default function Cookie() {
   useEffect(() => {
     const previous = document.title
-    document.title = 'Cookie — YET'
+    document.title = 'Cookie; YET'
     return () => {
       document.title = previous
     }
@@ -76,7 +76,7 @@ export default function Cookie() {
             Tecnicamente non sono nemmeno «cookie»: sono spazi di memoria del browser
             (<code className={s.code}>localStorage</code> e <code className={s.code}>IndexedDB</code>
             ), che restano sul tuo dispositivo e non vengono inviati a ogni richiesta. Le regole,
-            però, sono le stesse — quindi te li elenchiamo comunque.
+            però, sono le stesse, quindi te li elenchiamo comunque.
           </p>
 
           <div className={s.tableWrap}>

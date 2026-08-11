@@ -14,8 +14,8 @@ const FEEDBACK_MS = 3000
  * Copia `text` negli appunti e dice se ci è riuscita.
  *
  * Perché non basta `navigator.clipboard.writeText`: l'API esiste solo in
- * contesti sicuri (https, o localhost). Aperto il sito in http semplice —
- * un'anteprima su IP locale, una LAN — `navigator.clipboard` è `undefined`
+ * contesti sicuri (https, o localhost). Aperto il sito in http semplice
+ * un'anteprima su IP locale, una LAN - `navigator.clipboard` è `undefined`
  * e un bottone che chiama il metodo a occhi chiusi esplode e non fa niente.
  * Anche dove esiste può rifiutare: permesso negato, documento non a fuoco.
  *
@@ -62,7 +62,7 @@ export default function Contatti() {
   const socialsHeadingId = useId()
   const placeHeadingId = useId()
 
-  // 'idle' | 'ok' | 'error' — tre stati, perché "non riuscita" è un esito
+  // 'idle' | 'ok' | 'error', tre stati, perché "non riuscita" è un esito
   // possibile e va mostrato, non nascosto.
   const [copyState, setCopyState] = useState('idle')
   const feedbackTimer = useRef(null)
@@ -74,7 +74,7 @@ export default function Contatti() {
      tutte le pagine che non lo impostano. */
   useEffect(() => {
     const previous = document.title
-    document.title = `Contatti — ${COMMUNITY?.name || 'YET'}`
+    document.title = `Contatti - ${COMMUNITY?.name || 'YET'}`
     return () => {
       document.title = previous
     }
@@ -295,18 +295,21 @@ export default function Contatti() {
         {/* ------------------------------------------------------------------
             Dove siamo. Città e nulla più: un indirizzo preciso non ce l'ha
             dato nessuno e inventarlo sarebbe peggio che ometterlo.
-            La città da sola, però, si legge come un filtro all'ingresso —
+            La città da sola, però, si legge come un filtro all'ingresso
             quindi il raggio va detto nella stessa schermata, non altrove.
             ------------------------------------------------------------------ */}
         <section className={s.place} aria-labelledby={placeHeadingId}>
           <h2 className={s.sectionTitle} id={placeHeadingId}>
             Dove siamo
           </h2>
-          <p className={s.placeCity}>Sede a {city}, membri in tutta Italia</p>
+          <p className={s.placeCity}>Si parte da {city}, si va verso tutta Italia</p>
           <p className={s.placeNote}>
-            Gli incontri di persona capitano a {city}, il resto succede online: se stai a
-            Palermo o a Udine puoi entrare lo stesso e non ti perdi niente. E se sei di passaggio
-            a {city}, scrivici: troviamo un caffè.
+            I primi eventi saranno a {city}, ma l’obiettivo è espandersi in tutta Italia: se vivi
+            a Palermo o a Udine, puoi trovare gente della tua stessa città e contribuire a fare
+            eventi proprio dove sei tu.
+          </p>
+          <p className={s.placeNote}>
+            E, ovvio: se sei di passaggio a {city}, scrivici e ci prendiamo un caffè.
           </p>
         </section>
       </div>

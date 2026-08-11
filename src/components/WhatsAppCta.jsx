@@ -13,8 +13,8 @@ import s from './WhatsAppCta.module.css'
  * meglio un blocco che sparisce di un bottone che porta a una pagina d'errore.
  *
  * @param {'block'|'button'} variant
- *   'button' — un bottone da mettere accanto a un altro invito.
- *   'block'  — una fascia con titolo e spiegazione, per chiudere una pagina.
+ *   'button', un bottone da mettere accanto a un altro invito.
+ *   'block' , una fascia con titolo e spiegazione, per chiudere una pagina.
  */
 export default function WhatsAppCta({ variant = 'block', className = '' }) {
   if (!WHATSAPP?.href) return null

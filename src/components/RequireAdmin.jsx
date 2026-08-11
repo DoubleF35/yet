@@ -11,7 +11,7 @@ import s from './RequireAdmin.module.css'
  * è successo, altrimenti sembra che il link sia rotto. Tre casi distinti,
  * tre schermate diverse.
  *
- * ATTENZIONE — questo componente nasconde l'interfaccia, non protegge i dati.
+ * ATTENZIONE, questo componente nasconde l'interfaccia, non protegge i dati.
  * Chi apre la console può montare la pagina lo stesso: a fermarlo sono le
  * regole in firestore.rules, che rifiutano la scrittura lato server.
  */

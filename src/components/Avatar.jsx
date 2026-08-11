@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { safeImageSrc } from '../lib/attachments.js'
+
 import s from './Avatar.module.css'
 
 /**
@@ -7,7 +9,7 @@ import s from './Avatar.module.css'
  *
  * Regge i casi veri: un nome solo ("Federico" -> FE, non F), spazi doppi,
  * spazi in testa e in coda, nomi con il trattino, e la stringa vuota. Prende
- * la prima lettera del primo e dell'ultimo pezzo — con tre nomi, "Anna Maria
+ * la prima lettera del primo e dell'ultimo pezzo, con tre nomi, "Anna Maria
  * Rossi" dà AR e non AM, che è quello che ci si aspetta.
  */
 export function initialsFrom(name) {
@@ -43,7 +45,12 @@ export default function Avatar({ src, name, size = 48, className = '' }) {
     setFailed(false)
   }, [src])
 
-  const clean = typeof src === 'string' ? src.trim() : ''
+  /* safeImageSrc e non la stringa grezza: la foto può essere un indirizzo
+     incollato oppure un data URL di una foto caricata dall'utente, e in
+     entrambi i casi finisce dentro un `src`. Il controllo qui è l'ultima
+     barriera prima del DOM, protegge anche dalle foto salvate prima che
+     questa validazione esistesse. Un `javascript:` o un SVG non passano. */
+  const clean = safeImageSrc(src) ?? ''
   const showImage = clean !== '' && !failed
   const label = name ? String(name) : 'Membro'
 

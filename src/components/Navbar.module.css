@@ -97,7 +97,7 @@
 }
 
 /* Admin: coral pieno, perché è il link che deve saltare all'occhio.
-   Il coral su beige sta a ~4.3:1 — sopra la soglia AA per questo peso e
+   Il coral su beige sta a ~4.3:1, sopra la soglia AA per questo peso e
    corpo, ma non per testo più piccolo: qui usiamo la variante scura. */
 .admin {
   color: var(--coral-dark);

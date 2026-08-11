@@ -1,12 +1,12 @@
 /* =========================================================================
-   YET — design tokens
+   YET, design tokens
    -------------------------------------------------------------------------
    Questo file contiene SOLO custom properties su :root. Nessun selettore,
    nessuna regola applicata a elementi: se un token serve a un componente,
    il componente lo consuma dal suo .module.css.
 
    Regola di base del progetto: nessun colore hardcodato fuori da qui.
-   Se un valore non esiste come token, si aggiunge qui e si documenta —
+   Se un valore non esiste come token, si aggiunge qui e si documenta:
    non si scrive #qualcosa dentro un modulo.
 
    NIENTE ombre e NIENTE gradienti: non esistono nemmeno come variabili,
@@ -25,7 +25,7 @@
      --------------------------------------------------------------------- */
 
   --bg: #eceae4; /* beige di fondo */
-  --ink: #1e1b18; /* nero caldo — 14.3:1 su --bg, AAA */
+  --ink: #1e1b18; /* nero caldo - 14.3:1 su --bg, AAA */
   --coral: #d14a2c; /* accento del brand */
 
   /* Superfici.
@@ -255,7 +255,7 @@
      numeri: nessun componente va toccato.
 
      I valori sono NUMERI SENZA UNITÀ apposta, così si moltiplicano dentro
-     calc(). Uso previsto — il contenitore È la finestra di ritaglio, il video
+     calc(). Uso previsto, il contenitore È la finestra di ritaglio, il video
      ci sta dentro sovradimensionato e traslato:
 
        .frame {
