@@ -1,6 +1,6 @@
-# YET; Young Entrepreneurs Together
+# YET, Young Entrepreneurs Together
 
-Sito della community YET: giovani builder dai 14 ai 23 anni, con base a Torino.
+Sito della community YET: giovani builder dai 16 ai 23 anni, con base a Torino.
 
 Sito statico in React, servito da GitHub Pages, con Firebase (Auth + Firestore)
 per il login e per i contenuti. **Niente backend, niente Cloud Functions**: tutto

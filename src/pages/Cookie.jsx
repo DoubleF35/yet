@@ -25,7 +25,7 @@ import s from './Legal.module.css'
 export default function Cookie() {
   useEffect(() => {
     const previous = document.title
-    document.title = 'Cookie; YET'
+    document.title = 'Cookie · YET'
     return () => {
       document.title = previous
     }

@@ -38,7 +38,7 @@
 export const ADMIN_EMAILS = [
   'fedefas.210@gmail.com',
   'greta.dal19@gmail.com',
-  'lucafrancesco.rollino@gmail.com',
+  'lucafrancesco.rollino3@gmail.com',
   'mattiapapa.075@gmail.com',
 ]
 
