@@ -21,6 +21,21 @@ export const LEGAL = {
    *  assume la responsabilità del trattamento. */
   ownerName: 'YET, Young Entrepreneurs Together',
 
+  /**
+   * Metti `true` SOLO quando `ownerName` qui sopra è il titolare vero.
+   *
+   * Finché resta `false`, la pagina /privacy mostra un riquadro coral che
+   * ricorda di completarlo.
+   *
+   * È un booleano e non un confronto con la frase segnaposto perché il
+   * confronto si era già rotto una volta, in silenzio: uno script di
+   * punteggiatura aveva cambiato il trattino nel dato ma non nella stringa
+   * confrontata, e da quel momento l'avviso non è più comparso, lasciando
+   * l'informativa a dichiarare un titolare inventato. Una decisione
+   * dichiarata non si può desincronizzare da sé stessa.
+   */
+  ownerConfirmed: false,
+
   /** TODO: se esiste un'associazione registrata, mettere qui la sede legale.
    *  Se non esiste, si può indicare la sola città e togliere l'indirizzo. */
   ownerAddress: 'Torino, Italia',

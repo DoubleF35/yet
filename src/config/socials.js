@@ -130,7 +130,7 @@ export const COMMUNITY = {
      legge da Bari deve capire alla prima riga che può entrare anche lui. */
   scope: 'tutta Italia',
 
-  ageRange: '14 ai 23',
+  ageRange: '16 ai 23',
 
   description:
     'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',

@@ -182,7 +182,7 @@ function JoinPitch({ firebaseMissing }) {
     name = 'YET',
     tagline = '',
     city = 'Torino',
-    ageRange = '14 ai 23',
+    ageRange = '16 ai 23',
     description = '',
   } = COMMUNITY || {}
 

@@ -16,13 +16,13 @@ import s from './Legal.module.css'
 export default function Privacy() {
   useEffect(() => {
     const previous = document.title
-    document.title = 'Privacy; YET'
+    document.title = 'Privacy · YET'
     return () => {
       document.title = previous
     }
   }, [])
 
-  const ownerIncomplete = LEGAL.ownerName.startsWith('YET -')
+  const ownerIncomplete = !LEGAL.ownerConfirmed
 
   return (
     <div className={`${s.page} container`}>
@@ -75,7 +75,7 @@ export default function Privacy() {
         <section className={s.section}>
           <h2 className={s.h2}>Se navighi e basta, non raccogliamo niente</h2>
           <p className={s.p}>
-            Le pagine pubbliche, home, membri, contatti, non richiedono alcun account e non
+            Le pagine pubbliche (home, membri, contatti) non richiedono alcun account e non
             attivano nessuna statistica. Non usiamo Google Analytics né strumenti equivalenti. Non
             c’è alcun cookie di profilazione e non c’è alcuna pubblicità.
           </p>
@@ -274,14 +274,17 @@ export default function Privacy() {
           <h2 className={s.h2}>Chi ha meno di 18 anni</h2>
           <p className={s.p}>
             {COMMUNITY.name} si rivolge anche ai minorenni: si entra dai {COMMUNITY.ageRange} anni.
-            In Italia un minore può acconsentire da solo al trattamento dei propri dati per i
-            servizi online <strong>a partire dai 14 anni</strong> (art. 2-<em>quinquies</em> del
-            Codice privacy). Sotto quella soglia serve il consenso di chi esercita la
-            responsabilità genitoriale, ed è il motivo per cui l’età minima della community
-            coincide con quella soglia.
           </p>
           <p className={s.p}>
-            Se sei un genitore e vuoi che rimuoviamo il profilo di tuo figlio, scrivi a{' '}
+            In Italia un minore può acconsentire da solo al trattamento dei propri dati per i
+            servizi online <strong>a partire dai 14 anni</strong> (art. 2-<em>quinquies</em> del
+            Codice privacy). L’età minima della community è più alta di quella soglia, quindi
+            chiunque possa iscriversi qui è già nelle condizioni di decidere da sé: non chiediamo
+            il consenso di un genitore perché la legge non lo richiede in questo caso.
+          </p>
+          <p className={s.p}>
+            Resta comunque vero che sei minorenne, e che quello che scrivi nella bio diventa
+            pubblico. Se sei un genitore e vuoi che rimuoviamo il profilo di tuo figlio, scrivi a{' '}
             <a className={s.link} href={`mailto:${LEGAL.privacyEmail}`}>
               {LEGAL.privacyEmail}
             </a>
