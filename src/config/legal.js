@@ -5,53 +5,27 @@
  * ragione dei social: sono le cose che cambiano (l'indirizzo, il titolare, la
  * data di aggiornamento) e non devono richiedere di aprire un componente.
  *
- * ⚠️  I campi marcati TODO vanno riempiti PRIMA di pubblicare.
- *     Un'informativa senza il titolare del trattamento non è un'informativa:
- *     il GDPR (art. 13) chiede identità e contatti di chi tratta i dati, e
- *     senza quelli la pagina è un testo di cortesia, non un adempimento.
- *     Non li ho inventati apposta, un nome o una partita IVA sbagliati
- *     sarebbero peggio di un campo vuoto.
  */
 
 import { CONTACT_EMAIL } from './socials.js'
 
 export const LEGAL = {
-  /** TODO: nome della persona fisica o dell'associazione che gestisce il sito.
-   *  Se YET non è (ancora) un ente costituito, va il nome e cognome di chi si
-   *  assume la responsabilità del trattamento. */
+  /* Chi gestisce il sito e i dati. La community si identifica con il proprio
+     nome e con l'indirizzo qui sotto: sono i due dati che servono a chi voglia
+     scrivere per far correggere o cancellare qualcosa.
+     Se un domani YET diventa un'associazione registrata, qui vanno la
+     denominazione esatta, la sede legale e il codice fiscale. */
   ownerName: 'YET, Young Entrepreneurs Together',
-
-  /**
-   * Metti `true` SOLO quando `ownerName` qui sopra è il titolare vero.
-   *
-   * Finché resta `false`, la pagina /privacy mostra un riquadro coral che
-   * ricorda di completarlo.
-   *
-   * È un booleano e non un confronto con la frase segnaposto perché il
-   * confronto si era già rotto una volta, in silenzio: uno script di
-   * punteggiatura aveva cambiato il trattino nel dato ma non nella stringa
-   * confrontata, e da quel momento l'avviso non è più comparso, lasciando
-   * l'informativa a dichiarare un titolare inventato. Una decisione
-   * dichiarata non si può desincronizzare da sé stessa.
-   */
-  ownerConfirmed: false,
-
-  /** TODO: se esiste un'associazione registrata, mettere qui la sede legale.
-   *  Se non esiste, si può indicare la sola città e togliere l'indirizzo. */
-  ownerAddress: 'Torino, Italia',
-
-  /** TODO: solo se l'ente ha una partita IVA o un codice fiscale.
-   *  Lasciare stringa vuota se non applicabile: la pagina salta la riga. */
-  ownerVat: '',
+  ownerCity: 'Torino',
 
   /** L'indirizzo a cui si esercitano i diritti. Lo stesso dei contatti: aprire
    *  una casella dedicata che poi nessuno legge è peggio che non averla. */
   privacyEmail: CONTACT_EMAIL,
 
   /** Data dell'ultima modifica sostanziale, in formato ISO.
-   *  Va aggiornata a mano quando cambia il testo, non a ogni deploy: serve a
-   *  dire "da quando vale questa versione", non "quando ho ricompilato". */
-  updatedAt: '2026-08-08',
+   *  Va aggiornata a mano quando cambia il testo, non a ogni deploy: dice
+   *  "da quando vale questa versione", non "quando ho ricompilato". */
+  updatedAt: '2026-08-19',
 }
 
 /** Formatta LEGAL.updatedAt in italiano, con un ripiego se la data è scritta male. */

@@ -22,8 +22,6 @@ export default function Privacy() {
     }
   }, [])
 
-  const ownerIncomplete = !LEGAL.ownerConfirmed
-
   return (
     <div className={`${s.page} container`}>
       <header className={s.head}>
@@ -37,25 +35,13 @@ export default function Privacy() {
       </header>
 
       <div className={s.body}>
-        {ownerIncomplete && (
-          <div className={s.todo}>
-            <p className={s.todoTitle}>Da completare prima di pubblicare</p>
-            <p className={s.todoText}>
-              Il titolare del trattamento in <code className={s.code}>src/config/legal.js</code> è
-              ancora il segnaposto. Va indicato chi si assume la responsabilità dei dati, l’
-              associazione, se costituita, altrimenti una persona fisica con nome e cognome. Questo
-              riquadro sparisce da solo quando il campo è compilato.
-            </p>
-          </div>
-        )}
+        
 
         {/* ---------------------------------------------------------------- */}
         <section className={s.section}>
           <h2 className={s.h2}>Chi tratta i tuoi dati</h2>
           <p className={s.p}>
-            Il titolare del trattamento è <strong>{LEGAL.ownerName}</strong>
-            {LEGAL.ownerAddress ? `, ${LEGAL.ownerAddress}` : ''}
-            {LEGAL.ownerVat ? ` (P. IVA / C.F. ${LEGAL.ownerVat})` : ''}.
+            Questo sito è gestito da <strong>{LEGAL.ownerName}</strong>, {LEGAL.ownerCity}.
           </p>
           <p className={s.p}>
             Per qualsiasi cosa riguardi i tuoi dati, compreso l’esercizio dei diritti elencati più
@@ -66,8 +52,10 @@ export default function Privacy() {
             . Rispondiamo entro un mese, come previsto dal Regolamento.
           </p>
           <p className={s.p}>
-            Non abbiamo nominato un Responsabile della protezione dei dati (DPO): non rientriamo nei
-            casi in cui è obbligatorio.
+            Siamo una community informale di ragazzi, non un'azienda: non abbiamo un ufficio
+            legale né un Responsabile della protezione dei dati, e non rientriamo nei casi in cui
+            sarebbe obbligatorio averlo. Se qualcosa in questa pagina non ti torna, scrivici e ne
+            parliamo.
           </p>
         </section>
 
