@@ -738,6 +738,18 @@ function ProfileForm({ firebaseMissing }) {
                     </p>
                   )}
 
+                  {/* Con una foto caricata il campo indirizzo sparisce.
+                      Non è cosmesi: un data URL compresso sono decine di
+                      migliaia di caratteri, e riversarli in un input a riga
+                      singola rende il campo inutilizzabile, con il cursore che
+                      scorre all'infinito su base64 illeggibile. */}
+                  {form.photoURL.startsWith('data:') ? (
+                    <p className={s.hint}>
+                      Foto caricata dal tuo dispositivo, ridotta a{' '}
+                      {humanBytes(form.photoURL.length)}. Usa «Togli» per sceglierne un’altra o
+                      per tornare a un indirizzo.
+                    </p>
+                  ) : (
                   <input
                     className={cx(s.input, errors.photoURL && s.inputInvalid)}
                     id={`${fid}-photo`}
@@ -756,6 +768,7 @@ function ProfileForm({ firebaseMissing }) {
                       errors.photoURL && `${fid}-photo-err`,
                     )}
                   />
+                  )}
                   <p className={s.hint} id={`${fid}-photo-hint`}>
                     Facoltativo: se non metti niente usiamo le tue iniziali. Puoi caricare una foto
                     dal dispositivo oppure incollare qui sopra l’indirizzo di una già online. Le
