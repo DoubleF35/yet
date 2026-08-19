@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 
 import {
   LABEL_MAX,
@@ -90,11 +90,18 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
   function rimuovi(chiave) {
     const tolto = value.find((a) => chiaveDi(a) === chiave)
     onChange(value.filter((a) => chiaveDi(a) !== chiave))
-    /* Se il file l'avevamo caricato noi, il documento va cancellato: senza,
-       ogni ripensamento lascerebbe in giro fino a un megabyte mai mostrato.
-       Non si aspetta l'esito, l'allegato è già sparito dalla notizia, che è
-       quello che l'utente ha chiesto. */
-    if (tolto?.mediaId) deleteMedia(tolto.mediaId)
+
+    /* Il file viene cancellato SOLO se è stato caricato in questa sessione di
+       modifica, cioè se non è ancora finito in nessuna notizia salvata.
+       Il perché è un guaio vero: modificando una notizia già pubblicata,
+       "Togli" seguito da "Annulla" cancellava il file dal database ma lasciava
+       intatta la notizia, che continuava a puntarci. Risultato: la foto
+       spariva dalla home e nessuno lo veniva a sapere. Annullare non deve
+       poter distruggere niente.
+       Il prezzo è che togliere un allegato da una notizia salvata lascia il
+       file orfano nel database. Costa qualche centinaio di KB e si vede nel
+       backup: molto meno di una foto pubblicata che sparisce. */
+    if (tolto?.mediaId && tolto?.justUploaded) deleteMedia(tolto.mediaId)
   }
 
   async function carica(file) {
@@ -142,6 +149,10 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
           type: isImmagine ? 'image' : 'file',
           mediaId,
           label: label.trim().slice(0, LABEL_MAX) || file.name,
+          /* Marchio "appena caricato": distingue i file che possiamo ancora
+             cancellare senza rischi da quelli che una notizia salvata sta già
+             mostrando. normalizeAttachments lo scarta prima di scrivere. */
+          justUploaded: true,
           /* Solo per l'anteprima qui nell'editor: normalizeAttachments lo
              scarta prima di salvare, così il documento della notizia non si
              porta dietro il megabyte che sta già in media/{id}. */
@@ -312,6 +323,15 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
           </progress>
         )}
       </div>
+
+      {/* Sempre nel DOM, anche vuota: una live region aggiunta al momento non
+          viene annunciata, perché lo screen reader non la stava osservando.
+          Il testo di fase da solo non basta: vive dentro il nome accessibile
+          di un bottone che nello stesso istante viene disabilitato, e un
+          controllo disabilitato non viene riletto. */}
+      <p className="sr-only" role="status">
+        {fase ?? ''}
+      </p>
 
       {error && (
         <p className={s.error} id={errorId} role="alert">
