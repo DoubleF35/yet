@@ -500,19 +500,6 @@ Il sito ha due informative, raggiungibili dal footer di ogni pagina:
 `/privacy` e `/cookie`. Non sono un modello copiato: descrivono quello che il
 codice fa davvero, riga per riga.
 
-### C'è un campo da riempire prima di pubblicare
-
-Apri `src/config/legal.js` e compila `ownerName` (e, se esistono,
-`ownerAddress` e `ownerVat`).
-
-Il **titolare del trattamento** è chi si assume la responsabilità dei dati: se
-YET è un'associazione costituita, il suo nome; altrimenti il nome e cognome di
-una persona fisica. Non l'ho inventato di proposito, un nome sbagliato in
-un'informativa è peggio di un campo vuoto.
-
-Finché il campo resta al segnaposto, la pagina `/privacy` mostra un riquadro
-coral che te lo ricorda. Sparisce da solo quando lo compili.
-
 ### Perché non c'è il banner dei cookie
 
 Le linee guida del Garante (2021) chiedono il consenso preventivo solo per i
