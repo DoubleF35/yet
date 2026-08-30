@@ -13,6 +13,7 @@ const LINKS = [
   { to: '/join', label: 'Join' },
   { to: '/contatti', label: 'Contatti' },
   { to: '/brand', label: 'Brand' },
+  { to: '/sponsor', label: 'Sponsor' },
 ]
 
 export default function Navbar() {
