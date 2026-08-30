@@ -1,0 +1,186 @@
+/* Stili della card di un evento.
+
+   Spostati qui da Home.module.css quando la card e' diventata un componente a
+   se': il CSS segue il componente, non la pagina che per prima lo ha usato.
+   Cosi' la home e la pagina Eventi non possono mostrarla in due modi diversi. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--border);
+  background-color: var(--surface);
+
+  /* Quante righe di corpo si vedono prima di "Leggi tutto". È una custom
+     property e non un valore fisso in .body così .featured può alzarla senza
+     riscrivere il calcolo dell'altezza. */
+  --collapsed-lines: 7;
+}
+/* Notizia in evidenza: prima card a piena larghezza e bordo pieno da 2px.
+   Scelta editoriale, serve a rompere la griglia regolare. */
+.featured {
+  grid-column: 1 / -1;
+  padding: var(--space-8);
+  border: var(--border-strong);
+  --collapsed-lines: 10;
+}
+.badge {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+.cardTitle {
+  font-size: var(--step-2);
+}
+.featured .cardTitle {
+  font-size: var(--step-3);
+}
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+.sep {
+  color: var(--line);
+}
+.body {
+  /* pre-wrap: i ritorni a capo scritti dall'autore contano. Il testo resta
+     un nodo di testo React (escapato): mai innerHTML su contenuto di persone. */
+  white-space: pre-wrap;
+  max-width: var(--measure);
+  line-height: var(--lh-relaxed);
+}
+/* Taglio in altezza, non troncamento: il testo c'è tutto nel DOM e nessuna
+   parola viene sostituita da puntini. calc() in em, così il numero di righe
+   resta corretto anche quando la scala fluida cambia il font-size. */
+.bodyClamped {
+  max-height: calc(var(--collapsed-lines) * var(--lh-relaxed) * 1em);
+  overflow: hidden;
+}
+.moreBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-block: var(--space-1);
+  border-bottom: var(--border-coral);
+  color: var(--ink);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  transition: color var(--transition-fast);
+}
+.moreBtn:hover {
+  color: var(--coral-dark);
+}
+/* -------------------------------------------------------------------------
+   3. STATI (caricamento, avviso di configurazione)
+   ---------------------------------------------------------------------- */
+
+/* Le card scheletro hanno la stessa forma di quelle vere (stesso bordo,
+   stesso padding, stessa griglia) così il passaggio a contenuto caricato
+   non sposta nulla. */
+.skelLine {
+  margin-bottom: var(--space-2);
+}
+.featured {
+    padding: var(--space-6);
+    border: var(--border);
+  }
+/* =========================================================================
+   5. ALLEGATI
+   ====================================================================== */
+
+/* Una immagine sola occupa tutta la larghezza, due o più vanno in griglia.
+   auto-fit con minmax fa da solo il passaggio, senza media query: a 375px
+   torna comunque a colonna singola. */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-3);
+  width: 100%;
+}
+.shot {
+  display: block;
+  border: var(--border);
+  /* line-height a 0: altrimenti il baseline dell'immagine lascia una striscia
+     chiara sotto, dentro il bordo, e sembra un errore di allineamento. */
+  line-height: 0;
+  transition: border-color var(--transition);
+}
+.shot img {
+  width: 100%;
+  /* Rapporto fisso: senza, le immagini di altezze diverse fanno una griglia a
+     denti di sega, e ogni caricamento sposta il testo sotto. */
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--surface-sunken);
+}
+.shot:hover {
+  border-color: var(--ink);
+}
+.shot:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step-0);
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+.link:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+/* Un quadratino coral invece di un'icona: coerente con il resto e senza
+   aggiungere un altro svg da mantenere. */
+.linkIcon {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  background-color: var(--coral);
+}
+.linkLabel {
+  /* Un'etichetta lunga va a capo invece di allargare la card. */
+  overflow-wrap: anywhere;
+}
+@media (max-width: 47.9375rem) {
+  .featured {
+    padding: var(--space-6);
+    border: var(--border);
+  }
+
+  .featured .cardTitle {
+    font-size: var(--step-2);
+  }
+}

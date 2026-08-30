@@ -5,6 +5,7 @@ import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import AttachmentEditor from '../components/AttachmentEditor.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
+import SponsorAdmin from '../components/SponsorAdmin.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { BODY_MAX, createNews, deleteNews, formatDate, listenNews, updateNews } from '../lib/db.js'
@@ -497,7 +498,12 @@ export default function Admin() {
 
         <HandsDivider />
 
-        {/* 3. Tutte le notizie ------------------------------------------ */}
+        {/* 3. Sponsor ---------------------------------------------------- */}
+        {isFirebaseConfigured && <SponsorAdmin />}
+
+        <HandsDivider />
+
+        {/* 4. Tutte le notizie ------------------------------------------ */}
         <section className={s.section} aria-labelledby="tutte-le-notizie">
           <div className={s.sectionHead}>
             <h2 id="tutte-le-notizie" className={s.sectionTitle}>

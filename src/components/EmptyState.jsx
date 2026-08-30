@@ -11,7 +11,7 @@ import s from './EmptyState.module.css'
  * @param {node}   [action]   un Link o un bottone già pronto
  */
 export default function EmptyState({ title, children, action, className = '' }) {
-  const hands = `${import.meta.env.BASE_URL}hands.png`
+  const hands = `${import.meta.env.BASE_URL}hands-light.png`
 
   return (
     <div className={`${s.empty} ${className}`.trim()}>

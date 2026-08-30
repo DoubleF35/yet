@@ -48,6 +48,7 @@ export const PHOTO_MAX_CHARS = 100000
 const USERS = 'users'
 const NEWS = 'news'
 const MEDIA = 'media'
+const SPONSORS = 'sponsors'
 
 /** Limite del corpo di una notizia. Come BIO_MAX: il valore vero è nelle
  *  regole, questo serve a non far scoprire il limite all'utente dopo che ha
@@ -634,4 +635,57 @@ export async function deleteMedia(id) {
     console.warn('[YET] Non riesco a cancellare il media', id, error)
     return false
   }
+}
+
+/* --------------------------------------------------------------------------
+   sponsors/ — chi sostiene la community
+
+   Il logo non sta qui dentro: sta in `media` come tutti gli altri file
+   caricati, e qui resta solo il riferimento. Una collection in meno da
+   proteggere, e la stessa compressione gia' collaudata.
+-------------------------------------------------------------------------- */
+
+/** Gli sponsor, in ordine di priorita' e poi alfabetico. */
+export async function listSponsors() {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const snapshot = await getDocs(collection(db, SPONSORS))
+  return snapshot.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => {
+      /* `ordine` piu' basso viene prima: serve a mettere in cima chi ha dato
+         di piu' senza doverlo scrivere da nessuna parte. A parita', l'ordine
+         alfabetico e' l'unico che non sembra arbitrario. */
+      const oa = Number.isFinite(a.ordine) ? a.ordine : 500
+      const ob = Number.isFinite(b.ordine) ? b.ordine : 500
+      if (oa !== ob) return oa - ob
+      return String(a.nome ?? '').localeCompare(String(b.nome ?? ''), 'it')
+    })
+}
+
+export async function createSponsor({ nome, url, nota, logoMediaId, ordine }) {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const pulito = String(nome ?? '').trim()
+  if (!pulito) throw new Error('Il nome dello sponsor non puo\' essere vuoto.')
+
+  const ref = await addDoc(collection(db, SPONSORS), {
+    nome: pulito.slice(0, 80),
+    url: String(url ?? '').trim().slice(0, 500),
+    nota: String(nota ?? '').trim().slice(0, 120),
+    logoMediaId: String(logoMediaId ?? '').trim().slice(0, 64),
+    ordine: Number.isFinite(Number(ordine)) ? Math.round(Number(ordine)) : 500,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function deleteSponsor(id, logoMediaId) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!id) throw new Error('Manca l\'identificativo dello sponsor.')
+
+  await deleteDoc(doc(db, SPONSORS, id))
+  // Il logo non serve piu' a nessuno: lo togliamo, ma senza far fallire la
+  // cancellazione dello sponsor se per qualche motivo non ci riusciamo.
+  if (logoMediaId) await deleteMedia(logoMediaId)
 }

@@ -1,0 +1,293 @@
+.wrap {
+  margin-block-end: clamp(var(--space-8), 8vw, var(--space-10));
+}
+
+.titolo {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
+
+.intro {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-6);
+  color: var(--muted);
+  line-height: var(--lh-relaxed);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-strong);
+  background-color: var(--surface);
+  margin-block-end: var(--space-6);
+}
+
+.riga {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-4);
+}
+
+.campo {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.campoStretto {
+  max-width: 10rem;
+}
+
+.etichetta {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.opzionale {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--weight-regular);
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--ink);
+  background-color: var(--bg);
+  border: var(--border-strong);
+}
+
+.input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- logo ---------------------------------------------------------------- */
+
+.logoRiga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* contain e non cover: i loghi arrivano in mille proporzioni, e ritagliarli
+   taglierebbe via mezzo marchio a qualcuno. */
+.anteprima {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  border: var(--border);
+  background-color: var(--surface-sunken);
+  padding: var(--space-1);
+}
+
+.senzaLogo {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+}
+
+.logoNome {
+  font-size: var(--step--1);
+  overflow-wrap: anywhere;
+}
+
+.peso {
+  color: var(--muted);
+}
+
+/* L'input file nativo non si impagina e ha un testo diverso in ogni browser:
+   si nasconde e si usa la label come bottone, così il clic arriva comunque
+   all'input e la tastiera continua a funzionare senza tabIndex inventati. */
+.fileLabel {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fileBottone {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-5);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  border: var(--border-strong);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.fileLabel:hover .fileBottone {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* L'input è nascosto, quindi il focus va mostrato sul bottone finto: senza
+   questa riga chi naviga da tastiera non vede dove si trova. */
+.file:focus-visible + .fileBottone {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.file:disabled + .fileBottone {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- bottoni -------------------------------------------------------------- */
+
+.primario {
+  justify-self: start;
+  min-height: 48px;
+  padding-inline: var(--space-6);
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  border: 2px solid var(--coral-text);
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.primario:hover:not(:disabled) {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.primario:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.primario:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.piccolo,
+.pericolo {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.piccolo:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.piccolo:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.pericolo {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.pericolo:hover {
+  background-color: var(--danger);
+  color: var(--bg);
+}
+
+.pericolo:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.errore {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+}
+
+/* --- elenco --------------------------------------------------------------- */
+
+.elenco {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.voce {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* Su schermo stretto i comandi vanno sotto invece di stringere il nome fino
+     a renderlo illeggibile. */
+  flex-wrap: wrap;
+  padding: var(--space-3);
+  border: var(--border);
+  background-color: var(--surface);
+}
+
+.voceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* min-width: 0 è quel che permette al testo di troncare invece di allargare
+     la riga oltre il contenitore. */
+  min-width: 0;
+  flex: 1 1 10rem;
+}
+
+.voceNome {
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.voceMeta {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.conferma {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.vuoto {
+  color: var(--muted);
+}

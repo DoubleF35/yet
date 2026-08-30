@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
+import Hero from '../components/Hero.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -27,133 +28,8 @@ const CLAMP_OVER = 420
 /* --------------------------------------------------------------------------
    Una notizia
 -------------------------------------------------------------------------- */
-function NewsCard({ item, featured, media }) {
-  const [expanded, setExpanded] = useState(false)
-  const body = String(item.body ?? '')
-  const isLong = body.length > CLAMP_OVER
+import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
 
-  /* Un allegato può essere un indirizzo incollato oppure un file caricato, e
-     nel secondo caso il contenuto arriva da media/{id}. `sorgente` appiattisce
-     i due casi in una cosa sola, così il rendering più sotto non deve sapere
-     da dove viene niente.
-     safeImageSrc / safeFileSrc ricontrollano SEMPRE, anche sul contenuto che
-     arriva dal nostro database: è il controllo che protegge dai dati scritti
-     prima che questa validazione esistesse, o messi a mano dalla console. */
-  const allegati = normalizeAttachments(item.attachments).map((a) => {
-    if (!a.mediaId) return { ...a, src: a.type === 'image' ? safeImageSrc(a.url) : safeUrl(a.url) }
-    const m = media?.[a.mediaId]
-    if (!m) return { ...a, src: null }
-    return {
-      ...a,
-      src: a.type === 'image' ? safeImageSrc(m.dataUrl) : safeFileSrc(m.dataUrl),
-      name: m.name,
-    }
-  })
-
-  const immagini = allegati.filter((a) => a.type === 'image' && a.src)
-  const link = allegati.filter((a) => a.type !== 'image' && a.src)
-
-  return (
-    <article className={`${s.card} ${featured ? s.featured : ''}`.trim()}>
-      {featured && <p className={s.badge}>In evidenza</p>}
-
-      {/* h2: l'h1 della pagina è il logo. */}
-      <h2 className={s.cardTitle}>{item.title}</h2>
-
-      <p className={s.cardMeta}>
-        <span>{formatDate(item.createdAt)}</span>
-        {item.authorName ? (
-          <>
-            <span className={s.sep} aria-hidden="true">
-              /
-            </span>
-            <span>{item.authorName}</span>
-          </>
-        ) : null}
-      </p>
-
-      <div className={`${s.body} ${isLong && !expanded ? s.bodyClamped : ''}`.trim()}>{body}</div>
-
-      {isLong && (
-        <button
-          type="button"
-          className={s.moreBtn}
-          onClick={() => setExpanded((open) => !open)}
-          aria-expanded={expanded}
-        >
-          {expanded ? 'Mostra meno' : 'Leggi tutto'}
-        </button>
-      )}
-
-      {/* Gli allegati ripassano da normalizeAttachments anche qui, in lettura.
-          Non è una ripetizione inutile: è l'unico controllo che protegge dai
-          dati scritti prima che la validazione esistesse, o messi a mano dalla
-          console Firebase. Un `javascript:` finito in un href diventerebbe
-          codice al primo clic, e il posto giusto per fermarlo è quello in cui
-          l'URL viene usato. */}
-      {immagini.length > 0 && (
-        <div className={s.gallery}>
-          {immagini.map((a) =>
-            /* Le immagini ospitate altrove si aprono a dimensione piena in una
-               scheda nuova. Quelle caricate da noi no: il loro `src` è un data
-               URL, e un data URL dentro un href è una PAGINA che si apre con i
-               permessi del nostro dominio. In un <img> è innocuo, in un link
-               no, quindi lì il link non si mette proprio. */
-            a.mediaId ? (
-              <span className={s.shot} key={`media:${a.mediaId}`}>
-                <img src={a.src} alt={a.label} loading="lazy" decoding="async" />
-              </span>
-            ) : (
-              <a
-                className={s.shot}
-                key={a.src}
-                href={a.src}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src={a.src} alt={a.label} loading="lazy" decoding="async" />
-                <span className="sr-only"> (apri a dimensione piena in una nuova scheda)</span>
-              </a>
-            ),
-          )}
-        </div>
-      )}
-
-      {link.length > 0 && (
-        <ul className={s.links}>
-          {link.map((a) => (
-            <li key={a.mediaId ? `media:${a.mediaId}` : a.src}>
-              <a
-                className={s.link}
-                href={a.src}
-                /* Un file caricato si scarica invece di aprirsi: `download`
-                   suggerisce il nome giusto al posto di una stringa base64
-                   lunga un chilometro. */
-                {...(a.mediaId
-                  ? { download: a.name || a.label }
-                  : { target: '_blank', rel: 'noopener noreferrer' })}
-              >
-                <span className={s.linkIcon} aria-hidden="true" />
-                <span className={s.linkLabel}>{a.label}</span>
-                {!a.mediaId && <span className="sr-only"> (si apre in una nuova scheda)</span>}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </article>
-  )
-}
-
-function NewsSkeleton({ featured }) {
-  return (
-    <div className={`${s.card} ${featured ? s.featured : ''}`.trim()} aria-hidden="true">
-      <Skeleton height="1.75rem" width="70%" className={s.skelLine} />
-      <Skeleton height="0.85rem" width="40%" className={s.skelLine} />
-      <Skeleton height="0.85rem" count={4} className={s.skelLine} />
-    </div>
-  )
-}
 
 /* --------------------------------------------------------------------------
    La pagina
@@ -178,7 +54,7 @@ export default function Home() {
      foto non devono scaricarla due volte. */
   const [media, setMedia] = useState({})
 
-  const logo = `${import.meta.env.BASE_URL}logo.png`
+  const logo = `${import.meta.env.BASE_URL}logo-light.png`
 
   /* Il listener può emettere dopo lo smontaggio (o dopo un retry che ne ha già
      creato un altro): senza questa guardia, il primo listener sovrascriverebbe
@@ -255,51 +131,28 @@ export default function Home() {
 
   return (
     <div>
-      {/* ------------------------------------------------------------------
-          Apertura
-      ------------------------------------------------------------------ */}
-      <header className={`${s.hero} container`}>
-        <h1 className={s.title}>
-          <img className={s.logo} src={logo} alt="YET" width="486" height="291" />
-          <span className={s.tagline}>
-            {taglineText}
-            <span className={s.dot}>{taglineDot}</span>
-          </span>
-        </h1>
+      {/* L'apertura vive in un componente suo: e' l'unico pezzo del sito con
+          una fotografia sotto, quindi ha regole di contrasto e di impaginazione
+          che non valgono da nessun'altra parte. Tenerla qui dentro avrebbe
+          significato mescolarle a quelle del feed. */}
+      <Hero />
 
-        <p className={s.lead}>{COMMUNITY.description}</p>
-
-        <p className={s.meta}>
-          {/* Punto mediano e non un trattino: questa riga è tutta maiuscola e
-              spaziata, e un trattino in mezzo a delle maiuscole si legge come
-              un segno meno. Il punto separa senza pretendere di collegare. */}
-          Dai {COMMUNITY.ageRange} anni <span aria-hidden="true">·</span> {COMMUNITY.reach}
-        </p>
-
-        {membri !== null && membri > 0 && (
-          <p className={s.tally}>
-            <Link className={s.tallyLink} to="/membri">
-              <span className={s.tallyNumber}>{membri}</span>
-              <span className={s.tallyLabel}>
-                {membri === 1 ? 'persona sta costruendo con noi' : 'persone stanno costruendo con noi'}
-              </span>
-            </Link>
-          </p>
-        )}
-
-        <p className={s.ctaRow}>
-          <Link className={s.cta} to="/join">
-            Entra in YET
-            <span className={s.ctaArrow} aria-hidden="true">
-              →
+      {/* Il contatore resta sulla home ma sotto la piega: sopra la foto sarebbe
+          un numero in mezzo a due bottoni, e ruberebbe la scena alla frase che
+          conta. Qui invece e' la prima cosa che si incontra scorrendo. */}
+      {membri !== null && membri > 0 && (
+        <section className={`${s.tallyBlock} container`}>
+          <Link className={s.tallyLink} to="/vetrina">
+            <span className={s.tallyNumber}>{membri}</span>
+            <span className={s.tallyLabel}>
+              {membri === 1
+                ? 'persona sta costruendo con noi'
+                : 'persone stanno costruendo con noi'}
             </span>
           </Link>
-          {/* Le due porte d'ingresso, una accanto all'altra: il profilo passa
-              da un'approvazione, il gruppo no. Chi arriva sceglie quella che
-              gli somiglia invece di trovarne una sola. */}
-          <WhatsAppCta variant="button" />
-        </p>
-      </header>
+          <p className={s.tallyLead}>{COMMUNITY.description}</p>
+        </section>
+      )}
 
       <HandsDivider />
 

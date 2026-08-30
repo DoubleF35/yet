@@ -1,0 +1,218 @@
+.hero {
+  position: relative;
+  /* 100svh e non 100vh: su mobile la barra dell'indirizzo che compare e sparisce
+     con vh fa saltare l'altezza a ogni scroll. svh è l'altezza con la barra
+     visibile, cioè quella che c'è davvero all'apertura.
+     min-height e non height: se il testo cresce (traduzioni, font più grande
+     impostato dall'utente) la sezione si allunga invece di tagliarlo. */
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+
+  display: flex;
+  align-items: center;
+
+  overflow: hidden;
+  /* Il segnaposto minuscolo riempie lo schermo di colore mentre la foto vera
+     arriva: senza, il primo istante è un rettangolo nero e il titolo sembra
+     galleggiare nel vuoto. */
+  background-color: var(--bg);
+  background-image: url('/hero-bg-tiny.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  /* La foto è più larga che alta: su uno schermo verticale il centro
+     geometrico taglierebbe via la parete illuminata, che è la parte che dà
+     il contrasto al testo. Ancorandola in alto restano le sagome in basso e
+     la luce dove serve. */
+  object-position: center 38%;
+}
+
+/* Due veli in uno.
+   In alto resta leggero, così la foto si vede ancora ed è lei a dare il tono.
+   In basso diventa quasi pieno, e serve a due cose insieme: il testo appoggia
+   su una zona uniforme, e l'attacco con la sezione successiva non è un taglio
+   netto ma una dissolvenza. */
+.veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--hero-veil-top) 0%,
+      rgba(20, 18, 15, 0.55) 45%,
+      var(--hero-veil-bottom) 100%
+    );
+}
+
+.inner {
+  position: relative;
+  inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
+  margin-inline: auto;
+  padding-block: var(--space-11) var(--space-10);
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo {
+  inline-size: clamp(9rem, 22vw, 15rem);
+  block-size: auto;
+  margin-block-end: clamp(var(--space-6), 5vw, var(--space-8));
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-6);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  /* Il testo appoggia sulla parte più chiara della foto: un'ombra lunga e
+     morbida è l'unica ammessa in tutto il progetto, e non è decorazione ma
+     leggibilità. Senza, il contrasto varia da pixel a pixel. */
+  text-shadow: 0 2px 40px rgba(20, 18, 15, 0.7);
+  text-wrap: balance;
+}
+
+.dot {
+  color: var(--coral-text);
+}
+
+.lead {
+  max-inline-size: 46ch;
+  margin: clamp(var(--space-5), 3vw, var(--space-6)) 0 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+  /* Non --muted: sopra una foto un grigio attenuato perde troppo. Qui si usa
+     l'opacità, che scurisce in modo uniforme sopra qualunque cosa ci sia
+     sotto. */
+  opacity: 0.86;
+  text-wrap: pretty;
+  text-shadow: 0 1px 20px rgba(20, 18, 15, 0.8);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: clamp(var(--space-7), 5vw, var(--space-8));
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 52px;
+  padding-inline: var(--space-7);
+
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  /* Pillole, come nel riferimento. È l'unico punto del sito in cui il raggio
+     non è zero, e ha una ragione: i bordi netti funzionano su un fondo piatto,
+     su una fotografia sembrano ritagli incollati. */
+  border-radius: 999px;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.primary {
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  border: 2px solid var(--coral-text);
+}
+
+.primary:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.primary:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+/* Vetro smerigliato, il solo effetto "moderno" che mi concedo: serve perché
+   un bottone trasparente su una foto cambia leggibilità a ogni scroll, mentre
+   così ha sempre un fondo suo. Il fallback per chi non supporta backdrop-filter
+   è il colore semi-opaco, che regge lo stesso. */
+.secondary {
+  color: var(--ink);
+  background-color: rgba(242, 239, 233, 0.1);
+  border: 2px solid rgba(242, 239, 233, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.secondary:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.secondary:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.meta {
+  margin: clamp(var(--space-7), 5vw, var(--space-8)) 0 0;
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.62;
+}
+
+/* --- invito a scorrere ---------------------------------------------------- */
+
+.scroll {
+  position: absolute;
+  inset-block-end: var(--space-6);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  inline-size: 1px;
+  block-size: 56px;
+  overflow: hidden;
+  background-color: rgba(242, 239, 233, 0.18);
+}
+
+.scrollLine {
+  display: block;
+  inline-size: 100%;
+  block-size: 50%;
+  background-color: var(--coral-text);
+  animation: scorri 2.4s cubic-bezier(0.7, 0, 0.3, 1) infinite;
+}
+
+@keyframes scorri {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollLine {
+    animation: none;
+    transform: translateY(50%);
+  }
+}
+
+/* Sotto i 768px l'invito a scorrere sparisce: su un telefono si scorre per
+   istinto, e quello spazio serve al testo. */
+@media (max-width: 47.9375rem) {
+  .scroll {
+    display: none;
+  }
+}

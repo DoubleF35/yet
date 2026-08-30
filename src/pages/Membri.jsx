@@ -347,7 +347,7 @@ export default function Membri() {
       <section className={s.hero}>
         <div className="container">
           <p className={s.eyebrow}>La community</p>
-          <h1 className={s.title}>Membri</h1>
+          <h1 className={s.title}>Vetrina</h1>
           {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
               cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
               sembrava attaccata alla parte sbagliata. Separare le due idee

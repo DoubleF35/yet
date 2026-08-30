@@ -446,3 +446,30 @@
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+
+/* =========================================================================
+   IL CONTATORE, SOTTO LA PIEGA
+
+   Era dentro l'apertura, insieme al logo e ai due bottoni. Spostato qui
+   perche' sopra una fotografia un numero grande compete con la frase che
+   deve leggere per prima chi arriva: uno dei due perde, ed e' sempre quello
+   sbagliato. Sotto la piega invece e' la prima cosa che si incontra
+   scorrendo, che e' esattamente il momento in cui interessa.
+   ====================================================================== */
+
+.tallyBlock {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(var(--space-6), 5vw, var(--space-9));
+  align-items: center;
+  padding-block: clamp(var(--space-9), 9vw, var(--space-11));
+}
+
+.tallyLead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}

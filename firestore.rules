@@ -409,6 +409,54 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // sponsors/{id}, chi sostiene la community
+    //
+    // Lettura pubblica: la pagina /sponsor deve funzionare per chiunque, ed e'
+    // esattamente contenuto fatto per essere visto.
+    // Scrittura solo agli admin, come le notizie: e' comunicazione ufficiale.
+    //
+    // Il logo NON sta qui dentro: sta in media/{id} come tutti gli altri file
+    // caricati, e qui resta solo il riferimento. Una collection in meno da
+    // proteggere, e nessun documento che rischia di sfondare il MiB.
+    // =========================================================================
+    match /sponsors/{sponsorId} {
+
+      allow read: if true;
+
+      function sponsorShapeOk() {
+        return incoming().keys().hasOnly(
+          ['nome', 'url', 'nota', 'logoMediaId', 'ordine', 'createdAt']
+        )
+            && incoming().nome is string
+            && incoming().nome.size() >= 1
+            && incoming().nome.size() <= 80
+            && incoming().url is string
+            && incoming().url.size() <= 500
+            // Vuoto ammesso, il sito e' facoltativo. Se c'e' deve essere
+            // http(s): questo valore finisce in un href, e un `javascript:`
+            // li' dentro sarebbe codice che parte al clic.
+            && (incoming().url == '' || incoming().url.matches('(?i)https?://.*'))
+            && incoming().nota is string
+            && incoming().nota.size() <= 120
+            && incoming().logoMediaId is string
+            && incoming().logoMediaId.size() <= 64
+            && incoming().ordine is int
+            && incoming().ordine >= 0
+            && incoming().ordine <= 9999;
+      }
+
+      allow create: if isAdmin()
+                    && sponsorShapeOk()
+                    && incoming().createdAt == request.time;
+
+      allow update: if isAdmin()
+                    && sponsorShapeOk()
+                    && incoming().createdAt == stored().createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
     // TUTTO IL RESTO: NEGATO
     //
     // Non è ridondante rispetto al comportamento predefinito di Firestore.

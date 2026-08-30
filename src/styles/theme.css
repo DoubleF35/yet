@@ -24,48 +24,67 @@
      su --bg salvo diversa indicazione.
      --------------------------------------------------------------------- */
 
-  --bg: #eceae4; /* beige di fondo */
-  --ink: #1e1b18; /* nero caldo - 14.3:1 su --bg, AAA */
-  --coral: #d14a2c; /* accento del brand */
+  /* I due colori del marchio non cambiano, cambia quale dei due sta sotto.
+     Il beige di YET diventa il TESTO e il nero diventa il fondo: e' la stessa
+     identita' rovesciata, non una palette nuova. Il coral resta l'accento. */
+  --bg: #14120f; /* nero caldo di fondo */
+  --ink: #f2efe9; /* il beige del marchio, ora come testo: 16.3:1 su --bg, AAA */
+  --coral: #d14a2c; /* il coral esatto del marchio */
 
   /* Superfici.
-     --surface è la card: appena più chiara del fondo, così si stacca senza
-     bisogno di ombre. --surface-sunken è l'incavo (skeleton, campi disabilitati,
-     barre di progresso) ed è appena più scura. */
-  --surface: #f5f3ee;
-  --surface-sunken: #dedbd3;
+     Su fondo scuro le card si staccano andando verso l'ALTO, non verso il
+     basso: schiarire e' l'unico modo di suggerire rilievo senza usare ombre,
+     che qui non esistono. --surface-sunken e' piu' scuro del fondo e serve
+     agli incavi (skeleton, campi disabilitati, barre di progresso). */
+  --surface: #1e1b18;
+  --surface-sunken: #0d0c0a;
 
-  /* Bordi.
-     Due pesi, e la differenza NON è estetica ma di accessibilità:
-     --line       3.3:1 su --bg -> passa WCAG 1.4.11 (non-text contrast),
-                  quindi è l'unico ammesso per bordi che PORTANO informazione:
-                  input, bottoni, card cliccabili, tabelle.
-     --line-soft  1.3:1 -> puramente decorativo. Divisori, hairline fra righe
-                  di una lista. Mai per delimitare un controllo. */
-  --line: #857f75;
-  --line-soft: #cfcbc2;
+  /* Bordi. Stessa distinzione di prima, ribaltata:
+     --line       porta informazione (input, bottoni, card cliccabili)
+     --line-soft  puramente decorativo, mai per delimitare un controllo. */
+  --line: #4a423a;
+  --line-soft: #2a2622;
 
-  /* Testo attenuato: 4.8:1 su --bg, quindi passa AA anche a 16px.
-     È volutamente un grigio CALDO (tira al beige) e non un grigio neutro,
-     che su questo fondo sembrerebbe sporco. */
-  --muted: #6b655c;
+  /* Testo attenuato: 8.4:1 su --bg. Grigio CALDO, che tira al beige: un
+     grigio neutro su questo fondo sembrerebbe cenere. */
+  --muted: #b5aca3;
 
-  /* Coral, le tre varianti.
-     ATTENZIONE, è il tranello più facile di questa palette:
-     --coral su --bg fa 3.7:1. Basta per il testo GRANDE (>=24px, o >=18.66px
-     bold) e per icone e bordi, ma NON per un paragrafo o un link inline.
-     Per il testo piccolo e per i fill pieni usare --coral-dark. */
-  --coral-dark: #a83a22; /* 5.3:1 su --bg (AA) e 6.4:1 con --on-coral sopra */
-  --coral-soft: #f6e2dc; /* fondo tenue per badge/evidenziazioni; --ink sopra fa 13.7:1 */
-  --on-coral: #ffffff; /* testo sopra un fill --coral-dark. Sopra --coral puro solo se grande */
+  /* Coral, e qui sta il tranello di questa palette, misurato non stimato.
+     Il coral del marchio su --bg fa 4.21:1: basta per il testo GRANDE, per
+     le icone e per i bordi, ma NON per un paragrafo o un link inline.
+     Per quelli c'e' --coral-text, che fa 5.32:1.
 
-  /* Stati. Desaturati apposta per stare nella palette: non sono il rosso e il
-     verde di sistema, che accanto al coral stonerebbero. Entrambi passano AA
-     su --bg (6.6:1 e 5.2:1). Le varianti -soft sono fondi, con --ink sopra. */
-  --danger: #9b2226;
-  --danger-soft: #f3dede;
-  --ok: #2f6b4f;
-  --ok-soft: #dce8e1;
+     Il nome --coral-dark e' rimasto per non spezzare i moduli che gia' lo
+     usano, ma sul tema scuro il coral "sicuro" e' piu' CHIARO, non piu'
+     scuro: e' l'unico punto in cui il nome mente, ed e' scritto qui. */
+  --coral-text: #e2603c; /* 5.32:1 su --bg, AA anche a 16px */
+  --coral-dark: #e2603c; /* stesso valore: alias per i moduli esistenti */
+  --coral-soft: #2b1a14; /* fondo tenue per badge; --ink sopra fa 12.4:1 */
+
+  /* CONTROINTUITIVO, e verificato con la formula WCAG: sopra un riempimento
+     coral il testo va SCURO, non bianco. Su #e2603c il nero caldo fa 5.32:1,
+     il bianco solo 3.52:1. Sul tema chiaro era l'opposto. */
+  --on-coral: #14120f;
+
+  /* Stati. Schiariti rispetto al tema chiaro, perche' un rosso e un verde
+     cupi su fondo nero diventano fango. Entrambi passano AA su --bg. */
+  --danger: #e8736f;
+  --danger-soft: #2c1616;
+  --ok: #6bbf94;
+  --ok-soft: #12241b;
+
+  /* -----------------------------------------------------------------------
+     1b. IMMAGINE DI APERTURA
+
+     La foto e' gia' sfocata e scurita in fase di preparazione, non in CSS:
+     un filtro blur su un'immagine da 2000px costa a ogni frame di scroll sui
+     telefoni, e sui bordi lascia una frangia chiara da nascondere. Qui
+     restano solo il velo che garantisce il contrasto del testo e il
+     segnaposto che riempie lo schermo mentre la foto arriva.
+     --------------------------------------------------------------------- */
+
+  --hero-veil-top: rgba(20, 18, 15, 0.22);
+  --hero-veil-bottom: rgba(20, 18, 15, 0.92);
 
   /* -----------------------------------------------------------------------
      2. TIPOGRAFIA

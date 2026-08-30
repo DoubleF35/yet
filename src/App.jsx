@@ -6,7 +6,10 @@ import ScrollToTop from './components/ScrollToTop.jsx'
 
 import Intro from './pages/Intro.jsx'
 import Home from './pages/Home.jsx'
-import Membri from './pages/Membri.jsx'
+import Vetrina from './pages/Membri.jsx'
+import Eventi from './pages/Eventi.jsx'
+import Brand from './pages/Brand.jsx'
+import Sponsor from './pages/Sponsor.jsx'
 import Join from './pages/Join.jsx'
 import Contatti from './pages/Contatti.jsx'
 import Privacy from './pages/Privacy.jsx'
@@ -23,7 +26,16 @@ export default function App() {
 
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/membri" element={<Membri />} />
+          <Route path="/vetrina" element={<Vetrina />} />
+          <Route path="/eventi" element={<Eventi />} />
+          <Route path="/brand" element={<Brand />} />
+          <Route path="/sponsor" element={<Sponsor />} />
+
+          {/* La sezione si chiamava "Membri" e i link condivisi in giro
+              puntano ancora li'. `replace` per non lasciare il vecchio
+              indirizzo nella cronologia: chi preme Indietro deve tornare da
+              dove veniva, non rimbalzare di nuovo qui. */}
+          <Route path="/membri" element={<Navigate to="/vetrina" replace />} />
           <Route path="/join" element={<Join />} />
           <Route path="/contatti" element={<Contatti />} />
           <Route path="/privacy" element={<Privacy />} />
