@@ -11,7 +11,7 @@ import s from './HandsDivider.module.css'
  * @param {'left'|'center'|'right'} [align] dove sta il segno (default 'center')
  */
 export default function HandsDivider({ align = 'center', className = '' }) {
-  const hands = `${import.meta.env.BASE_URL}hands.png`
+  const hands = `${import.meta.env.BASE_URL}hands-light.png`
 
   return (
     <div className={`${s.divider} ${s[align] ?? s.center} ${className}`.trim()} aria-hidden="true">

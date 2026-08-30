@@ -1,0 +1,282 @@
+.page {
+  padding-block-end: clamp(var(--space-9), 10vw, var(--space-11));
+}
+
+.head {
+  padding-block: clamp(var(--space-9), 9vw, var(--space-11)) clamp(var(--space-6), 5vw, var(--space-8));
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--coral-text);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.lead {
+  max-width: var(--measure);
+  margin: var(--space-5) 0 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.section {
+  padding-block-start: clamp(var(--space-8), 7vw, var(--space-10));
+}
+
+.section + .section {
+  margin-block-start: clamp(var(--space-8), 7vw, var(--space-10));
+  border-block-start: var(--border);
+}
+
+.h2 {
+  margin: 0 0 var(--space-5);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
+
+.nota {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-4);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--coral);
+}
+
+.link:hover { color: var(--coral-text); }
+.link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+/* --- il logo, sulle due prove ------------------------------------------- */
+
+/* Le due prove servono a dimostrare la regola d'uso invece di enunciarla:
+   si vede a colpo d'occhio quale versione va su quale fondo. */
+.loghi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.provaScura,
+.provaChiara {
+  margin: 0;
+  padding: var(--space-7) var(--space-6) var(--space-5);
+  border: var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.provaScura { background-color: var(--surface-sunken); }
+.provaChiara { background-color: #eceae4; }
+
+.provaScura img,
+.provaChiara img {
+  width: min(100%, 13rem);
+  height: auto;
+}
+
+.provaScura figcaption,
+.provaChiara figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+.provaScura figcaption { color: var(--muted); }
+/* Il riquadro chiaro è l'unico punto del sito con un fondo beige: il testo
+   attenuato del tema scuro sopra sarebbe illeggibile, quindi qui va il nero. */
+.provaChiara figcaption { color: #6b655c; }
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  color: var(--ink);
+  border: var(--border-strong);
+  border-radius: 999px;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.download:hover { background-color: var(--ink); color: var(--bg); }
+.download:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+/* Dentro il riquadro chiaro il bottone deve invertirsi, altrimenti eredita
+   il beige del tema scuro e diventa invisibile sul beige del riquadro. */
+.provaChiara .download { color: #1e1b18; border-color: #1e1b18; }
+.provaChiara .download:hover { background-color: #1e1b18; color: #eceae4; }
+
+/* --- lancette ------------------------------------------------------------ */
+
+.lancetteRiga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.lancette {
+  height: clamp(6rem, 14vw, 9rem);
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* --- colori --------------------------------------------------------------- */
+
+.colori {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-4);
+}
+
+.colore {
+  border: var(--border);
+  background-color: var(--surface);
+}
+
+.campione {
+  display: block;
+  height: 5.5rem;
+  border-block-end: var(--border);
+}
+
+.coloreInfo { padding: var(--space-4); }
+
+.coloreNome {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+}
+
+/* Il codice è un bottone perché serve a copiarlo: è l'unica cosa che uno fa
+   davvero con un valore esadecimale. */
+.hex {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  margin-bottom: var(--space-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--step--1);
+  color: var(--ink);
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.hex:hover { background-color: var(--ink); color: var(--bg); }
+.hex:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+.coloreRuolo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+}
+
+.coloreNota {
+  margin: 0;
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+}
+
+.erroreCopia {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--danger);
+  background-color: var(--danger-soft);
+  font-size: var(--step--1);
+}
+
+/* --- carattere ------------------------------------------------------------ */
+
+.campioneFont {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step-6);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: 1;
+}
+
+.pesi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-size: var(--step-2);
+}
+
+/* --- sì e no -------------------------------------------------------------- */
+
+.regole {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.regola {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-3);
+  padding-block-end: var(--space-5);
+  border-block-end: var(--border-soft);
+}
+
+.si,
+.no {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  line-height: var(--lh-relaxed);
+}
+
+.no { color: var(--muted); }
+
+/* L'etichetta porta la parola, non solo il colore: chi non distingue il verde
+   dal rosso deve comunque capire quale delle due righe è quella da seguire. */
+.segno {
+  flex: 0 0 auto;
+  min-width: 2.2rem;
+  height: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  border: 1px solid currentColor;
+}
+
+.si .segno { color: var(--ok); }
+.no .segno { color: var(--danger); }

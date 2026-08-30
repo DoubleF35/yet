@@ -8,9 +8,11 @@ import s from './Navbar.module.css'
 
 const LINKS = [
   { to: '/home', label: 'Home' },
-  { to: '/membri', label: 'Membri' },
+  { to: '/vetrina', label: 'Vetrina' },
+  { to: '/eventi', label: 'Eventi' },
   { to: '/join', label: 'Join' },
   { to: '/contatti', label: 'Contatti' },
+  { to: '/brand', label: 'Brand' },
 ]
 
 export default function Navbar() {
@@ -28,7 +30,7 @@ export default function Navbar() {
   const userMenuRef = useRef(null)
   const navRef = useRef(null)
 
-  const logo = `${import.meta.env.BASE_URL}logo.png`
+  const logo = `${import.meta.env.BASE_URL}logo-light.png`
   const displayName = profile?.displayName || user?.displayName || user?.email || 'Il tuo profilo'
 
   /* Cambio pagina: chiudiamo tutto. Senza, si clicca un link dal panino e il

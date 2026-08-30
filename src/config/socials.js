@@ -132,6 +132,13 @@ export const COMMUNITY = {
 
   ageRange: '16 ai 23',
 
+  /* Versione corta della descrizione, per l'apertura del sito.
+     Sopra una fotografia il testo lungo non si legge: serve una frase che
+     stia in due righe e dica la cosa che conta. La versione lunga resta in
+     `description` e vive nelle pagine, dove c'e' spazio per leggerla. */
+  shortDescription:
+    'Il club dei giovani che costruiscono qualcosa. Anche se non hai ancora niente fra le mani: conta l’attitudine, non il progetto già avviato.',
+
   description:
     'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',
 

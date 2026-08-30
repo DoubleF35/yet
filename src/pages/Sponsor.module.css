@@ -1,0 +1,188 @@
+.page { padding-block-end: clamp(var(--space-9), 10vw, var(--space-11)); }
+
+.head {
+  padding-block: clamp(var(--space-9), 9vw, var(--space-11)) clamp(var(--space-6), 5vw, var(--space-8));
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--coral-text);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.lead {
+  max-width: var(--measure);
+  margin: var(--space-5) 0 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.section { padding-block-start: clamp(var(--space-8), 7vw, var(--space-10)); }
+
+.section + .section {
+  margin-block-start: clamp(var(--space-8), 7vw, var(--space-10));
+  border-block-start: var(--border);
+}
+
+.h2 {
+  margin: 0 0 var(--space-6);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
+
+/* --- la griglia dei loghi ------------------------------------------------ */
+
+.griglia {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-4);
+}
+
+.cella { display: flex; }
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+
+  width: 100%;
+  min-height: 7.5rem;
+  padding: var(--space-5);
+  border: var(--border);
+  background-color: var(--surface);
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+a.link:hover { border-color: var(--ink); background-color: var(--surface-sunken); }
+a.link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+
+/* I loghi arrivano in mille formati e proporzioni: contain dentro un box di
+   altezza fissa è l'unico modo di allinearli senza deformarne nessuno. */
+.logo {
+  max-width: 100%;
+  max-height: 3.5rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.nomeGrande {
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.nota {
+  font-size: var(--step--1);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* --- cosa offriamo -------------------------------------------------------- */
+
+.offerta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-6);
+}
+
+.punto {
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border-coral);
+}
+
+.numero {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  color: var(--coral-text);
+}
+
+.puntoTitolo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+}
+
+.puntoTesto {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* --- contatto -------------------------------------------------------------- */
+
+.nota2 {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-6);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.azioni { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+.primario,
+.secondario {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding-inline: var(--space-6);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border-radius: 999px;
+  /* Una mail lunga non deve sfondare il bottone su schermo stretto. */
+  overflow-wrap: anywhere;
+  text-align: center;
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.primario {
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  border: 2px solid var(--coral-text);
+}
+
+.primario:hover { background-color: var(--ink); border-color: var(--ink); color: var(--bg); }
+.primario:focus-visible { outline: var(--focus-ring-invert); outline-offset: var(--focus-offset); }
+
+.secondario {
+  color: var(--ink);
+  background: none;
+  border: var(--border-strong);
+}
+
+.secondario:hover { background-color: var(--ink); color: var(--bg); }
+.secondario:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }

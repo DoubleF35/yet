@@ -5,7 +5,7 @@ import { COMMUNITY, CONTACT_EMAIL, SOCIALS } from '../config/socials.js'
 import s from './Footer.module.css'
 
 export default function Footer() {
-  const logo = `${import.meta.env.BASE_URL}logo.png`
+  const logo = `${import.meta.env.BASE_URL}logo-light.png`
   const year = new Date().getFullYear()
 
   return (
@@ -51,8 +51,13 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link className={s.link} to="/membri">
-                Membri
+              <Link className={s.link} to="/vetrina">
+                Vetrina
+              </Link>
+            </li>
+            <li>
+              <Link className={s.link} to="/eventi">
+                Eventi
               </Link>
             </li>
             <li>
@@ -63,6 +68,16 @@ export default function Footer() {
             <li>
               <Link className={s.link} to="/contatti">
                 Contatti
+              </Link>
+            </li>
+            <li>
+              <Link className={s.link} to="/brand">
+                Brand identity
+              </Link>
+            </li>
+            <li>
+              <Link className={s.link} to="/sponsor">
+                Sponsor
               </Link>
             </li>
           </ul>
