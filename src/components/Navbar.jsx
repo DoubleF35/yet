@@ -20,6 +20,39 @@ export default function Navbar() {
   const { user, profile, loading, isAdmin, signIn, signOutUser } = useAuth()
   const { pathname } = useLocation()
 
+  /* La barra è trasparente sopra la foto d'apertura e diventa piena appena si
+     scorre. Senza, un rettangolo nero taglia in due l'immagine proprio nel
+     punto in cui dovrebbe fare impatto.
+     Solo sulla home, però: le altre pagine non hanno una foto sotto, e lì una
+     barra trasparente lascerebbe il logo sospeso nel vuoto. */
+  const sopraLaFoto = pathname === '/home'
+  const [scrolled, setScrolled] = useState(!sopraLaFoto)
+
+  useEffect(() => {
+    if (!sopraLaFoto) {
+      setScrolled(true)
+      return undefined
+    }
+
+    /* La soglia è una frazione dello schermo e non un numero fisso: su un
+       telefono in verticale 80px sono un decimo dell'apertura, su un monitor
+       largo sono niente. */
+    const soglia = () => window.innerHeight * 0.12
+
+    const onScroll = () => setScrolled(window.scrollY > soglia())
+    onScroll()
+
+    /* passive: true. Senza, il browser deve aspettare che il gestore finisca
+       prima di sapere se lo scroll è stato annullato, e lo scorrimento perde
+       fluidità proprio sui dispositivi più lenti. */
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [sopraLaFoto])
+
   const [menuOpen, setMenuOpen] = useState(false) // il panino, sotto i 768px
   const [userOpen, setUserOpen] = useState(false) // il menu dell'utente
   const [signingIn, setSigningIn] = useState(false)
@@ -112,7 +145,10 @@ export default function Navbar() {
   const linkClass = ({ isActive }) => `${s.link} ${isActive ? s.linkActive : ''}`.trim()
 
   return (
-    <header className={s.header} ref={navRef}>
+    <header
+      className={`${s.header} ${scrolled ? s.headerSolid : s.headerClear}`}
+      ref={navRef}
+    >
       <nav className={s.bar} aria-label="Navigazione principale">
         {/* --- logo ------------------------------------------------------ */}
         <Link to="/home" className={s.brand} aria-label="YET, vai alla home">

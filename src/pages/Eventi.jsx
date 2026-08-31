@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
+import Reveal, { stagger } from '../components/Reveal.jsx'
 import { mediaIdsOf } from '../lib/attachments.js'
 import { getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
@@ -155,12 +156,16 @@ export default function Eventi() {
             </p>
             <div className={s.grid}>
               {news.map((item, index) => (
-                <NewsCard
-                  key={item.id}
-                  item={item}
-                  media={media}
-                  featured={index === 0 && news.length > 1}
-                />
+                /* Lo scaglionamento e' 70ms per card e si ferma alla sesta:
+                   oltre, l'ultima di una lista lunga aspetterebbe piu' di un
+                   secondo e la cascata diventerebbe attesa. */
+                <Reveal key={item.id} delay={stagger(index)}>
+                  <NewsCard
+                    item={item}
+                    media={media}
+                    featured={index === 0 && news.length > 1}
+                  />
+                </Reveal>
               ))}
             </div>
           </>

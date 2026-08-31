@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Avatar from '../components/Avatar.jsx'
+import Reveal, { stagger } from '../components/Reveal.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
@@ -166,7 +167,7 @@ function splitBio(bio) {
   return { text, preview: `${head.trimEnd()}…`, truncated: true }
 }
 
-function MemberCard({ member, isMe, isAdmin = false }) {
+function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
   const [open, setOpen] = useState(false)
   const reactId = useId()
   const bioId = `${reactId}-bio`
@@ -183,6 +184,7 @@ function MemberCard({ member, isMe, isAdmin = false }) {
           browser non sa quale dei due attivare con Invio). L'espansione della
           bio è affidata a un vero <button> interno, così i link social
           restano attivabili da soli e non serve nessuno stopPropagation. */}
+      <Reveal delay={revealDelay} className={s.reveal}>
       <article
         className={[s.card, isMe && s.cardMe, isAdmin && s.cardAdmin].filter(Boolean).join(' ')}
         aria-labelledby={nameId}
@@ -254,6 +256,7 @@ function MemberCard({ member, isMe, isAdmin = false }) {
           </ul>
         )}
       </article>
+      </Reveal>
     </li>
   )
 }
@@ -454,9 +457,10 @@ export default function Membri() {
                     </p>
                   </div>
                   <ul className={s.grid}>
-                    {admins.map((member) => (
+                    {admins.map((member, i) => (
                       <MemberCard
                         key={member.uid}
+                        revealDelay={stagger(i)}
                         member={member}
                         isMe={!!user && user.uid === member.uid}
                         isAdmin
@@ -478,9 +482,10 @@ export default function Membri() {
                     </p>
                   </div>
                   <ul className={s.grid}>
-                    {regulars.map((member) => (
+                    {regulars.map((member, i) => (
                       <MemberCard
                         key={member.uid}
+                        revealDelay={stagger(i)}
                         member={member}
                         isMe={!!user && user.uid === member.uid}
                       />

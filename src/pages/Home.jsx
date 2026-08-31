@@ -29,6 +29,8 @@ const CLAMP_OVER = 420
    Una notizia
 -------------------------------------------------------------------------- */
 import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
+import Reveal, { stagger } from '../components/Reveal.jsx'
+import { useCountUp, useReveal } from '../lib/motion.js'
 
 
 /* --------------------------------------------------------------------------
@@ -48,6 +50,10 @@ export default function Home() {
      sarebbe un'affermazione: "non c'è nessuno" è una cosa diversa da "sto
      contando", e sulla home di un club appena nato la differenza si vede. */
   const [membri, setMembri] = useState(null)
+
+  /* Il conteggio si anima solo quando lo si guarda davvero. */
+  const contatore = useReveal({ threshold: 0.4 })
+  const numeroMostrato = useCountUp(membri ?? 0, { start: contatore.revealed })
 
   /* I contenuti dei file caricati, per id. Stanno qui e non dentro le card
      perché una lettura sola serve a tutte: due notizie che allegano la stessa
@@ -141,9 +147,15 @@ export default function Home() {
           un numero in mezzo a due bottoni, e ruberebbe la scena alla frase che
           conta. Qui invece e' la prima cosa che si incontra scorrendo. */}
       {membri !== null && membri > 0 && (
-        <section className={`${s.tallyBlock} container`}>
+        <section className={`${s.tallyBlock} container`} ref={contatore.ref}>
           <Link className={s.tallyLink} to="/vetrina">
-            <span className={s.tallyNumber}>{membri}</span>
+            {/* Il numero sale da zero quando la sezione entra nello schermo,
+                non al caricamento della pagina: partire mentre e' ancora
+                sotto la piega vuol dire che nessuno lo vede salire, e resta
+                solo il costo dell'animazione.
+                Con "riduci animazioni" attivo useCountUp restituisce subito il
+                valore finale. */}
+            <span className={s.tallyNumber}>{numeroMostrato}</span>
             <span className={s.tallyLabel}>
               {membri === 1
                 ? 'persona sta costruendo con noi'
@@ -159,7 +171,12 @@ export default function Home() {
       {/* ------------------------------------------------------------------
           Notizie
       ------------------------------------------------------------------ */}
-      <section className={`${s.news} container`} aria-labelledby="notizie" aria-busy={status === 'loading'}>
+      <Reveal
+        as="section"
+        className={`${s.news} container`}
+        aria-labelledby="notizie"
+        aria-busy={status === 'loading'}
+      >
         <div className={s.newsHead}>
           <h2 className={s.newsTitle} id="notizie">
             Notizie
@@ -251,7 +268,7 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
+      </Reveal>
 
       {/* Chiude la home: chi è arrivato in fondo ha letto tutto quel che
           c'era da leggere, ed è il momento in cui l'invito serve davvero. */}
