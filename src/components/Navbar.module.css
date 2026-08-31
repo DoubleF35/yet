@@ -4,8 +4,41 @@
   inset-inline: 0;
   z-index: var(--z-nav);
 
-  background-color: var(--bg);
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease,
+    backdrop-filter 320ms ease;
+}
+
+/* Sopra la foto: nessun fondo, nessun bordo. La barra non esiste come oggetto,
+   esistono solo il logo e i link appoggiati sull'immagine. */
+.headerClear {
+  background-color: transparent;
+  border-block-end: 1px solid transparent;
+}
+
+/* Dopo lo scroll: fondo pieno e bordo, perché sotto passa il contenuto e i
+   link devono restare leggibili su qualunque cosa scorra.
+   Il colore non è --bg pieno ma appena traslucido con il vetro smerigliato:
+   dà la sensazione che la pagina scorra SOTTO la barra invece che dietro un
+   pannello opaco. Chi non supporta backdrop-filter vede il colore quasi
+   pieno, che funziona lo stesso. */
+.headerSolid {
+  background-color: rgba(20, 18, 15, 0.82);
   border-block-end: var(--border);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .headerSolid {
+    background-color: var(--bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header {
+    transition: none;
+  }
 }
 
 .bar {

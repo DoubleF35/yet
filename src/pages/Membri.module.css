@@ -399,3 +399,19 @@
   color: var(--muted);
   text-wrap: pretty;
 }
+
+/* Il wrapper della rivelazione dentro il <li>: deve occupare tutta la cella
+   della griglia, altrimenti la card si restringe al proprio contenuto e
+   l'allineamento salta. */
+.reveal {
+  display: flex;
+  width: 100%;
+}
+
+/* Il contenitore della rivelazione dentro il <li>: deve riempire la cella
+   della griglia, altrimenti la card si restringe al proprio contenuto e
+   l'allineamento fra le colonne salta. */
+.reveal {
+  display: flex;
+  width: 100%;
+}

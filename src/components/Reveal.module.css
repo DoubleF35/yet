@@ -1,0 +1,41 @@
+/* NIENTE `opacity: 0` come stato di default in questo file.
+   Lo stato nascosto è la classe .out, che viene applicata dal JavaScript.
+   Se gli script non partono, l'elemento non riceve né .out né .in e resta un
+   blocco normale: il contenuto si vede. È la differenza fra un'animazione e
+   una pagina bianca. */
+
+.base {
+  /* will-change solo su queste due proprietà, e solo qui: dirlo su tutto
+     costringe il browser a promuovere ogni blocco a livello separato, e su un
+     telefono si paga in memoria. */
+  will-change: opacity, transform;
+}
+
+.out {
+  opacity: 0;
+  /* 14px. Abbastanza da leggersi come movimento, troppo poco da spostare
+     davvero il layout percepito: una risalita di 60px sembra un carosello. */
+  transform: translate3d(0, 14px, 0);
+}
+
+.in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  /* La curva conta più della durata: parte decisa e frena, come un oggetto
+     che si posa. Un ease lineare sembra una dissolvenza di PowerPoint. */
+  transition:
+    opacity 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Cintura di sicurezza. Il hook già non anima quando l'utente ha chiesto meno
+   movimento, ma se un domani qualcuno usa .out/.in a mano, qui il movimento
+   muore comunque. Le regole di accessibilità si scrivono due volte. */
+@media (prefers-reduced-motion: reduce) {
+  .out,
+  .in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -216,3 +216,62 @@
     display: none;
   }
 }
+
+/* =========================================================================
+   ENTRATA
+
+   Tutta dentro `prefers-reduced-motion: no-preference`, e la scelta non e'
+   stilistica ma strutturale: lo stato predefinito, fuori da questa media
+   query, e' il contenuto VISIBILE. L'animazione e' un di piu' che si applica
+   solo a chi la vuole. Il contrario — nascondere di default e mostrare con
+   l'animazione — lascerebbe la schermata vuota a chi ha ridotto il movimento.
+
+   Nessun ritardo supera i 320ms: oltre, chi apre il sito guarda un titolo che
+   non c'e' ancora, e l'attesa si nota piu' dell'effetto.
+   ====================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo,
+  .title,
+  .lead,
+  .actions,
+  .meta {
+    animation: entra 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .logo   { animation-delay: 60ms; }
+  .title  { animation-delay: 140ms; }
+  .lead   { animation-delay: 220ms; }
+  .actions{ animation-delay: 290ms; }
+  .meta   { animation-delay: 340ms; }
+
+  /* La foto entra da sola, piu' lentamente e senza spostarsi: una leggera
+     dissolvenza con un accenno di zoom che si ferma. Il movimento e' 1.5%,
+     quasi impercettibile — serve a togliere la sensazione di immagine
+     incollata, non a fare un effetto. */
+  .photo {
+    animation: respira 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes entra {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes respira {
+  from {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
