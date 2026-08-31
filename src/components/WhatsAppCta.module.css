@@ -91,11 +91,29 @@
 .blockButton {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3);
-  flex: 0 0 auto;
+
+  /* `0 1 auto` e non `0 0 auto`, con il tetto al 100%: con la riduzione
+     bloccata il bottone non poteva stringersi, e i suoi padding sono in rem,
+     quindi crescono insieme al testo. Su uno schermo da 320px sfondava lo
+     spazio della fascia gia' a testo normale, e col testo al 130% (una
+     misura ordinaria nelle impostazioni di Android) andava molto oltre.
+
+     Il guaio non restava suo. Su mobile un elemento che sfonda ALLARGA il
+     viewport di layout, e con lui tutto quello che sta in position: fixed:
+     la navbar diventava larga 364px su uno schermo da 320, e il panino e
+     l'avatar finivano oltre il bordo destro su OGNI pagina. Irraggiungibili,
+     perche' overflow-x: clip impedisce di scorrere fin li'. */
+  flex: 0 1 auto;
+  max-inline-size: 100%;
 
   min-block-size: 3.25rem;
-  padding-inline: var(--space-6);
+  /* Quando lo spazio manca cede prima il padding laterale, poi il testo va a
+     capo: il bordo del bottone non esce mai dalla fascia. */
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
+  padding-block: var(--space-2);
+  text-align: center;
 
   font-size: var(--step-0);
   font-weight: var(--weight-semibold);
@@ -109,6 +127,14 @@
 .blockButton:hover {
   background-color: var(--ink);
   border-color: var(--ink);
+}
+
+/* L'etichetta deve poter andare a capo dentro il bottone invece di allargarlo:
+   un elemento flex, di suo, non scende mai sotto la larghezza della sua riga
+   piu' lunga. Il secondo <span> e' quello per i lettori di schermo, che sta
+   fuori dal flusso e qui non conta. */
+.blockButton > span {
+  min-inline-size: 0;
 }
 
 /* Fondo scuro: l'anello coral scuro ci sparirebbe sopra. */

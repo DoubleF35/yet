@@ -800,14 +800,26 @@ function ProfileForm({ firebaseMissing }) {
               <label className={s.label} htmlFor={`${fid}-linkedin`}>
                 LinkedIn
               </label>
+              {/* `type="text"` e non `url` di proposito: questi campi accettano
+                  anche un handle nudo ("mario-rossi") e la validazione del
+                  browser lo rifiuterebbe. Il resto degli attributi però serve,
+                  e serve SOLO sul telefono: `inputMode` dà la tastiera con lo
+                  slash e il punto invece di quella per le frasi, e senza
+                  autoCapitalize/autoCorrect iOS scrive "Mario-rossi" con la
+                  maiuscola. Da quell'handle esce
+                  linkedin.com/in/Mario-rossi, che è un 404: il link finisce
+                  nella pagina Vetrina e non porta da nessuna parte. */}
               <input
                 className={s.input}
                 id={`${fid}-linkedin`}
                 type="text"
+                inputMode="url"
                 value={form.linkedin}
                 onChange={update('linkedin')}
                 placeholder="https://www.linkedin.com/in/nomecognome"
                 autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
                 spellCheck="false"
               />
             </div>
@@ -820,10 +832,13 @@ function ProfileForm({ firebaseMissing }) {
                 className={s.input}
                 id={`${fid}-instagram`}
                 type="text"
+                inputMode="url"
                 value={form.instagram}
                 onChange={update('instagram')}
                 placeholder="@nomeutente"
                 autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
                 spellCheck="false"
               />
             </div>
@@ -836,10 +851,13 @@ function ProfileForm({ firebaseMissing }) {
                 className={s.input}
                 id={`${fid}-other`}
                 type="text"
+                inputMode="url"
                 value={form.other}
                 onChange={update('other')}
                 placeholder="https://ilmiosito.it, o GitHub, o TikTok"
                 autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
                 spellCheck="false"
               />
             </div>
