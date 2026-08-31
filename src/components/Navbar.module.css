@@ -4,44 +4,83 @@
   inset-inline: 0;
   z-index: var(--z-nav);
 
-  transition:
-    background-color 320ms ease,
-    border-color 320ms ease,
-    backdrop-filter 320ms ease;
+  transition: border-color 320ms ease;
+}
+
+/* --- il fondo della barra -------------------------------------------------
+   Il fondo sta su uno PSEUDO-ELEMENTO e non sull'header, e non è una
+   preferenza di stile: `backdrop-filter` rende l'elemento che lo porta il
+   BLOCCO CONTENITORE dei suoi discendenti in position: fixed (e in Safari ne
+   ritaglia anche il contenuto che sporge).
+
+   Con il filtro sull'header succedeva questo, su telefono e su ogni pagina
+   tranne la home in cima: il pannello del panino è `fixed` da --nav-h a 0,
+   cioè "dalla barra al fondo dello SCHERMO", ma si misurava sui 56px della
+   barra. Risultato: si apriva alto zero, le voci finivano tagliate e la
+   pagina restava visibile sotto, sovrapposta al menu. Stesso motivo per cui
+   in Safari il menu utente veniva troncato all'altezza della barra.
+
+   Sullo pseudo-elemento il filtro non ha discendenti, quindi non può
+   contenere né ritagliare niente. L'aspetto è identico.
+   ------------------------------------------------------------------------ */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Il colore non è --bg pieno ma appena traslucido con il vetro smerigliato:
+     dà la sensazione che la pagina scorra SOTTO la barra invece che dietro un
+     pannello opaco. */
+  background-color: rgba(20, 18, 15, 0.82);
+  /* Il prefisso serve davvero: Safari ha supportato `backdrop-filter` senza
+     prefisso solo dalla 18, e gli iPhone che si fermano a iOS 15-17 sono
+     tanti. Senza, lì il vetro non c'era e restava il @supports qui sotto. */
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+
+  /* Si accende e si spegne con l'opacità invece di animare il colore e il
+     filtro: `backdrop-filter` non si interpola bene e ricalcolare la sfocatura
+     a ogni frame della transizione si sente sui telefoni lenti. */
+  opacity: 0;
+  transition: opacity 320ms ease;
 }
 
 /* Sopra la foto: nessun fondo, nessun bordo. La barra non esiste come oggetto,
    esistono solo il logo e i link appoggiati sull'immagine. */
 .headerClear {
-  background-color: transparent;
   border-block-end: 1px solid transparent;
 }
 
 /* Dopo lo scroll: fondo pieno e bordo, perché sotto passa il contenuto e i
-   link devono restare leggibili su qualunque cosa scorra.
-   Il colore non è --bg pieno ma appena traslucido con il vetro smerigliato:
-   dà la sensazione che la pagina scorra SOTTO la barra invece che dietro un
-   pannello opaco. Chi non supporta backdrop-filter vede il colore quasi
-   pieno, che funziona lo stesso. */
+   link devono restare leggibili su qualunque cosa scorra. */
 .headerSolid {
-  background-color: rgba(20, 18, 15, 0.82);
   border-block-end: var(--border);
-  backdrop-filter: blur(14px) saturate(140%);
 }
 
-@supports not (backdrop-filter: blur(1px)) {
-  .headerSolid {
+.headerSolid::before {
+  opacity: 1;
+}
+
+/* Chi non supporta il vetro smerigliato vede il colore pieno, che funziona
+   lo stesso. Le due condizioni vanno controllate entrambe, altrimenti Safari
+   con il solo prefisso ricadrebbe qui pur sapendo sfocare. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header::before {
     background-color: var(--bg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header {
+  .header,
+  .header::before {
     transition: none;
   }
 }
 
 .bar {
+  /* `relative` perché il fondo qui sopra è un elemento posizionato: senza,
+     coprirebbe logo e link, che sono nel flusso e si disegnano prima. */
+  position: relative;
+
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -49,6 +88,10 @@
   block-size: var(--nav-h);
   inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
   margin-inline: auto;
+  /* La tacca dell'iPhone. index.html dichiara viewport-fit=cover, quindi in
+     orizzontale la pagina arriva fino al bordo fisico dello schermo e senza
+     questo rientro il logo finisce sotto la tacca. Su tutto il resto vale 0. */
+  padding-inline: var(--safe-l) var(--safe-r);
 }
 
 /* --- logo ---------------------------------------------------------------- */
@@ -59,6 +102,9 @@
   /* margin-inline-end: auto spinge tutto il resto a destra quando i link
      sono nascosti (mobile), senza bisogno di un secondo spaziatore. */
   margin-inline-end: auto;
+  /* Il logo è alto 22px, il bersaglio no: 44px pieni come tutti gli altri
+     controlli della barra. Su telefono è il link che riporta alla home. */
+  min-block-size: 44px;
   padding: var(--space-2);
   /* Compensa il padding così il logo resta allineato al bordo del contenuto. */
   margin-inline-start: calc(var(--space-2) * -1);
@@ -140,13 +186,33 @@
 /* --- zona destra --------------------------------------------------------- */
 
 .right {
+  /* Il menu utente si aggancia QUI e non all'avatar. Su telefono l'avatar ha
+     il panino alla sua destra: ancorandolo lì, il pannello restava appeso in
+     mezzo allo schermo con 76px di vuoto a destra. Sul desktop il panino è
+     nascosto, quindi questo bordo e quello dell'avatar coincidono e non
+     cambia niente. */
+  position: relative;
+
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex: 0 0 auto;
 }
 
+/* Deve occupare ESATTAMENTE lo spazio del bottone che sostituisce (44x44) e
+   mostrare esattamente il riquadro di prima (36x36): il segnaposto serve solo
+   a non far spostare la barra quando Firebase risponde, e se le due impronte
+   non combaciano lo spostamento c'è comunque, solo di 8px. */
 .authPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+}
+
+.authPlaceholder::before {
+  content: '';
   inline-size: 36px;
   block-size: 36px;
   border: var(--border);
@@ -155,7 +221,9 @@
 }
 
 .signIn {
-  min-block-size: 40px;
+  /* 44px e non 40: è il bersaglio minimo del resto della barra, e su telefono
+     questo è il bottone che porta all'accesso. */
+  min-block-size: 44px;
   padding-inline: var(--space-4);
 
   font: inherit;
@@ -189,18 +257,26 @@
 
 /* --- menu utente --------------------------------------------------------- */
 
+/* Solo un raggruppamento: il pannello si posiziona rispetto a .right. */
 .user {
-  position: relative;
+  display: flex;
 }
 
 .userButton {
-  display: block;
+  /* L'avatar resta 36px per stare in equilibrio con il logo, il BERSAGLIO no:
+     44x44, come il panino qui accanto. Su telefono un tondo da 36px si sbaglia
+     a prendere, ed è il controllo che apre il proprio profilo. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+
   padding: 0;
   background: none;
   border: 0;
   cursor: pointer;
   border-radius: var(--radius);
-  line-height: 0;
 }
 
 .userButton:focus-visible {
@@ -322,7 +398,10 @@
 
   background-color: var(--bg);
   border-block-start: var(--border);
-  padding: var(--space-6) var(--container-pad);
+  /* Il rientro in fondo tiene conto della barra gesti di iOS: l'ultima voce
+     dell'elenco non deve finirci sotto. Ai lati, della tacca in orizzontale. */
+  padding-block: var(--space-6) calc(var(--space-6) + var(--safe-b));
+  padding-inline: calc(var(--container-pad) + var(--safe-l)) calc(var(--container-pad) + var(--safe-r));
   /* Un elenco lungo (o uno schermo basso in orizzontale) deve poter scorrere
      dentro il pannello, non finire tagliato. */
   overflow-y: auto;

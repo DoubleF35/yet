@@ -197,6 +197,18 @@
      trova qui e vede che vale 0. Lo stile è a spigolo vivo. */
   --radius: 0;
 
+  /* Rientri di sicurezza dello schermo: la tacca e la barra gesti.
+     index.html dichiara `viewport-fit=cover`, quindi la pagina arriva fino al
+     bordo FISICO del display: senza questi rientri, in orizzontale su un
+     iPhone la tacca si mangia il logo, e in verticale la barra gesti passa
+     sopra l'ultima voce di un pannello a tutto schermo.
+     Su qualunque schermo senza tacca valgono 0, quindi si possono sommare
+     sempre senza condizioni. Il fallback in px serve ai browser che non
+     conoscono env(): senza, l'intera dichiarazione verrebbe scartata. */
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+
   /* -----------------------------------------------------------------------
      5. BORDI E FOCUS
      --------------------------------------------------------------------- */
@@ -307,4 +319,12 @@
      uno scarto che a occhio non si distingue). Se un domani il video viene
      riesportato con il colore giusto, basta portarlo a 1. */
   --hero-color-fix: brightness(1.04);
+
+  /* Il beige del video DOPO --hero-color-fix, cioè quello che si vede davvero
+     sullo schermo: #E3DDD8 (227,221,216) schiarito del 4% fa (236,230,225).
+     Serve alla intro sul telefono, dove il riquadro dell'animazione non copre
+     tutto lo schermo e le fasce intorno devono essere dello stesso colore del
+     foglio su cui il logo è disegnato. Se il video viene riesportato, questo
+     valore va rimisurato insieme a --hero-color-fix. */
+  --intro-canvas: #ece6e1;
 }

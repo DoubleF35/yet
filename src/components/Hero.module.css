@@ -8,6 +8,15 @@
   min-block-size: 100vh;
   min-block-size: 100svh;
 
+  /* Il Layout mette su <main> un padding pari alla navbar, perché la barra è
+     fissa e non occupa spazio nel flusso. L'apertura però deve passarci
+     SOTTO: la barra è trasparente proprio per appoggiarsi sulla foto. Senza
+     questo margine il padding restava, e si otteneva esattamente il difetto
+     che la barra trasparente vuole evitare: una fascia nera che taglia la foto
+     in cima, più uno schermo pieno di foto SOTTO quella fascia, che su un
+     telefono spingeva i due bottoni oltre il bordo inferiore. */
+  margin-block-start: calc(var(--nav-h) * -1);
+
   display: flex;
   align-items: center;
 
@@ -149,6 +158,12 @@
   color: var(--ink);
   background-color: rgba(242, 239, 233, 0.1);
   border: 2px solid rgba(242, 239, 233, 0.45);
+  /* Il prefisso non è ridondanza: Safari ha supportato `backdrop-filter` senza
+     prefisso solo dalla 18. Sugli iPhone rimasti a iOS 15-17 il vetro non si
+     applicava e restava il fondo al 10%, cioè quasi trasparente: il bottone
+     cambiava leggibilità a ogni punto della foto, che è il problema che questo
+     effetto è qui per risolvere. */
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 

@@ -50,9 +50,13 @@ fieldset {
 }
 
 html {
-  /* Niente dark mode: dichiararlo fa sì che scrollbar, campi e controlli di
-     sistema si disegnino chiari anche su un OS in tema scuro. */
-  color-scheme: light;
+  /* Il tema del sito è SCURO (vedi --bg in theme.css), e va detto al browser:
+     è così che scrollbar, caret, campi di testo, menu a tendina e selettori di
+     data di sistema si disegnano scuri invece di comparire come rettangoli
+     bianchi in mezzo alla pagina. Su telefono era il caso peggiore: i
+     controlli nativi della tastiera e del datepicker arrivavano chiari, con
+     testo grigio chiaro su fondo bianco. */
+  color-scheme: dark;
 
   /* iOS ingrandisce da solo il testo in landscape senza questa riga. */
   -webkit-text-size-adjust: 100%;
