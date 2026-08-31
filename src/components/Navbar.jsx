@@ -87,6 +87,27 @@ export default function Navbar() {
     }
   }, [menuOpen])
 
+  /* Il pannello esiste solo sotto i 768px, e oltre il CSS lo nasconde. Lo
+     STATO però resterebbe aperto, e con lui il blocco dello scroll qui sopra:
+     bastava aprire il menu e girare il telefono in orizzontale per ritrovarsi
+     la pagina ferma, senza niente da chiudere. La soglia è la stessa della
+     media query in fondo al modulo: se cambia una, cambia l'altra. */
+  useEffect(() => {
+    if (!menuOpen) return undefined
+
+    const desktop = window.matchMedia('(min-width: 768px)')
+    if (desktop.matches) {
+      setMenuOpen(false)
+      return undefined
+    }
+
+    const onChange = (event) => {
+      if (event.matches) setMenuOpen(false)
+    }
+    desktop.addEventListener('change', onChange)
+    return () => desktop.removeEventListener('change', onChange)
+  }, [menuOpen])
+
   /* Esc chiude il pannello che è aperto e restituisce il focus a chi l'ha
      aperto: senza il ritorno del focus, chi naviga da tastiera riparte
      dall'inizio del documento. */
@@ -125,6 +146,21 @@ export default function Navbar() {
     document.addEventListener('pointerdown', onPointerDown)
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [userOpen, menuOpen])
+
+  /* I due pannelli si escludono a vicenda, e non è una finezza: si aprivano
+     insieme (il click sull'avatar è "dentro" la barra, quindi non contava come
+     click fuori dal panino) e il pannello del panino, che sta su un piano più
+     alto, copriva il menu utente lasciando solo la pagina a vedersi in mezzo.
+     Su telefono sembrava che le sezioni si sovrapponessero. */
+  const toggleMenu = useCallback(() => {
+    setUserOpen(false)
+    setMenuOpen((open) => !open)
+  }, [])
+
+  const toggleUser = useCallback(() => {
+    setMenuOpen(false)
+    setUserOpen((open) => !open)
+  }, [])
 
   const handleSignIn = useCallback(async () => {
     setSigningIn(true)
@@ -185,7 +221,7 @@ export default function Navbar() {
                 type="button"
                 ref={userButtonRef}
                 className={s.userButton}
-                onClick={() => setUserOpen((open) => !open)}
+                onClick={toggleUser}
                 aria-expanded={userOpen}
                 aria-haspopup="menu"
                 aria-controls={userMenuId}
@@ -223,7 +259,7 @@ export default function Navbar() {
           <button
             type="button"
             className={s.burger}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={toggleMenu}
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? 'Chiudi il menu' : 'Apri il menu'}

@@ -46,6 +46,26 @@
   overflow: hidden;
 }
 
+/* Su un telefono in verticale COPRIRE è la scelta sbagliata, e si vede subito:
+   la regione utile del video è quasi quadrata (712x692) mentre lo schermo è
+   più che doppio in altezza, quindi per riempirlo il riquadro diventa larghissimo
+   e resta visibile solo la striscia centrale. Su un 390x844 si perdeva il 55%
+   della larghezza: del logo si leggeva "Ye", con la Y tagliata a metà e la T
+   fuori campo.
+   Sotto i 768px si CONTIENE: il logo si vede intero e le fasce che restano
+   sopra e sotto prendono il beige del video (--intro-canvas), così non si
+   leggono come bande ma come lo stesso foglio su cui l'animazione è disegnata. */
+@media (max-width: 47.9375rem) {
+  .frame {
+    inline-size: min(100vw, calc(100svh * var(--hero-crop-w) / var(--hero-crop-h)));
+    block-size: min(100svh, calc(100vw * var(--hero-crop-h) / var(--hero-crop-w)));
+  }
+
+  .stage {
+    background-color: var(--intro-canvas);
+  }
+}
+
 .video {
   position: absolute;
   display: block;
@@ -81,6 +101,25 @@
      seconda volta, in modo simmetrico, cioè annullando proprio lo
      spostamento asimmetrico che stiamo calcolando. */
   object-fit: fill;
+}
+
+/* Il POSTER non è il video: hero-poster.jpg è già la regione utile ritagliata
+   (712x692, cioè esattamente --hero-crop-w x --hero-crop-h). Riusare la classe
+   .video gli applicava un ritaglio già fatto: veniva stirato da 712x692 a
+   701x394, cioè schiacciato e allargato di quasi il doppio, e spostato fuori
+   quadro. Si vedeva solo nel ripiego a immagine ferma, che però è proprio
+   quello che tocca a chi ha l'autoplay bloccato: iPhone in risparmio
+   energetico, in pratica.
+   Qui la finestra ha per costruzione il rapporto del ritaglio, quindi basta
+   riempirla. */
+.poster {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  /* Lo stesso riallineamento del beige, per lo stesso motivo. */
+  filter: var(--hero-color-fix);
 }
 
 /* --- comandi -------------------------------------------------------------- */

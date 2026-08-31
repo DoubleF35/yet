@@ -136,12 +136,17 @@ export default function Intro() {
             aria-label="Animazione del logo YET"
           />
         ) : (
+          /* Classe sua e non quella del video: il poster è già la regione
+             utile ritagliata, quindi non va né sovradimensionato né spostato.
+             Le misure sono quelle vere del file (712x692): con quelle
+             sbagliate il browser riserva un riquadro di rapporto diverso e
+             l'immagine salta di posizione appena arriva. */
           <img
-            className={s.video}
+            className={s.poster}
             src={posterSrc}
             alt="Il logo YET"
-            width="960"
-            height="720"
+            width="712"
+            height="692"
           />
         )}
       </div>
