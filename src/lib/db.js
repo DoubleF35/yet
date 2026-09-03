@@ -433,7 +433,6 @@ export async function saveUserProfile(uid, data) {
     displayName: displayName.slice(0, 80),
     location,
     bio,
-    ...extraValues,
     /* Una foto caricata è un data URL lungo decine di migliaia di caratteri:
        il vecchio slice(0, 500) l'avrebbe troncata a metà, producendo
        un'immagine rotta e, peggio, nessun errore. Il tetto vero è
@@ -446,6 +445,27 @@ export async function saveUserProfile(uid, data) {
     },
     role: currentRole(),
     updatedAt: serverTimestamp(),
+  }
+
+  /* I tre campi del profilo esteso si mandano SOLO se hanno qualcosa dentro,
+     o se il documento ne aveva già uno da svuotare.
+
+     Non è un'ottimizzazione, è compatibilità con le regole pubblicate sul
+     database, che sono una cosa diversa dal file nel repo e si aggiornano a
+     mano. `usersKeysOk()` usa hasOnly(): davanti a una chiave che non conosce
+     non la ignora, rifiuta l'INTERA scrittura. Mandando tre stringhe vuote a
+     una versione vecchia delle regole, quindi, non fallirebbe il campo nuovo:
+     fallirebbe qualunque salvataggio di profilo, anche di chi non ha toccato
+     niente. Omettendole, chi non li usa salva esattamente come prima e solo
+     chi li compila incontra l'errore, che spiega cosa pubblicare (vedi
+     saveErrorText nella pagina Join).
+
+     La seconda metà della condizione è quella che si dimentica: con
+     `merge: true` una chiave omessa NON viene cancellata, resta quella di
+     prima. Senza `key in stored`, svuotare un campo non lo svuoterebbe. */
+  const stored = existing.exists() ? existing.data() : {}
+  for (const [key, value] of Object.entries(extraValues)) {
+    if (value !== '' || key in stored) payload[key] = value
   }
 
   /* Lo status iniziale: approvato per gli admin, in attesa per tutti gli altri.
@@ -511,13 +531,13 @@ export async function createUserProfileFromGoogle(user) {
     displayName: (user.displayName || user.email?.split('@')[0] || 'Membro YET').slice(0, 80),
     location: '',
     bio: '',
-    /* Nati vuoti e non assenti: un campo che esiste con la stringa vuota si
-       legge senza guardie sparse per le pagine. Sui documenti creati PRIMA
-       che questi campi esistessero restano invece assenti, ed è per questo
-       che le regole li ammettono mancanti. */
-    project: '',
-    looking: '',
-    skills: '',
+    /* I tre campi del profilo esteso NON si scrivono qui, e nemmeno vuoti.
+       Questa è la creazione al primo accesso: mandare tre chiavi che le regole
+       pubblicate sul database potrebbero non conoscere ancora farebbe fallire
+       la creazione del profilo, cioè il primo login di una persona nuova, per
+       tre stringhe vuote che non aggiungono niente. Le pagine leggono già quei
+       campi con un ripiego a stringa vuota, e le regole li ammettono assenti:
+       nascono al primo salvataggio, quando hanno un contenuto. */
     photoURL: normalizeUrlScheme(user.photoURL).slice(0, 500),
     socials: { linkedin: '', instagram: '', other: '' },
     role: currentRole(),
