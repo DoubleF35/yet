@@ -69,9 +69,57 @@ export function isInAppBrowser() {
      NON vanno inclusi il browser dell'app Google, Gmail e simili: quelli
      usano le Custom Tabs (Android) o SFSafariViewController (iOS), che sono
      browser veri e l'accesso ci funziona. */
-  return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|LinkedInApp|Line\/|TikTok|musical_ly|BytedanceWebview|Snapchat|Twitter|WhatsApp/i.test(
-    ua,
-  )
+  if (
+    /FBAN|FBAV|FB_IAB|FBIOS|Instagram|LinkedInApp|Line\/|TikTok|musical_ly|BytedanceWebview|Snapchat|Twitter|WhatsApp|Telegram|MicroMessenger/i.test(
+      ua,
+    )
+  ) {
+    return true
+  }
+
+  /* WHATSAPP SU iOS NON SI DICHIARA, ed e' il buco che ha fatto passare il
+     caso vero: un utente arrivato dal gruppo WhatsApp e' finito sulla pagina
+     "Unable to process request due to missing initial state" di
+     firebaseapp.com, perche' il controllo qui sopra cerca la stringa
+     "WhatsApp" e su iOS quella stringa non c'e'. Su Android c'e', su iOS no.
+
+     Quindi si riconosce per esclusione. Un WKWebView incorporato si dichiara
+     Safari ma NON scrive `Version/`, che il Safari vero mette sempre. E'
+     l'euristica su cui si appoggiano tutte le librerie che affrontano questo
+     problema, e copre in un colpo WhatsApp, Telegram e ogni altra app iOS che
+     non si firma.
+
+     `standalone` va escluso: e' una PWA aggiunta alla schermata home, che e'
+     un contesto legittimo dove l'accesso funziona e che non va bloccato. */
+  const iOS = /iPhone|iPad|iPod/i.test(ua)
+  if (!iOS) return false
+
+  /* Il Safari vero scrive SEMPRE `Version/17.5`. Un WKWebView incorporato no.
+     E' l'unico segnale affidabile, e vanno evitate due trappole in cui sono
+     cascato scrivendolo, trovate solo provando gli user agent reali:
+
+     1. NON si puo' pretendere la stringa `Safari`. Lo user agent di WhatsApp
+        su iOS finisce con `AppleWebKit/605.1.15 (KHTML, like Gecko)
+        Mobile/15E148` e la parola Safari non c'e' affatto. Pretenderla
+        lasciava passare proprio il caso da cui e' partito tutto.
+
+     2. NON basta l'assenza di `Version/`. Chrome, Firefox ed Edge su iOS sono
+        obbligati da Apple a usare WebKit e nemmeno loro scrivono `Version/`,
+        ma sono browser veri e l'accesso ci funziona: bloccarli sarebbe un
+        danno peggiore del problema. Si riconoscono dal proprio marcatore. */
+  const browserVeroIOS = /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|DuckDuckGo|Brave/i.test(ua)
+  const haVersion = /Version\//i.test(ua)
+
+  /* Una PWA aggiunta alla schermata home e' un contesto legittimo: l'accesso
+     ci funziona e non va bloccata. */
+  const pwa =
+    typeof navigator.standalone === 'boolean'
+      ? navigator.standalone
+      : typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(display-mode: standalone)').matches
+
+  return !haVersion && !browserVeroIOS && !pwa
 }
 
 /** Codice interno, non di Firebase: la WebView non produce un errore suo,
