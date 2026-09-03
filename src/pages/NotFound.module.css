@@ -1,0 +1,153 @@
+.page {
+  padding-block: clamp(var(--space-10), 14vw, var(--space-12));
+}
+
+/* Il numero e' piccolo e in coral: chi arriva qui deve leggere prima COSA e'
+   successo, e solo dopo, se gli interessa, il codice. Un "404" gigante e' un
+   vezzo da sviluppatori che non dice niente a chi non lo e'. */
+.code {
+  margin: 0 0 var(--space-3);
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-wrap: balance;
+}
+
+.lead {
+  max-inline-size: var(--measure);
+  margin: var(--space-5) 0 0;
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.wrong {
+  margin: var(--space-6) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95em;
+  padding: 0.15em 0.45em;
+  color: var(--ink);
+  background-color: var(--surface-sunken);
+  border: var(--border-soft);
+  /* Un indirizzo lungo deve andare a capo, non sfondare lo schermo: chi
+     arriva qui ha per definizione un indirizzo strano. */
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: clamp(var(--space-7), 6vw, var(--space-8));
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 52px;
+  padding-inline: var(--space-7);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.primary {
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  border: 2px solid var(--coral-text);
+}
+
+.primary:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.primary:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+.secondary {
+  color: var(--ink);
+  background: none;
+  border: var(--border-strong);
+}
+
+.secondary:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.secondary:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- scorciatoie ---------------------------------------------------------- */
+
+.altre {
+  margin-block-start: clamp(var(--space-8), 8vw, var(--space-10));
+}
+
+.altreTitolo {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.altreLista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.altroLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: var(--space-4);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step-0);
+  border: var(--border);
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.altroLink:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.altroLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

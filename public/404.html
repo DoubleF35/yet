@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pagina non trovata · YET</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
+
+    <!--
+      QUESTA PAGINA E' VOLUTAMENTE AUTOSUFFICIENTE.
+
+      La serve GitHub Pages quando il PERCORSO non esiste, cioe' prima che
+      l'applicazione venga caricata: non ci sono ne' il bundle JavaScript, ne'
+      il foglio di stile con le variabili del tema, ne' il font. Importarli
+      sarebbe anche rischioso, perche' i loro nomi contengono un hash che
+      cambia a ogni build e qui nessuno lo aggiornerebbe.
+
+      Da qui due conseguenze:
+       - i colori sono scritti a mano invece di venire da theme.css. E' l'unico
+         punto del progetto in cui e' giusto farlo, ed e' segnato qui perche'
+         chi cambia la palette sappia che deve passare anche da questo file;
+       - il carattere e' quello di sistema. Su una pagina d'errore la coerenza
+         tipografica vale meno di comparire subito.
+
+      DA NON CONFONDERE con la pagina 404 dentro l'applicazione (src/pages/
+      NotFound.jsx): quella risponde a un indirizzo tipo /#/rotta-sbagliata,
+      dove l'app e' gia' caricata. Questa risponde a /percorso-sbagliato, dove
+      non lo e'.
+    -->
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        /* Gli stessi valori di --bg e --ink in src/styles/theme.css. */
+        background-color: #14120f;
+        color: #f2efe9;
+        font-family:
+          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100svh;
+        padding: 24px;
+      }
+
+      main {
+        width: 100%;
+        max-width: 34rem;
+      }
+
+      img.logo {
+        display: block;
+        width: clamp(7rem, 26vw, 10rem);
+        height: auto;
+        margin-bottom: clamp(32px, 7vw, 56px);
+      }
+
+      /* Il numero e' grande ma NON e' il messaggio: chi arriva qui deve
+         leggere prima cosa e' successo e poi, se gli interessa, il codice.
+         Per questo il 404 e' piccolo e in coral, e la frase e' il titolo. */
+      p.code {
+        margin: 0 0 12px;
+        color: #e2603c;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.125rem, 1.7rem + 1.8vw, 3.25rem);
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      p.lead {
+        margin: 20px 0 0;
+        max-width: 42ch;
+        color: #b5aca3;
+        font-size: 1.0625rem;
+        line-height: 1.75;
+        text-wrap: pretty;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: clamp(32px, 6vw, 44px);
+      }
+
+      a.btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 52px;
+        padding: 0 28px;
+        font-size: 1.0625rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 999px;
+        border: 2px solid transparent;
+        transition:
+          background-color 180ms ease,
+          color 180ms ease,
+          border-color 180ms ease;
+      }
+
+      a.primary {
+        /* Testo SCURO sul coral, non bianco: sul coral chiaro il nero fa
+           5,3:1 e il bianco solo 3,5:1. Vale qui come nel resto del sito. */
+        color: #14120f;
+        background-color: #e2603c;
+        border-color: #e2603c;
+      }
+
+      a.primary:hover {
+        background-color: #f2efe9;
+        border-color: #f2efe9;
+      }
+
+      a.secondary {
+        color: #f2efe9;
+        border-color: #4a423a;
+      }
+
+      a.secondary:hover {
+        background-color: #f2efe9;
+        color: #14120f;
+        border-color: #f2efe9;
+      }
+
+      a.btn:focus-visible {
+        outline: 3px solid #f2efe9;
+        outline-offset: 3px;
+      }
+
+      /* Le lancette del marchio, come nel resto del sito. */
+      img.hands {
+        display: block;
+        height: 34px;
+        width: auto;
+        margin-top: clamp(40px, 8vw, 64px);
+        opacity: 0.5;
+        transform: rotate(-8deg);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        a.btn {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img class="logo" src="/logo-light.png" alt="YET" width="486" height="291" />
+
+      <p class="code">Errore 404</p>
+      <h1 data-it="Questa pagina non esiste." data-en="This page doesn’t exist.">
+        Questa pagina non esiste.
+      </h1>
+      <p
+        class="lead"
+        data-it="Forse il link era vecchio, o c’è un errore di battitura nell’indirizzo. Il resto del sito funziona: da qui torni a casa."
+        data-en="The link may be old, or there’s a typo in the address. The rest of the site works fine: head back from here."
+      >
+        Forse il link era vecchio, o c’è un errore di battitura nell’indirizzo. Il resto del sito
+        funziona: da qui torni a casa.
+      </p>
+
+      <div class="actions">
+        <a class="btn primary" href="/" data-it="Torna alla home" data-en="Back to the homepage">
+          Torna alla home
+        </a>
+        <a
+          class="btn secondary"
+          href="/#/contatti"
+          data-it="Scrivici"
+          data-en="Get in touch"
+        >
+          Scrivici
+        </a>
+      </div>
+
+      <img class="hands" src="/hands-light.png" alt="" aria-hidden="true" />
+    </main>
+
+    <script>
+      /*
+        Traduzione minima, senza framework.
+
+        Il testo italiano e' gia' nell'HTML, quindi la pagina e' completa e
+        leggibile anche se questo script non parte: e' la stessa regola del
+        resto del sito, lo stato senza JavaScript deve essere quello buono e
+        non uno vuoto.
+
+        L'ordine dei controlli conta: prima la scelta che l'utente ha fatto sul
+        sito (salvata in localStorage dall'interruttore IT/EN), poi la lingua
+        del browser. Chi ha premuto "EN" deve trovare l'inglese anche su una
+        pagina d'errore, altrimenti sembra un altro sito.
+      */
+      (function () {
+        var lingua = null
+
+        try {
+          var salvata = window.localStorage.getItem('yet_lang')
+          if (salvata === 'it' || salvata === 'en') lingua = salvata
+        } catch (e) {
+          /* localStorage puo' lanciare in navigazione privata: si ignora e si
+             passa alla lingua del browser. */
+        }
+
+        if (!lingua) {
+          var l = (navigator.language || 'it').slice(0, 2).toLowerCase()
+          lingua = l === 'en' ? 'en' : 'it'
+        }
+
+        document.documentElement.lang = lingua
+        if (lingua === 'en') {
+          document.title = 'Page not found · YET'
+          var nodi = document.querySelectorAll('[data-en]')
+          for (var i = 0; i < nodi.length; i++) {
+            nodi[i].textContent = nodi[i].getAttribute('data-en')
+          }
+          document.querySelector('p.code').textContent = 'Error 404'
+        }
+      })()
+    </script>
+  </body>
+</html>

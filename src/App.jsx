@@ -16,6 +16,7 @@ import Contatti from './pages/Contatti.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Cookie from './pages/Cookie.jsx'
 import Admin from './pages/Admin.jsx'
+import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
   return (
@@ -54,8 +55,12 @@ export default function App() {
               </RequireAdmin>
             }
           />
-          {/* Qualunque altra rotta torna alla home invece di lasciare il bianco. */}
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          {/* Una 404 vera al posto del redirect silenzioso alla home.
+              Il redirect sembrava gentile ed era dannoso: chi cliccava un link
+              rotto non sapeva di averlo fatto, `replace` cancellava
+              l'indirizzo sbagliato dalla cronologia, e per un motore di
+              ricerca qualunque indirizzo inventato risultava esistente. */}
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </>
