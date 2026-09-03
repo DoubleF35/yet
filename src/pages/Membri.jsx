@@ -213,7 +213,19 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
              quattro righe. Prima si mandava a schermo una versione accorciata
              a mano, e cosi' la ricerca del browser non trovava le parole
              nascoste e uno screen reader leggeva la bio mozzata. */
-          <p className={open ? `${s.bio} ${s.bioOpen}` : s.bio} id={bioId}>
+          <p
+            /* Il taglio a due righe si applica SOLO quando esiste il bottone
+               che lo annulla, cioe' quando splitBio ha deciso che il testo e'
+               lungo. Prima il CSS tagliava sempre, ma il bottone compariva
+               solo oltre le 144 battute: una bio di sessanta finiva tagliata
+               a due righe SENZA nessun modo di leggerne il resto, e su una
+               tessera larga un terzo di schermo capita quasi sempre.
+               Il prezzo e' che una bio media allunga la sua riga di tessere.
+               Va bene: una griglia un po' piu' alta si vede, del testo
+               irraggiungibile no. */
+            className={[s.bio, (open || !bio.truncated) && s.bioOpen].filter(Boolean).join(' ')}
+            id={bioId}
+          >
             {bio.text}
           </p>
         ) : (
