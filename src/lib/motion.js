@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * Movimento, con una regola sola: se JavaScript non parte, il contenuto si
@@ -43,11 +43,24 @@ export function prefersReducedMotion() {
  * sito fatto col pilota automatico.
  */
 export function useReveal({ threshold = 0.15, delay = 0 } = {}) {
-  const ref = useRef(null)
+  /* Un ref di CALLBACK, non useRef, e la differenza è tutto il punto di
+     questa funzione.
+     Con useRef, l'effetto gira una volta sola dopo il primo render. Se
+     l'elemento in quel momento non esiste ancora, perché il blocco che lo
+     contiene è dietro una condizione, per esempio `{conteggio > 0 && ...}` e
+     il conteggio arriva dalla rete, l'effetto trova `null`, esce, e non viene
+     più rieseguito: l'osservatore non si aggancia mai e il contenuto resta
+     nascosto per sempre.
+     È esattamente il bug che mostrava "0 persone stanno costruendo con noi":
+     la sezione del contatore compare solo quando il numero è arrivato, cioè
+     sempre DOPO il primo render.
+     Tenendo il nodo in uno stato, ogni volta che React lo attacca o lo stacca
+     lo stato cambia, e l'effetto riparte con l'elemento vero in mano. */
+  const [el, setEl] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  const ref = useCallback((node) => setEl(node), [])
 
   useEffect(() => {
-    const el = ref.current
     if (!el) return undefined
 
     /* Niente movimento richiesto, oppure browser senza IntersectionObserver:
@@ -110,7 +123,7 @@ export function useReveal({ threshold = 0.15, delay = 0 } = {}) {
       obs.disconnect()
       window.clearTimeout(timer)
     }
-  }, [threshold, delay])
+  }, [el, threshold, delay])
 
   return { ref, revealed }
 }

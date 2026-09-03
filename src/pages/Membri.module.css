@@ -62,7 +62,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
   gap: var(--space-5);
-  align-items: start;
+  /* `stretch` e non `start`: e' questo che rende alte uguali le celle di una
+     stessa riga. Con `start` ogni card prendeva l'altezza del proprio
+     contenuto, e una bio lunga faceva sporgere la sua tessera dalle vicine.
+
+     `grid-auto-rows: 1fr` fa il passo che mancava: rende uguali anche le RIGHE
+     fra loro. Senza, la prima fila veniva 430px, la seconda 453 e la terza
+     442, perche' ognuna si adattava alla bio piu' lunga che conteneva, e la
+     griglia sembrava storta pur essendo allineata riga per riga. */
+  align-items: stretch;
+  grid-auto-rows: 1fr;
 }
 
 .item {
@@ -80,10 +89,28 @@
   gap: var(--space-4);
 
   inline-size: 100%;
+  /* NIENTE aspect-ratio qui, e la ragione l'ho vista misurando.
+     Con `aspect-ratio: 1/1` le tessere venivano 279x279 e sembravano perfette,
+     ma il contenuto ne serviva 303: i link social finivano DISEGNATI FUORI
+     dalla scatola, sopra le tessere vicine. Un quadrato che taglia il
+     contenuto non e' ordine, e' un difetto piu' difficile da vedere.
+     L'uniformita' la da' `grid-auto-rows: 1fr` sulla griglia: tutte le tessere
+     prendono l'altezza della piu' alta, quindi restano identiche fra loro e
+     nulla sporge. La proporzione che ne esce e' vicina al quadrato perche' la
+     bio e' tagliata a tre righe. */
+  block-size: 100%;
+
   padding: var(--space-6);
   border: var(--border);
   background-color: var(--surface);
   transition: border-color var(--transition);
+}
+
+/* Aperta, la tessera smette di essere quadrata: e' l'utente ad averlo chiesto
+   cliccando "Mostra tutto", e la griglia lo assorbe senza spostare le altre.
+   Lo stato di riposo, che e' quello che si vede quasi sempre, resta ordinato. */
+.cardOpen {
+  aspect-ratio: auto;
 }
 
 .card:hover {
@@ -137,6 +164,32 @@
   /* I ritorni a capo scritti dall'utente contano anche qui. */
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+
+  /* La bio prende tutto lo spazio che avanza fra l'intestazione e i social:
+     e' cosi' che i social finiscono sempre allo stesso posto, in fondo alla
+     tessera, invece di salire e scendere con la lunghezza del testo. */
+  flex: 1 1 auto;
+  min-block-size: 0;
+
+  /* Tagliata a un numero fisso di righe, con i puntini. Il testo intero resta
+     nel DOM: si nasconde, non si tronca, quindi la ricerca del browser lo
+     trova comunque e il bottone "Mostra tutto" lo rivela per intero. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* Tre righe e non quattro: e' il numero che tiene la tessera vicina al
+     quadrato senza far sporgere i social. Cambiandolo cambia la proporzione di
+     tutta la griglia, perche' l'altezza comune si adatta alla piu' alta. */
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Aperta: nessun taglio. */
+.bioOpen {
+  display: block;
+  -webkit-line-clamp: none;
+  line-clamp: none;
+  overflow: visible;
 }
 
 .bioEmpty {
@@ -171,7 +224,9 @@
 
 .socials {
   list-style: none;
-  margin: var(--space-1) 0 0;
+  /* auto in cima: spinge i social in fondo alla tessera, cosi' su tutte le
+     card stanno alla stessa altezza invece di seguire la lunghezza della bio. */
+  margin: auto 0 0;
   padding: 0;
 
   display: flex;
@@ -406,6 +461,10 @@
 .reveal {
   display: flex;
   width: 100%;
+  /* Deve riempire la cella in ALTEZZA, non solo in larghezza: senza, la card
+     dentro non ha da chi ereditare il 100% e la griglia a righe uguali non
+     serve a niente. */
+  height: 100%;
 }
 
 /* Il contenitore della rivelazione dentro il <li>: deve riempire la cella
@@ -414,4 +473,8 @@
 .reveal {
   display: flex;
   width: 100%;
+  /* Deve riempire la cella in ALTEZZA, non solo in larghezza: senza, la card
+     dentro non ha da chi ereditare il 100% e la griglia a righe uguali non
+     serve a niente. */
+  height: 100%;
 }

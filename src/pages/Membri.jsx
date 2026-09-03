@@ -186,7 +186,9 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
           restano attivabili da soli e non serve nessuno stopPropagation. */}
       <Reveal delay={revealDelay} className={s.reveal}>
       <article
-        className={[s.card, isMe && s.cardMe, isAdmin && s.cardAdmin].filter(Boolean).join(' ')}
+        className={[s.card, open && s.cardOpen, isMe && s.cardMe, isAdmin && s.cardAdmin]
+          .filter(Boolean)
+          .join(' ')}
         aria-labelledby={nameId}
       >
         <header className={s.head}>
@@ -207,8 +209,12 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
         </header>
 
         {bio.text ? (
-          <p className={s.bio} id={bioId}>
-            {open ? bio.text : bio.preview}
+          /* Il testo INTERO sta sempre nel DOM: e' il CSS a tagliarlo a
+             quattro righe. Prima si mandava a schermo una versione accorciata
+             a mano, e cosi' la ricerca del browser non trovava le parole
+             nascoste e uno screen reader leggeva la bio mozzata. */
+          <p className={open ? `${s.bio} ${s.bioOpen}` : s.bio} id={bioId}>
+            {bio.text}
           </p>
         ) : (
           /* Niente card mezza vuota: una riga di riserva discreta, che dice

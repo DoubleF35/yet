@@ -638,7 +638,7 @@ export async function deleteMedia(id) {
 }
 
 /* --------------------------------------------------------------------------
-   sponsors/ — chi sostiene la community
+   sponsors/ : chi sostiene la community
 
    Il logo non sta qui dentro: sta in `media` come tutti gli altri file
    caricati, e qui resta solo il riferimento. Una collection in meno da
