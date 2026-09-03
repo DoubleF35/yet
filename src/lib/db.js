@@ -31,8 +31,24 @@ import { normalizeAttachments, safeUrl } from './attachments.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
  *  della pagina Join sia, soprattutto, le regole in firestore.rules, che
- *  sono la validazione vera. Se lo cambi qui, cambialo anche nelle rules. */
-export const BIO_MAX = 300
+ *  sono la validazione vera. Se lo cambi qui, cambialo anche nelle rules.
+ *
+ *  2500 e non 300: da quando esiste la pagina del singolo profilo, la bio non
+ *  deve piu' stare dentro una tessera. Nella tessera si vede l'inizio, tagliato
+ *  dal CSS, e il resto si legge aprendo il profilo. */
+export const BIO_MAX = 2500
+
+/** I tre campi che rendono la vetrina utile per FARSI TROVARE, e non solo per
+ *  essere elencati. Sono corti di proposito: a domanda precisa si risponde in
+ *  poche righe, e una risposta lunga finisce nella bio.
+ *
+ *  Come location, sono campi aggiunti DOPO: nelle regole vanno trattati come
+ *  opzionali, altrimenti bloccano le scritture parziali su un documento nato
+ *  prima che esistessero (vedi il commento di locationOk in firestore.rules).
+ *  Se cambi questi numeri, cambiali anche là. */
+export const PROJECT_MAX = 600
+export const LOOKING_MAX = 300
+export const SKILLS_MAX = 300
 
 /** Da dove scrive un membro: "Torino", "Bari", "Provincia di Cuneo".
  *  Corto apposta, è un'informazione da riga sotto il nome, non un indirizzo.
@@ -336,6 +352,33 @@ export async function getUserProfile(uid) {
 }
 
 /**
+ * Un singolo profilo per la sua pagina pubblica (/vetrina/:uid).
+ *
+ * Torna `null` sia quando il documento non c'è sia quando le regole non ne
+ * concedono la lettura, e le due cose vanno confuse APPOSTA: le regole aprono
+ * la lettura ai soli profili approvati (più il proprietario e gli admin),
+ * quindi distinguere "non esiste" da "esiste ma non è approvato" direbbe a
+ * chiunque che una certa persona si è iscritta ed è in attesa. Per chi guarda
+ * la pagina, entrambi i casi sono "questo profilo non c'è".
+ *
+ * Gli altri errori risalgono invece al chiamante: una rete assente o le regole
+ * non pubblicate non sono un profilo mancante, e mostrarli come tale
+ * manderebbe a caccia del bug sbagliato.
+ */
+export async function getMemberProfile(uid) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) return null
+
+  try {
+    const snapshot = await getDoc(doc(db, USERS, uid))
+    return snapshot.exists() ? { uid: snapshot.id, ...snapshot.data() } : null
+  } catch (err) {
+    if (err?.code === 'permission-denied') return null
+    throw err
+  }
+}
+
+/**
  * Crea o aggiorna users/{uid}.
  *
  * `createdAt` viene scritto solo se il documento non esisteva: le regole
@@ -367,6 +410,22 @@ export async function saveUserProfile(uid, data) {
     throw new Error(`La bio supera i ${BIO_MAX} caratteri.`)
   }
 
+  /* I tre campi del profilo esteso. Il controllo con il messaggio sta qui e
+     non uno slice() silenzioso: un testo tagliato a metà senza dirlo è il modo
+     più sicuro di far perdere a qualcuno tre righe che aveva scritto. */
+  const extra = { project: PROJECT_MAX, looking: LOOKING_MAX, skills: SKILLS_MAX }
+  const extraLabels = {
+    project: 'Il campo “cosa stai costruendo”',
+    looking: 'Il campo “cosa cerchi”',
+    skills: 'Il campo “cosa sai fare”',
+  }
+  const extraValues = {}
+  for (const [key, max] of Object.entries(extra)) {
+    const value = String(data[key] ?? '').trim()
+    if (value.length > max) throw new Error(`${extraLabels[key]} supera i ${max} caratteri.`)
+    extraValues[key] = value
+  }
+
   const ref = doc(db, USERS, uid)
   const existing = await getDoc(ref)
 
@@ -374,6 +433,7 @@ export async function saveUserProfile(uid, data) {
     displayName: displayName.slice(0, 80),
     location,
     bio,
+    ...extraValues,
     /* Una foto caricata è un data URL lungo decine di migliaia di caratteri:
        il vecchio slice(0, 500) l'avrebbe troncata a metà, producendo
        un'immagine rotta e, peggio, nessun errore. Il tetto vero è
@@ -451,6 +511,13 @@ export async function createUserProfileFromGoogle(user) {
     displayName: (user.displayName || user.email?.split('@')[0] || 'Membro YET').slice(0, 80),
     location: '',
     bio: '',
+    /* Nati vuoti e non assenti: un campo che esiste con la stringa vuota si
+       legge senza guardie sparse per le pagine. Sui documenti creati PRIMA
+       che questi campi esistessero restano invece assenti, ed è per questo
+       che le regole li ammettono mancanti. */
+    project: '',
+    looking: '',
+    skills: '',
     photoURL: normalizeUrlScheme(user.photoURL).slice(0, 500),
     socials: { linkedin: '', instagram: '', other: '' },
     role: currentRole(),

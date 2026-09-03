@@ -83,6 +83,11 @@
    ====================================================================== */
 
 .card {
+  /* `relative` perché il link del nome stende su tutta la tessera uno
+     pseudo-elemento in `absolute`: è quello a rendere cliccabile anche la
+     foto e la bio. Vedi .nameLink::after. */
+  position: relative;
+
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -110,13 +115,6 @@
   border: var(--border);
   background-color: var(--surface);
   transition: border-color var(--transition);
-}
-
-/* Aperta, la tessera smette di essere quadrata: e' l'utente ad averlo chiesto
-   cliccando "Mostra tutto", e la griglia lo assorbe senza spostare le altre.
-   Lo stato di riposo, che e' quello che si vede quasi sempre, resta ordinato. */
-.cardOpen {
-  aspect-ratio: auto;
 }
 
 .card:hover {
@@ -150,7 +148,7 @@
 .identity,
 .bio,
 .bioEmpty,
-.toggle,
+.more,
 .socials {
   padding-inline: var(--space-5);
 }
@@ -172,6 +170,52 @@
   letter-spacing: var(--ls-heading);
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* --- il nome è il link, e il link è tutta la tessera --------------------- */
+
+.nameLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Lo pseudo-elemento steso: un rettangolo trasparente sopra tutta la tessera,
+   così il tocco funziona anche sulla foto e sulla bio. È la tecnica che tiene
+   UN SOLO link nell'albero di accessibilità invece di rendere cliccabile un
+   <div>, che non si raggiunge col tab e non si apre in una scheda nuova.
+
+   z-index NON serve qui: essendo posizionato si disegna già sopra i contenuti
+   nel flusso. Serve invece ai social, che devono restare sopra di lui. */
+.nameLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.nameLink:hover {
+  color: var(--coral-dark);
+}
+
+/* L'anello di focus sul nome sarebbe un rettangolo intorno a due parole in
+   mezzo alla tessera: si vede meglio se lo prende la tessera intera, che è
+   anche l'area che il link attiva davvero. */
+.nameLink:focus-visible {
+  outline: none;
+}
+
+.card:has(.nameLink:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Ripiego per i browser senza :has() (Safari prima della 15.4): l'anello
+   torna sul nome. Meno bello, ma il focus non sparisce mai, che è la cosa
+   che conta. */
+@supports not selector(:has(a)) {
+  .nameLink:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
 }
 
 .badge {
@@ -219,14 +263,6 @@
   overflow: hidden;
 }
 
-/* Aperta: nessun taglio. */
-.bioOpen {
-  display: block;
-  -webkit-line-clamp: none;
-  line-clamp: none;
-  overflow: visible;
-}
-
 .bioEmpty {
   margin: 0;
   line-height: var(--lh-relaxed);
@@ -234,23 +270,22 @@
   font-style: italic;
 }
 
-.toggle {
-  min-height: 2.75rem; /* 44px */
-  padding-block: var(--space-1);
-  border-bottom: var(--border-coral);
-  font-size: var(--step-0);
+/* L'invito ad aprire il profilo. Coral e sottolineato: deve leggersi come
+   l'azione della tessera, non come una didascalia. Il tocco lo raccoglie
+   comunque il rettangolo steso del link, quindi qui non serve nessun
+   bersaglio: e' testo. */
+.more {
+  margin: var(--space-3) 0 0;
+  font-size: var(--step--1);
   font-weight: var(--weight-semibold);
-  color: var(--ink);
-  transition: color var(--transition-fast);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--coral-text);
 }
 
-.toggle:hover {
-  color: var(--coral-dark);
-}
-
-.toggle:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
+.card:hover .more {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
 }
 
 /* =========================================================================
@@ -262,6 +297,12 @@
   /* auto in cima: spinge i social in fondo alla tessera, cosi' su tutte le
      card stanno alla stessa altezza invece di seguire la lunghezza della bio. */
   margin: auto 0 0;
+
+  /* Sopra il rettangolo steso del link del nome, altrimenti il tocco su una
+     pill aprirebbe il profilo invece del social. Basta essere posizionati e
+     avere uno z-index: sono l'unica eccezione all'area cliccabile. */
+  position: relative;
+  z-index: var(--z-base);
 
   /* `padding-block` e non la coppia `padding-block-end` + `padding: 0`: quella
      era scritta in quest'ordine, e la scorciatoia dopo la proprieta' specifica
@@ -318,21 +359,29 @@
 
 /* Lo scheletro ricalca la card vera, stesso bordo, stesso padding, stesso
    ordine di blocchi, così quando i dati arrivano nulla si sposta. */
+/* Stessa forma della tessera vera: banda quadrata in cima, nessun rientro
+   sulla scatola, il testo con il suo. `overflow: hidden` come la tessera, cosi'
+   niente puo' sporgere e portarsi via la pagina. */
 .ghost {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
 
   inline-size: 100%;
-  padding: var(--space-6);
+  block-size: 100%;
   border: var(--border);
   background-color: var(--surface);
+  overflow: hidden;
 }
 
-.ghostHead {
+.ghostPhoto {
+  aspect-ratio: 1 / 1;
+}
+
+.ghostText {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
 }
 
 /* Sempre presente nel DOM (vedi il commento nel JSX): se comparisse solo
@@ -543,7 +592,7 @@
   .identity,
   .bio,
   .bioEmpty,
-  .toggle,
+  .more,
   .socials {
     padding-inline: var(--space-4);
   }
@@ -551,6 +600,10 @@
   .socials {
     padding-block-end: var(--space-4);
     gap: var(--space-1);
+  }
+
+  .ghostText {
+    padding: var(--space-4) var(--space-4) var(--space-4);
   }
 
   .name {

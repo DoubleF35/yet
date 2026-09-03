@@ -8,7 +8,15 @@ import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { COMMUNITY } from '../config/socials.js'
 import { isInAppBrowser, useAuth } from '../lib/auth.jsx'
-import { BIO_MAX, LOCATION_MAX, saveUserProfile } from '../lib/db.js'
+import { memberPath } from '../lib/members.jsx'
+import {
+  BIO_MAX,
+  LOCATION_MAX,
+  LOOKING_MAX,
+  PROJECT_MAX,
+  SKILLS_MAX,
+  saveUserProfile,
+} from '../lib/db.js'
 import { AVATAR_MAX_BYTES, compressAvatar, humanBytes } from '../lib/imageCompress.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
@@ -330,6 +338,9 @@ const EMPTY_FORM = {
   displayName: '',
   location: '',
   bio: '',
+  project: '',
+  looking: '',
+  skills: '',
   photoURL: '',
   linkedin: '',
   instagram: '',
@@ -343,6 +354,13 @@ function formFromProfile(profile, user) {
     displayName: (profile && profile.displayName) || (user && user.displayName) || '',
     location: (profile && profile.location) || '',
     bio: (profile && profile.bio) || '',
+    /* Su un documento nato prima che questi campi esistessero sono assenti,
+       non vuoti: il `|| ''` è quello che tiene il textarea controllato invece
+       di farlo passare a undefined, che React tratta come non controllato e
+       che fa perdere il valore al primo tasto. */
+    project: (profile && profile.project) || '',
+    looking: (profile && profile.looking) || '',
+    skills: (profile && profile.skills) || '',
     photoURL: (profile && profile.photoURL) || (user && user.photoURL) || '',
     linkedin: socials.linkedin || '',
     instagram: socials.instagram || '',
@@ -532,6 +550,9 @@ function ProfileForm({ firebaseMissing }) {
         displayName,
         location: form.location.trim(),
         bio: form.bio.trim(),
+        project: form.project.trim(),
+        looking: form.looking.trim(),
+        skills: form.skills.trim(),
         photoURL,
         socials: {
           linkedin: form.linkedin.trim(),
@@ -669,13 +690,13 @@ function ProfileForm({ firebaseMissing }) {
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-bio`}>
-                Due righe su di te
+                Presentati
               </label>
               <textarea
                 className={cx(s.input, s.textarea, (errors.bio || bioOver) && s.inputInvalid)}
                 id={`${fid}-bio`}
                 ref={bioRef}
-                rows={5}
+                rows={9}
                 value={form.bio}
                 onChange={update('bio')}
                 maxLength={BIO_MAX}
@@ -688,7 +709,8 @@ function ProfileForm({ firebaseMissing }) {
               />
               <div className={s.bioFoot}>
                 <p className={s.hint} id={`${fid}-bio-hint`}>
-                  Cosa stai costruendo, o cosa vorresti costruire.
+                  Raccontati con calma: nella vetrina si vedono le prime due righe, il resto si
+                  legge aprendo il tuo profilo. I ritorni a capo restano.
                 </p>
                 {/* Nessun aria-live su questo contatore: cambiando a ogni tasto
                     farebbe parlare lo screen reader sopra alla digitazione.
@@ -812,6 +834,77 @@ function ProfileForm({ firebaseMissing }) {
             </div>
           </fieldset>
 
+          {/* I tre campi che rendono la vetrina utile per FARSI TROVARE e non
+              solo per essere elencati: sono le domande a cui un altro membro
+              cerca risposta prima di scriverti. Corti di proposito, e tutti
+              facoltativi: un profilo con solo il nome e la bio deve restare
+              legittimo. Si vedono nella pagina del profilo, non nella
+              tessera. */}
+          <fieldset className={s.group}>
+            <legend className={s.legend}>Cosa fai</legend>
+            <p className={s.groupHint}>
+              Facoltativi, e sono quelli che fanno la differenza: chi cerca una mano o un socio
+              legge questi tre. Compaiono nella pagina del tuo profilo.
+            </p>
+
+            <div className={s.field}>
+              <label className={s.label} htmlFor={`${fid}-project`}>
+                Cosa stai costruendo
+              </label>
+              <textarea
+                className={cx(s.input, s.textarea)}
+                id={`${fid}-project`}
+                rows={4}
+                value={form.project}
+                onChange={update('project')}
+                maxLength={PROJECT_MAX}
+                aria-describedby={`${fid}-project-hint`}
+              />
+              <p className={s.hint} id={`${fid}-project-hint`}>
+                Il progetto, il prodotto, l&apos;idea. Anche se è appena cominciata, o se è ancora
+                confusa: scrivere com&apos;è adesso vale più di una descrizione perfetta.
+              </p>
+            </div>
+
+            <div className={s.field}>
+              <label className={s.label} htmlFor={`${fid}-looking`}>
+                Cosa cerchi
+              </label>
+              <textarea
+                className={cx(s.input, s.textarea, s.textareaShort)}
+                id={`${fid}-looking`}
+                rows={3}
+                value={form.looking}
+                onChange={update('looking')}
+                maxLength={LOOKING_MAX}
+                aria-describedby={`${fid}-looking-hint`}
+              />
+              <p className={s.hint} id={`${fid}-looking-hint`}>
+                Una mano su qualcosa, un socio, qualcuno che ha già risolto il tuo problema, o
+                solo due opinioni sincere. Chiedere è il motivo per cui esiste il club.
+              </p>
+            </div>
+
+            <div className={s.field}>
+              <label className={s.label} htmlFor={`${fid}-skills`}>
+                Cosa sai fare
+              </label>
+              <textarea
+                className={cx(s.input, s.textarea, s.textareaShort)}
+                id={`${fid}-skills`}
+                rows={3}
+                value={form.skills}
+                onChange={update('skills')}
+                maxLength={SKILLS_MAX}
+                aria-describedby={`${fid}-skills-hint`}
+              />
+              <p className={s.hint} id={`${fid}-skills-hint`}>
+                Quello su cui gli altri possono chiedere a te. Non serve un titolo: &ldquo;monto
+                video&rdquo;, &ldquo;parlo inglese bene&rdquo;, &ldquo;so fare un sito&rdquo;.
+              </p>
+            </div>
+          </fieldset>
+
           <fieldset className={s.group}>
             <legend className={s.legend}>Dove trovarti</legend>
             <p className={s.groupHint}>
@@ -895,9 +988,13 @@ function ProfileForm({ firebaseMissing }) {
               {saving ? 'Salvataggio…' : profile ? 'Salva le modifiche' : 'Crea il mio profilo'}
             </button>
 
+            {/* Porta alla PAGINA del proprio profilo e non piu' all'elenco:
+                "vedi il tuo profilo" che apriva la vetrina obbligava a
+                cercarsi in mezzo agli altri. Da qui si vede esattamente
+                quello che vedono gli altri aprendo la tessera. */}
             {canSeeMembers && (
-              <Link className={s.secondary} to="/vetrina">
-                Vedi il tuo profilo tra i membri
+              <Link className={s.secondary} to={memberPath(user.uid)}>
+                Vedi come ti vedono
               </Link>
             )}
           </div>

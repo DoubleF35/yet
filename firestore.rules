@@ -116,7 +116,11 @@ service cloud.firestore {
       function usersKeysOk() {
         return incoming().keys().hasOnly(
           ['displayName', 'location', 'bio', 'photoURL', 'socials', 'role',
-           'status', 'createdAt', 'updatedAt']
+           'status', 'createdAt', 'updatedAt',
+           // I tre campi del profilo esteso, aggiunti con la pagina del
+           // singolo membro. Vanno elencati QUI o l'intera scrittura viene
+           // rifiutata: hasOnly() non ignora le chiavi che non conosce.
+           'project', 'looking', 'skills']
         );
       }
 
@@ -145,9 +149,39 @@ service cloud.firestore {
             || (incoming().location is string && incoming().location.size() <= 60);
       }
 
+      // 2500 e non piu' 300: da quando esiste la pagina del singolo profilo la
+      // bio non deve stare dentro una tessera. Nella tessera si vede l'inizio,
+      // tagliato dal CSS; il resto si legge aprendo il profilo.
+      // Se cambi il numero, cambialo anche in BIO_MAX dentro src/lib/db.js.
       function bioOk() {
         return incoming().bio is string
-            && incoming().bio.size() <= 300;
+            && incoming().bio.size() <= 2500;
+      }
+
+      // I tre campi del profilo esteso: "cosa stai costruendo", "cosa cerchi",
+      // "cosa sai fare".
+      //
+      // OPZIONALI, e come per locationOk non e' pignoleria: sono campi
+      // aggiunti dopo, quindi i documenti nati prima non li contengono. Le
+      // scritture parziali (reconcileUserRole manda solo role, status e
+      // updatedAt) producono un documento fuso che ne resta senza, e
+      // pretenderli qui bloccherebbe quelle scritture con un permission-denied
+      // che non spiega niente. E' lo stesso inciampo gia' pagato con `status`.
+      // Se cambi i numeri, cambiali anche in src/lib/db.js
+      // (PROJECT_MAX, LOOKING_MAX, SKILLS_MAX).
+      function projectOk() {
+        return !('project' in incoming())
+            || (incoming().project is string && incoming().project.size() <= 600);
+      }
+
+      function lookingOk() {
+        return !('looking' in incoming())
+            || (incoming().looking is string && incoming().looking.size() <= 300);
+      }
+
+      function skillsOk() {
+        return !('skills' in incoming())
+            || (incoming().skills is string && incoming().skills.size() <= 300);
       }
 
       // Stringa vuota ammessa (il campo è opzionale). Se valorizzata deve
@@ -233,6 +267,7 @@ service cloud.firestore {
 
       function usersShapeOk() {
         return usersKeysOk() && displayNameOk() && locationOk() && bioOk()
+            && projectOk() && lookingOk() && skillsOk()
             && photoOk() && socialsOk() && roleOk() && statusValid();
       }
 
