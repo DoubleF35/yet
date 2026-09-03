@@ -64,3 +64,20 @@
   outline: var(--focus-ring-invert);
   outline-offset: var(--focus-offset);
 }
+
+/* Il motivo per cui l'accesso non e' andato. Compare sotto il bottone, dove
+   l'utente sta guardando: role="alert" nel JSX lo fa leggere anche a chi usa
+   uno screen reader, che altrimenti non saprebbe che e' comparso qualcosa. */
+.error {
+  max-inline-size: var(--measure);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4);
+
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+
+  border-inline-start: 3px solid var(--danger);
+  background-color: var(--danger-soft);
+  text-wrap: pretty;
+}

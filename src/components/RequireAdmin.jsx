@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../lib/auth.jsx'
@@ -16,7 +17,21 @@ import s from './RequireAdmin.module.css'
  * regole in firestore.rules, che rifiutano la scrittura lato server.
  */
 export default function RequireAdmin({ children }) {
-  const { user, loading, isAdmin, signIn } = useAuth()
+  const { user, loading, isAdmin, signIn, error } = useAuth()
+  const [signingIn, setSigningIn] = useState(false)
+
+  /* `onClick={signIn}` secco non bastava: passava l'oggetto evento come primo
+     argomento, non mostrava nessuna attesa e, se l'accesso falliva, lasciava
+     la schermata identica a prima. Chi non riusciva a entrare non aveva modo
+     di sapere perche'. */
+  const handleSignIn = useCallback(async () => {
+    setSigningIn(true)
+    try {
+      await signIn()
+    } finally {
+      setSigningIn(false)
+    }
+  }, [signIn])
 
   if (loading) {
     return (
@@ -39,9 +54,15 @@ export default function RequireAdmin({ children }) {
             Questa pagina serve a pubblicare le notizie del sito. Accedi con l’account YET per
             continuare.
           </p>
-          <button type="button" className={s.button} onClick={signIn}>
-            Accedi con Google
+          <button type="button" className={s.button} onClick={handleSignIn} disabled={signingIn}>
+            {signingIn ? 'Attendi…' : 'Accedi con Google'}
           </button>
+
+          {error && (
+            <p className={s.error} role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     )
