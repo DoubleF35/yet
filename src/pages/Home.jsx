@@ -8,6 +8,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { COMMUNITY } from '../config/socials.js'
+import { useT } from '../lib/i18n.jsx'
 import {
   mediaIdsOf,
   normalizeAttachments,
@@ -37,6 +38,7 @@ import { useCountUp, useReveal } from '../lib/motion.js'
    La pagina
 -------------------------------------------------------------------------- */
 export default function Home() {
+  const { t, isEn } = useT()
   const [news, setNews] = useState([])
   const [status, setStatus] = useState(isFirebaseConfigured ? 'loading' : 'unconfigured')
   const [error, setError] = useState(null)
@@ -171,11 +173,11 @@ export default function Home() {
             <span className={s.tallyNumber}>{numeroMostrato}</span>
             <span className={s.tallyLabel}>
               {membri === 1
-                ? 'persona sta costruendo con noi'
-                : 'persone stanno costruendo con noi'}
+                ? t('persona sta costruendo con noi')
+                : t('persone stanno costruendo con noi')}
             </span>
           </Link>
-          <p className={s.tallyLead}>{COMMUNITY.description}</p>
+          <p className={s.tallyLead}>{isEn ? COMMUNITY.descriptionEn : COMMUNITY.description}</p>
         </section>
       )}
 
@@ -192,11 +194,11 @@ export default function Home() {
       >
         <div className={s.newsHead}>
           <h2 className={s.newsTitle} id="notizie">
-            Notizie
+            {t('Notizie')}
           </h2>
           {status === 'ready' && (
             <p className={s.newsCount}>
-              {news.length} {news.length === 1 ? 'notizia' : 'notizie'}
+              {news.length} {news.length === 1 ? t('notizia') : t('notizie')}
             </p>
           )}
         </div>
@@ -235,7 +237,7 @@ export default function Home() {
 
         {status === 'error' && (
           <ErrorState
-            title="Non riusciamo a caricare le notizie"
+            title={t('Non riusciamo a caricare le notizie')}
             /* Ogni codice ha la sua causa tipica e la sua mossa successiva.
                Il ramo generico è l'ultima spiaggia: quando ci finisce qualcosa
                di ricorrente, gli si dà una riga sua invece di lasciarlo lì. */
@@ -254,7 +256,7 @@ export default function Home() {
 
         {status === 'empty' && (
           <EmptyState
-            title="Ancora nessuna notizia"
+            title={t('Ancora nessuna notizia')}
             action={
               <Link className={s.cta} to="/join">
                 Entra in YET

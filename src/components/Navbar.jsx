@@ -2,6 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
+import LanguageToggle from './LanguageToggle.jsx'
+import { useT } from '../lib/i18n.jsx'
 import { useAuth } from '../lib/auth.jsx'
 
 import s from './Navbar.module.css'
@@ -18,6 +20,7 @@ const LINKS = [
 
 export default function Navbar() {
   const { user, profile, loading, isAdmin, signIn, signOutUser } = useAuth()
+  const { t } = useT()
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -210,14 +213,14 @@ export default function Navbar() {
           {LINKS.map((link) => (
             <li key={link.to}>
               <NavLink to={link.to} className={linkClass}>
-                {link.label}
+                {t(link.label)}
               </NavLink>
             </li>
           ))}
           {isAdmin && (
             <li>
               <NavLink to="/admin" className={({ isActive }) => `${s.link} ${s.admin} ${isActive ? s.linkActive : ''}`.trim()}>
-                Admin
+                {t('Admin')}
               </NavLink>
             </li>
           )}
@@ -225,6 +228,11 @@ export default function Navbar() {
 
         {/* --- zona destra ------------------------------------------------ */}
         <div className={s.right}>
+          {/* Prima dell'area utente e non dopo: chi arriva e non capisce la
+              lingua deve trovarlo SUBITO, prima di dover interpretare un
+              avatar o un bottone di accesso che non sa leggere. */}
+          <LanguageToggle className={s.lang} />
+
           {loading ? (
             /* Segnaposto della stessa dimensione dell'avatar: senza, la barra
                si allarga di colpo quando Firebase risponde. */
@@ -265,7 +273,7 @@ export default function Navbar() {
             </div>
           ) : (
             <button type="button" className={s.signIn} onClick={handleSignIn} disabled={signingIn}>
-              {signingIn ? 'Attendi…' : 'Accedi'}
+              {signingIn ? t('Attendi…') : t('Accedi')}
             </button>
           )}
 
@@ -290,6 +298,13 @@ export default function Navbar() {
           suoi link non sono raggiungibili col tab mentre è chiuso. */}
       {menuOpen && (
         <div className={s.panel} id={menuId}>
+          {/* Copia dell'interruttore: sotto i 480px quello in barra e'
+              nascosto per far posto al logo, e senza questa copia la lingua
+              diventerebbe irraggiungibile proprio sui telefoni piu' piccoli. */}
+          <div className={s.panelLang}>
+            <LanguageToggle />
+          </div>
+
           <ul className={s.panelLinks}>
             {LINKS.map((link) => (
               <li key={link.to}>
@@ -298,7 +313,7 @@ export default function Navbar() {
                   className={({ isActive }) => `${s.panelLink} ${isActive ? s.panelLinkActive : ''}`.trim()}
                   onClick={() => setMenuOpen(false)}
                 >
-                  {link.label}
+                  {t(link.label)}
                 </NavLink>
               </li>
             ))}

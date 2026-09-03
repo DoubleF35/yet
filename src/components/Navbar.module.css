@@ -465,3 +465,30 @@
     display: none;
   }
 }
+
+/* L'interruttore della lingua. Sotto i 480px sparisce dalla barra: lo spazio
+   serve al logo e al panino, e nel pannello del menu c'e' la sua copia. */
+.lang {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 29.9375rem) {
+  .lang {
+    display: none;
+  }
+}
+
+.panelLang {
+  display: none;
+  margin-block-end: var(--space-5);
+  padding-block-end: var(--space-5);
+  border-block-end: var(--border);
+}
+
+/* Compare solo quando quello in barra e' nascosto: due interruttori identici
+   visibili insieme sarebbero solo confusione. */
+@media (max-width: 29.9375rem) {
+  .panelLang {
+    display: block;
+  }
+}

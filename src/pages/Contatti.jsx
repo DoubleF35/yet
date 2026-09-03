@@ -5,6 +5,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import { CONTACT_EMAIL, COMMUNITY, SOCIALS } from '../config/socials.js'
 
 import s from './Contatti.module.css'
+import { useT } from '../lib/i18n.jsx'
 
 /* Quanto resta a schermo il messaggio dopo il tentativo di copia.
    Abbastanza per leggerlo, non tanto da restare lì a distrarre. */
@@ -56,6 +57,7 @@ async function copyToClipboard(text) {
 }
 
 export default function Contatti() {
+  const { t } = useT()
   // useId e non stringhe fisse: se un giorno questa pagina venisse montata
   // due volte (una sezione riusata altrove) gli id resterebbero unici.
   const mailHeadingId = useId()
@@ -121,7 +123,7 @@ export default function Contatti() {
     <div className={s.page}>
       <div className="container">
         <header className={s.head}>
-          <p className={s.eyebrow}>Contatti</p>
+          <p className={s.eyebrow}>{t('Contatti')}</p>
           <h1 className={s.title}>
             Parliamone.
             <br />
@@ -300,7 +302,7 @@ export default function Contatti() {
             ------------------------------------------------------------------ */}
         <section className={s.place} aria-labelledby={placeHeadingId}>
           <h2 className={s.sectionTitle} id={placeHeadingId}>
-            Dove siamo
+            {t('Dove siamo')}
           </h2>
           <p className={s.placeCity}>Si parte da {city}, si va verso tutta Italia</p>
           <p className={s.placeNote}>

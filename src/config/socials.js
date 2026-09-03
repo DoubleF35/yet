@@ -142,6 +142,24 @@ export const COMMUNITY = {
   description:
     'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',
 
+  /* Le versioni inglesi dei testi lunghi.
+
+     Stanno qui accanto alle italiane e NON nel dizionario di en.js, per una
+     ragione pratica: sono le uniche stringhe del sito che qualcuno vorra'
+     riscrivere spesso, ed e' molto piu' facile ricordarsi di aggiornarle
+     entrambe se si toccano leggendo la stessa schermata. Nel dizionario, con
+     la frase italiana come chiave, riscrivere l'italiano avrebbe silenziosamente
+     scollegato la traduzione.
+
+     Sono TRADOTTE, non ricalcate: "build ambition" resta com'e' perche' e' un
+     marchio, ma il resto e' riscritto perche' suoni scritto da una persona
+     inglese, non tradotto da un italiano. */
+  descriptionEn:
+    'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. The first events will be in Turin, but the plan is to spread across Italy. No selection, no membership fee.',
+
+  ageRangeEn: '16 to 23',
+  reachEn: 'First events in Turin, aiming for all of Italy',
+
   /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera.
      "I primi eventi" e non "la sede": dice da dove si parte senza suonare come
      un requisito d'ingresso per chi sta altrove. */

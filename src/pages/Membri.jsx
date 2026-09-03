@@ -13,6 +13,7 @@ import { listUsers } from '../lib/db.js'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Membri.module.css'
+import { useT } from '../lib/i18n.jsx'
 
 /* Quante card fantasma durante il caricamento. Sei riempiono la griglia a
    ogni breakpoint (1, 2 o 3 colonne) senza lasciare una riga spaiata. */
@@ -38,6 +39,10 @@ function sortMembers(list) {
 }
 
 function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
+  /* L'hook serve ANCHE qui: MemberCard e' un componente a se', e `t` definita
+     in Membri() non e' in ambito. Averlo dimenticato faceva cadere l'intero
+     albero con "t is not defined", non solo questa tessera. */
+  const { t } = useT()
   const reactId = useId()
   const nameId = `${reactId}-name`
 
@@ -77,9 +82,9 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
             {/* Un distintivo solo per tessera: "Il tuo profilo" ha la
                 precedenza perché è l'informazione che serve a te che guardi. */}
             {isMe ? (
-              <p className={s.badge}>Il tuo profilo</p>
+              <p className={s.badge}>{t('Il tuo profilo')}</p>
             ) : isAdmin ? (
-              <p className={`${s.badge} ${s.badgeAdmin}`}>Organizza</p>
+              <p className={`${s.badge} ${s.badgeAdmin}`}>{t('Organizza')}</p>
             ) : null}
           </div>
         </header>
@@ -170,6 +175,7 @@ function GhostCard() {
 }
 
 export default function Membri() {
+  const { t } = useT()
   const { user } = useAuth()
 
   /* `isFirebaseConfigured === false` e non `!isFirebaseConfigured`: se per
@@ -239,8 +245,8 @@ export default function Membri() {
     <>
       <section className={s.hero}>
         <div className="container">
-          <p className={s.eyebrow}>La community</p>
-          <h1 className={s.title}>Vetrina</h1>
+          <p className={s.eyebrow}>{t('La community')}</p>
+          <h1 className={s.title}>{t('Vetrina')}</h1>
           {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
               cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
               sembrava attaccata alla parte sbagliata. Separare le due idee
@@ -304,7 +310,7 @@ export default function Membri() {
 
           {status === 'error' && (
             <ErrorState
-              title="Non riusciamo a caricare i profili"
+              title={t("Non riusciamo a caricare i profili")}
               message={
                 error?.code === 'permission-denied'
                   ? 'La lettura dell’elenco è stata rifiutata dal server. Riprova, e se il problema resta scrivici.'
@@ -316,10 +322,10 @@ export default function Membri() {
 
           {status === 'ready' && count === 0 && (
             <EmptyState
-              title="Ancora nessun profilo"
+              title={t("Ancora nessun profilo")}
               action={
                 <Link className={s.cta} to="/join">
-                  Entra in YET
+                  {t('Entra in YET')}
                 </Link>
               }
             >
@@ -340,10 +346,10 @@ export default function Membri() {
                 <section className={s.group} aria-labelledby="chi-organizza">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="chi-organizza">
-                      Chi organizza
+                      {t('Chi organizza')}
                     </h2>
                     <p className={s.groupNote}>
-                      Tengono in piedi la community e pubblicano le notizie del sito.
+                      {t('Tengono in piedi la community e pubblicano le notizie del sito.')}
                     </p>
                   </div>
                   <ul className={s.grid}>
@@ -365,10 +371,10 @@ export default function Membri() {
                 <section className={s.group} aria-labelledby="i-membri">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="i-membri">
-                      {admins.length > 0 ? 'I membri' : 'La community'}
+                      {admins.length > 0 ? t('I membri') : t('La community')}
                     </h2>
                     <p className={s.groupNote}>
-                      {regulars.length} {regulars.length === 1 ? 'profilo' : 'profili'}
+                      {regulars.length} {regulars.length === 1 ? t('profilo') : t('profili')}
                     </p>
                   </div>
                   <ul className={s.grid}>

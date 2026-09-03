@@ -1,0 +1,57 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: var(--border);
+  border-radius: 999px;
+  /* overflow hidden: i due bottoni interni sono rettangolari, e senza questo
+     gli angoli sporgono dalla pillola. */
+  overflow: hidden;
+}
+
+.btn {
+  /* Non 44px: questo comando sta dentro la barra alta 56-72px, accanto
+     all'avatar da 36. Un bersaglio da 44 lo farebbe sfondare. La regola dei
+     44px vale per i bersagli principali, e la WCAG esente i controlli inline
+     dentro una barra densa; qui i 32px in altezza sono compensati dalla
+     larghezza e dal fatto che sono due bersagli affiancati e non isolati. */
+  min-block-size: 32px;
+  padding-inline: var(--space-3);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--transition), background-color var(--transition);
+}
+
+.btn:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.btn:focus-visible {
+  /* Verso l'interno: la pillola ha overflow hidden e un anello esterno
+     verrebbe tagliato a metà. */
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+}
+
+/* La lingua attiva è piena, non solo di colore diverso: su una barra
+   trasparente sopra una fotografia un semplice cambio di colore del testo si
+   perde, e non si capisce più quale delle due è quella corrente. */
+.attiva {
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  cursor: default;
+}
+
+/* `disabled` qui non significa "non disponibile" ma "sei già qui": non va
+   quindi sbiadito come un comando spento, che sembrerebbe un guasto. */
+.attiva:disabled {
+  opacity: 1;
+}
