@@ -12,6 +12,7 @@ import { getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Eventi.module.css'
+import { useT } from '../lib/i18n.jsx'
 
 /**
  * Tutto quello che succede in YET.
@@ -20,6 +21,7 @@ import s from './Eventi.module.css'
  * ci sono tutti, lì solo i primi tre. Una fonte sola, due viste.
  */
 export default function Eventi() {
+  const { t } = useT()
   const [news, setNews] = useState([])
   const [status, setStatus] = useState(isFirebaseConfigured ? 'loading' : 'unconfigured')
   const [error, setError] = useState(null)
@@ -90,8 +92,8 @@ export default function Eventi() {
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
-        <p className={s.eyebrow}>Eventi</p>
-        <h1 className={s.title}>Cosa succede</h1>
+        <p className={s.eyebrow}>{t('Eventi')}</p>
+        <h1 className={s.title}>{t('Cosa succede')}</h1>
         <p className={s.lead}>
           Incontri, annunci e cose che stiamo costruendo. I primi eventi saranno a Torino, ma
           l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.
@@ -165,7 +167,7 @@ export default function Eventi() {
         {status === 'ready' && (
           <>
             <p className={s.count}>
-              {news.length} {news.length === 1 ? 'evento' : 'eventi'}
+              {news.length} {news.length === 1 ? t('evento') : t('eventi')}
             </p>
             <div className={s.grid}>
               {news.map((item, index) => (

@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router-dom'
 
 import App from './App.jsx'
 import { AuthProvider } from './lib/auth.jsx'
+import { LanguageProvider } from './lib/i18n.jsx'
 
 /* Inter, servito dal nostro dominio invece che dal CDN di Google.
    Solo il sottoinsieme latino e solo i cinque pesi che il tema usa davvero:
@@ -24,9 +25,11 @@ import './styles/global.css'
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HashRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </LanguageProvider>
     </HashRouter>
   </React.StrictMode>,
 )

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { COMMUNITY } from '../config/socials.js'
 import { useParallax } from '../lib/motion.js'
+import { useT } from '../lib/i18n.jsx'
 
 import s from './Hero.module.css'
 
@@ -20,6 +21,7 @@ import s from './Hero.module.css'
  */
 export default function Hero() {
   const { refContenitore, refBersaglio } = useParallax()
+  const { t, isEn } = useT()
 
   const base = import.meta.env.BASE_URL
   const [taglineTesto, taglinePunto] = (() => {
@@ -61,15 +63,20 @@ export default function Hero() {
 
         <div className={s.actions}>
           <Link className={s.primary} to="/join">
-            Entra in YET
+            {t('Entra in YET')}
           </Link>
           <Link className={s.secondary} to="/eventi">
-            Guarda gli eventi
+            {t('Guarda gli eventi')}
           </Link>
         </div>
 
         <p className={s.meta}>
-          Dai {COMMUNITY.ageRange} anni <span aria-hidden="true">·</span> {COMMUNITY.reach}
+          {/* La riga cambia struttura, non solo parole: "dai 16 ai 23 anni"
+              in inglese e' "ages 16 to 23", e tradurre pezzo per pezzo darebbe
+              "from the 16 to the 23 years". */}
+          {isEn
+            ? `Ages ${COMMUNITY.ageRangeEn ?? '16 to 23'} · ${COMMUNITY.reachEn ?? 'Starting in Turin, aiming for all of Italy'}`
+            : `Dai ${COMMUNITY.ageRange} anni · ${COMMUNITY.reach}`}
         </p>
       </div>
 
