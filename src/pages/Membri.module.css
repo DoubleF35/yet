@@ -35,8 +35,8 @@
 /* =========================================================================
    2. GRIGLIA
 
-   minmax(min(100%, 17rem), 1fr): il min() interno è la parte che conta.
-   Senza, a 375px una traccia da 272px più i gap sfonderebbe il contenitore e
+   minmax(min(100%, 15rem), 1fr): il min() interno è la parte che conta.
+   Senza, a 375px una traccia da 240px più i gap sfonderebbe il contenitore e
    comparirebbe lo scroll orizzontale. Con auto-fill invece di auto-fit le
    colonne restano larghe uguali anche quando i membri sono due: auto-fit le
    allargherebbe a mezza pagina ciascuna.
@@ -60,7 +60,14 @@
   padding: 0;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  /* 15rem e non 17rem, e cambia il conto delle colonne dove c'e' spazio:
+     a 1440px il contenitore e' 1040px, quindi con 240px di traccia minima e
+     20px di gap ne entrano QUATTRO invece di tre. La richiesta era vedere piu'
+     profili insieme, e su un monitor largo tre tessere da 330px lasciavano
+     mezza pagina di aria.
+     Sotto i 768px comanda comunque la media query piu' in basso, che impone
+     due colonne esatte: qui questo valore non ha effetto. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
   gap: var(--space-5);
   /* `stretch` e non `start`: e' questo che rende alte uguali le celle di una
      stessa riga. Con `start` ogni card prendeva l'altezza del proprio
@@ -561,10 +568,11 @@
 /* =========================================================================
    7. TELEFONO: DUE TESSERE PER RIGA
 
-   La griglia usa auto-fill con 17rem di colonna minima, e 17rem su un telefono
-   non ci stanno due volte: usciva UNA tessera per riga, e con la banda della
-   foto in cima alta quanto la tessera e' larga faceva 600px, cioe' quasi uno
-   schermo per profilo. La vetrina si guardava un membro alla volta.
+   La griglia usa auto-fill con 15rem di colonna minima, e 15rem su un telefono
+   non ci stanno due volte (a 390px lo spazio utile e' 342px): usciva UNA
+   tessera per riga, e con la banda della foto in cima alta quanto la tessera
+   e' larga faceva 600px, cioe' quasi uno schermo per profilo. La vetrina si
+   guardava un membro alla volta.
 
    Le soglie sono due, ognuna misurata su dove un pezzo smette di starci:
 
@@ -597,7 +605,19 @@
     padding-inline: var(--space-4);
   }
 
+  /* Padding laterale ridotto SOLO qui, e serve a un conto preciso: tre pill
+     da 44px chiedono 132px, piu' due gap da 4px fanno 140. In una tessera da
+     160px, con 16px di padding per lato ne restavano 128 e la terza andava a
+     capo. Con 8px lo spazio disponibile veniva 140 e il fabbisogno 140:
+     ESATTAMENTE uguale, e con le larghezze frazionarie di una griglia a 1fr
+     il flex andava a capo comunque. Da qui 4px per lato, che lasciano 148
+     contro 140: otto pixel di margine vero. I bersagli restano di 44px.
+     L'alternativa era rimpicciolire le pill a 40px, ma sarebbe stato un passo
+     indietro sull'accessibilita' per guadagnare spazio che si poteva prendere
+     dal padding. E siccome le tessere hanno tutte la stessa altezza, quella
+     riga in piu' costava 44px a TUTTE, non solo a chi ha tre social. */
   .socials {
+    padding-inline: var(--space-1);
     padding-block-end: var(--space-4);
     gap: var(--space-1);
   }
