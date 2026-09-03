@@ -138,8 +138,15 @@
   inline-size: 100%;
 }
 
-/* Il testo della tessera, tutto quello che sta sotto la foto. */
-.body,
+/* Il testo della tessera, tutto quello che sta sotto la foto.
+
+   `.body` NON va in questo elenco, ed e' un errore facile perche' il nome
+   sembra quello del corpo della tessera: `.body` e' invece la <section> di
+   TUTTA la pagina (vedi la regola in cima al file). Includendola, la sezione
+   prendeva 24px di rientro per lato sopra a quelli che il .container ha gia',
+   e la griglia perdeva 48px di larghezza su ogni schermo: su un telefono da
+   390px le tessere venivano 301px invece di 342. Dentro la tessera non
+   esiste nessun elemento con questa classe. */
 .identity,
 .bio,
 .bioEmpty,
@@ -187,11 +194,14 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 
-  /* La bio prende tutto lo spazio che avanza fra l'intestazione e i social:
-     e' cosi' che i social finiscono sempre allo stesso posto, in fondo alla
-     tessera, invece di salire e scendere con la lunghezza del testo. */
-  flex: 1 1 auto;
-  min-block-size: 0;
+  /* NIENTE `flex: 1 1 auto` qui, e la ragione e' che rompeva il taglio a due
+     righe: -webkit-line-clamp mette i puntini alla riga indicata, ma se la
+     scatola e' PIU' ALTA di due righe le righe successive restano visibili
+     lo stesso. Con la bio che si allargava a riempire lo spazio libero si
+     vedeva "faccio video e ..." e poi il testo che continuava sotto: i
+     puntini in mezzo alla frase, che sembrano un errore di stampa.
+     A spingere i social in fondo basta il loro `margin-block-start: auto`,
+     che c'era gia': quel flex non serviva a niente. */
 
   /* Tagliata a un numero fisso di righe, con i puntini. Il testo intero resta
      nel DOM: si nasconde, non si tronca, quindi la ricerca del browser lo
@@ -252,8 +262,14 @@
   /* auto in cima: spinge i social in fondo alla tessera, cosi' su tutte le
      card stanno alla stessa altezza invece di seguire la lunghezza della bio. */
   margin: auto 0 0;
-  padding-block-end: var(--space-5);
-  padding: 0;
+
+  /* `padding-block` e non la coppia `padding-block-end` + `padding: 0`: quella
+     era scritta in quest'ordine, e la scorciatoia dopo la proprieta' specifica
+     azzerava sia il rientro in fondo sia il padding-inline che .socials prende
+     dalla regola condivisa qui sopra. Le pill finivano appiccicate al bordo
+     della tessera, in basso e a sinistra. Toccando solo l'asse di blocco il
+     rientro laterale resta quello condiviso. */
+  padding-block: 0 var(--space-5);
 
   display: flex;
   flex-wrap: wrap;
@@ -493,14 +509,75 @@
   height: 100%;
 }
 
-/* Il contenitore della rivelazione dentro il <li>: deve riempire la cella
-   della griglia, altrimenti la card si restringe al proprio contenuto e
-   l'allineamento fra le colonne salta. */
-.reveal {
-  display: flex;
-  width: 100%;
-  /* Deve riempire la cella in ALTEZZA, non solo in larghezza: senza, la card
-     dentro non ha da chi ereditare il 100% e la griglia a righe uguali non
-     serve a niente. */
-  height: 100%;
+/* =========================================================================
+   7. TELEFONO: DUE TESSERE PER RIGA
+
+   La griglia usa auto-fill con 17rem di colonna minima, e 17rem su un telefono
+   non ci stanno due volte: usciva UNA tessera per riga, e con la banda della
+   foto in cima alta quanto la tessera e' larga faceva 600px, cioe' quasi uno
+   schermo per profilo. La vetrina si guardava un membro alla volta.
+
+   Le soglie sono due, ognuna misurata su dove un pezzo smette di starci:
+
+     768px  due colonne fisse al posto della griglia automatica
+     480px  i rientri interni scendono a 16px e le pill social perdono
+            l'etichetta, che con la tessera a 132px non ci sta piu'
+
+   Sul disegno di questa vetrina NON serve altro: la testata e' gia' in
+   colonna (la foto e' una banda, non un bollino accanto al nome) e la bio e'
+   gia' tagliata dal CSS. Erano le due cose che sul disegno precedente
+   andavano sistemate a mano.
+   ====================================================================== */
+
+@media (max-width: 47.9375rem) {
+  .grid {
+    /* `minmax(0, 1fr)` e non `1fr` secco: 1fr non scende sotto il contenuto
+       minimo, e un nome lungo allargherebbe la colonna oltre il bordo dello
+       schermo invece di andare a capo. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 30rem) {
+  .identity,
+  .bio,
+  .bioEmpty,
+  .toggle,
+  .socials {
+    padding-inline: var(--space-4);
+  }
+
+  .socials {
+    padding-block-end: var(--space-4);
+    gap: var(--space-1);
+  }
+
+  .name {
+    font-size: var(--step-0);
+  }
+
+  /* Il distintivo e' maiuscolo e spaziato: "IL TUO PROFILO" a corpo pieno
+     riempie da solo tutta la larghezza della tessera. */
+  .badge {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Le pill diventano SOLA ICONA. Con l'etichetta ce ne sta una per riga, e
+     tre social occupavano piu' spazio della bio.
+     Il nome del social non si perde: sta nell'aria-label del link, che c'e'
+     gia' e lo cita per esteso. La WCAG 2.5.3 (Label in Name) chiede che il
+     testo VISIBILE sia contenuto nel nome accessibile: senza testo visibile il
+     criterio non si applica, e il bersaglio resta di 44px. */
+  .social span {
+    display: none;
+  }
+
+  .social {
+    /* Quadrata come il bersaglio minimo, cosi' tre pill stanno in una riga. */
+    inline-size: 2.75rem;
+    justify-content: center;
+    padding-inline: 0;
+  }
 }
