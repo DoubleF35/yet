@@ -7,7 +7,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { COMMUNITY } from '../config/socials.js'
-import { useAuth } from '../lib/auth.jsx'
+import { isInAppBrowser, useAuth } from '../lib/auth.jsx'
 import { BIO_MAX, LOCATION_MAX, saveUserProfile } from '../lib/db.js'
 import { AVATAR_MAX_BYTES, compressAvatar, humanBytes } from '../lib/imageCompress.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
@@ -67,7 +67,12 @@ function signInErrorText(err) {
     case 'auth/cancelled-popup-request':
       return 'Hai chiuso la finestra di Google prima di finire. Puoi riprovare quando vuoi.'
     case 'auth/popup-blocked':
-      return 'Il browser ha bloccato la finestra di Google. Consenti i popup per questo sito e riprova.'
+    case 'auth/operation-not-supported-in-this-environment':
+      return 'Il browser ha bloccato la finestra di Google. Consenti i popup per questo sito e riprova, oppure apri il sito in Safari o Chrome.'
+    /* Codice nostro, non di Firebase: lo mette lib/auth.jsx quando riconosce
+       il browser interno di un'app, dove Google rifiuta l'accesso. */
+    case 'yet/in-app-browser':
+      return 'Stai navigando dentro un’altra app (Instagram, LinkedIn o simili), e Google non permette l’accesso da qui. Apri il sito in Safari o in Chrome e riprova.'
     case 'auth/network-request-failed':
       return 'Connessione assente o instabile. Controlla la rete e riprova.'
     case 'auth/unauthorized-domain':
@@ -176,6 +181,10 @@ function JoinPitch({ firebaseMissing }) {
   const [pending, setPending] = useState(false)
   const [localError, setLocalError] = useState(null)
 
+  /* Calcolato una volta sola: lo user agent non cambia durante la visita, e
+     rifarlo a ogni render sarebbe lavoro buttato. */
+  const [inApp] = useState(isInAppBrowser)
+
   // COMMUNITY arriva da config/socials.js: destrutturiamo con dei default così
   // un campo aggiunto dopo (o rimasto vuoto) non lascia buchi nel testo.
   const {
@@ -276,6 +285,19 @@ function JoinPitch({ firebaseMissing }) {
       <HandsDivider />
 
       <div className={s.cta}>
+        {/* Avviso PRIMA del tentativo, non dopo: dentro il browser interno di
+            un'app Google rifiuta l'accesso a prescindere, e farlo scoprire con
+            un errore dopo il tocco e' solo un giro in piu'. Il bottone resta
+            attivo perche' il riconoscimento guarda lo user agent e puo'
+            sbagliare: non gli lasciamo il potere di bloccare l'accesso. */}
+        {inApp && (
+          <p className={s.inAppNotice} role="note">
+            <strong>Sei nel browser interno di un’app.</strong> Google non permette l’accesso da
+            qui, per nessun sito. Apri questa pagina in Safari o in Chrome (dal menu dell’app, la
+            voce “Apri nel browser”) e l’accesso funziona.
+          </p>
+        )}
+
         <button
           type="button"
           className={s.primary}

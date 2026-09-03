@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
 import { useAuth } from '../lib/auth.jsx'
@@ -19,6 +19,7 @@ const LINKS = [
 export default function Navbar() {
   const { user, profile, loading, isAdmin, signIn, signOutUser } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
 
   /* La barra è trasparente sopra la foto d'apertura e diventa piena appena si
      scorre. Senza, un rettangolo nero taglia in due l'immagine proprio nel
@@ -165,13 +166,26 @@ export default function Navbar() {
   const handleSignIn = useCallback(async () => {
     setSigningIn(true)
     try {
-      await signIn()
+      /* Se l'accesso non riesce si porta l'utente su /join, che l'errore lo
+         mostra e ha lo spazio per spiegarlo. Prima non lo faceva nessuno: chi
+         premeva "Accedi" dalla barra e incappava in un popup bloccato o nel
+         browser interno di un'app vedeva il bottone tornare come prima e
+         NIENTE ALTRO. Da fuori si presenta come "l'accesso non funziona", che
+         e' il modo piu' rapido di trasformare un messaggio mancante in una
+         segnalazione. */
+      const { ok, code } = await signIn()
+
+      /* Chiudere la finestra di Google e' una decisione, non un guasto: chi ha
+         appena annullato non va portato altrove. Per tutto il resto la
+         spiegazione serve, e sta su /join. */
+      const annullato =
+        code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request'
+      if (!ok && !annullato) navigate('/join')
     } finally {
-      // Anche in caso di errore il bottone deve tornare cliccabile: l'errore
-      // vero lo mostra la pagina Join, che ha lo spazio per spiegarlo.
+      // Anche in caso di errore il bottone deve tornare cliccabile.
       setSigningIn(false)
     }
-  }, [signIn])
+  }, [signIn, navigate])
 
   const handleSignOut = useCallback(async () => {
     setUserOpen(false)

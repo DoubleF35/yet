@@ -129,6 +129,24 @@
   color: var(--muted);
 }
 
+/* Browser interno di un'app: l'avviso sta SOPRA il bottone perche' cambia la
+   decisione (cambiare browser), non commenta il risultato. Coral e non rosso:
+   non e' un errore del sito ne' un'azione andata male, e' un'informazione che
+   serve prima di provare. */
+.inAppNotice {
+  max-inline-size: var(--measure);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4);
+
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+
+  border-inline-start: 3px solid var(--coral);
+  background-color: var(--coral-soft);
+  text-wrap: pretty;
+}
+
 /* -------------------------------------------------------------------------
    BOTTONI
 
