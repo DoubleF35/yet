@@ -62,7 +62,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
   gap: var(--space-5);
-  align-items: start;
+  /* `stretch` e non `start`: e' questo che rende alte uguali le celle di una
+     stessa riga. Con `start` ogni card prendeva l'altezza del proprio
+     contenuto, e una bio lunga faceva sporgere la sua tessera dalle vicine.
+
+     `grid-auto-rows: 1fr` fa il passo che mancava: rende uguali anche le RIGHE
+     fra loro. Senza, la prima fila veniva 430px, la seconda 453 e la terza
+     442, perche' ognuna si adattava alla bio piu' lunga che conteneva, e la
+     griglia sembrava storta pur essendo allineata riga per riga. */
+  align-items: stretch;
+  grid-auto-rows: 1fr;
 }
 
 .item {
@@ -76,14 +85,38 @@
 .card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
+  align-items: stretch;
+  /* Niente gap: la foto sta attaccata al bordo e i distacchi fra i blocchi di
+     testo li danno i loro margini. Un gap qui aprirebbe una fessura fra la
+     banda e il bordo della tessera. */
+  gap: 0;
 
   inline-size: 100%;
-  padding: var(--space-6);
+  /* NIENTE aspect-ratio qui, e la ragione l'ho vista misurando.
+     Con `aspect-ratio: 1/1` le tessere venivano 279x279 e sembravano perfette,
+     ma il contenuto ne serviva 303: i link social finivano DISEGNATI FUORI
+     dalla scatola, sopra le tessere vicine. Un quadrato che taglia il
+     contenuto non e' ordine, e' un difetto piu' difficile da vedere.
+     L'uniformita' la da' `grid-auto-rows: 1fr` sulla griglia: tutte le tessere
+     prendono l'altezza della piu' alta, quindi restano identiche fra loro e
+     nulla sporge. La proporzione che ne esce e' vicina al quadrato perche' la
+     bio e' tagliata a tre righe. */
+  block-size: 100%;
+
+  /* Nessun padding sulla card: la foto e' una banda che deve arrivare fino ai
+     bordi. Il respiro lo danno i blocchi di testo, che hanno il loro. */
+  padding: 0;
+  overflow: hidden;
   border: var(--border);
   background-color: var(--surface);
   transition: border-color var(--transition);
+}
+
+/* Aperta, la tessera smette di essere quadrata: e' l'utente ad averlo chiesto
+   cliccando "Mostra tutto", e la griglia lo assorbe senza spostare le altre.
+   Lo stato di riposo, che e' quello che si vede quasi sempre, resta ordinato. */
+.cardOpen {
+  aspect-ratio: auto;
 }
 
 .card:hover {
@@ -97,10 +130,26 @@
 }
 
 .head {
+  /* In colonna e non in riga: la foto e' sopra, a piena larghezza, e il nome
+     sta sotto. Prima erano affiancati e la foto era un bollino da 56px, in cui
+     il soggetto non si distingueva. */
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
   inline-size: 100%;
+}
+
+/* Il testo della tessera, tutto quello che sta sotto la foto. */
+.body,
+.identity,
+.bio,
+.bioEmpty,
+.toggle,
+.socials {
+  padding-inline: var(--space-5);
+}
+
+.identity {
+  padding-block-start: var(--space-4);
 }
 
 .identity {
@@ -131,12 +180,41 @@
 }
 
 .bio {
-  margin: 0;
+  margin: var(--space-3) 0 0;
   line-height: var(--lh-relaxed);
   color: var(--ink);
   /* I ritorni a capo scritti dall'utente contano anche qui. */
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+
+  /* La bio prende tutto lo spazio che avanza fra l'intestazione e i social:
+     e' cosi' che i social finiscono sempre allo stesso posto, in fondo alla
+     tessera, invece di salire e scendere con la lunghezza del testo. */
+  flex: 1 1 auto;
+  min-block-size: 0;
+
+  /* Tagliata a un numero fisso di righe, con i puntini. Il testo intero resta
+     nel DOM: si nasconde, non si tronca, quindi la ricerca del browser lo
+     trova comunque e il bottone "Mostra tutto" lo rivela per intero. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* Tre righe e non quattro: e' il numero che tiene la tessera vicina al
+     quadrato senza far sporgere i social. Cambiandolo cambia la proporzione di
+     tutta la griglia, perche' l'altezza comune si adatta alla piu' alta. */
+  /* Due righe: con la banda quadrata in cima lo spazio per il testo si e'
+     dimezzato, e tre righe rendevano la tessera troppo alta rispetto alla
+     foto. Il testo intero resta nel DOM e "Mostra tutto" lo apre. */
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Aperta: nessun taglio. */
+.bioOpen {
+  display: block;
+  -webkit-line-clamp: none;
+  line-clamp: none;
+  overflow: visible;
 }
 
 .bioEmpty {
@@ -171,7 +249,10 @@
 
 .socials {
   list-style: none;
-  margin: var(--space-1) 0 0;
+  /* auto in cima: spinge i social in fondo alla tessera, cosi' su tutte le
+     card stanno alla stessa altezza invece di seguire la lunghezza della bio. */
+  margin: auto 0 0;
+  padding-block-end: var(--space-5);
   padding: 0;
 
   display: flex;
@@ -406,121 +487,20 @@
 .reveal {
   display: flex;
   width: 100%;
+  /* Deve riempire la cella in ALTEZZA, non solo in larghezza: senza, la card
+     dentro non ha da chi ereditare il 100% e la griglia a righe uguali non
+     serve a niente. */
+  height: 100%;
 }
 
-/* =========================================================================
-   7. TELEFONO: DUE CARD PER RIGA
-
-   La griglia automatica ha 17rem di colonna minima, che su un telefono non ci
-   sta due volte: usciva UNA card per riga, alta quasi uno schermo, e la
-   vetrina si guardava un profilo alla volta.
-
-   Cambiare il numero di colonne, da solo, non basta: la card scende da 349 a
-   132px e quello che dentro stava in riga non ci sta piu'. Ma non smette di
-   starci tutto insieme, ed e' per questo che qui sotto ci sono TRE soglie e
-   non una: ognuna e' la larghezza a cui un pezzo preciso sfonda, misurata.
-
-     768px  due colonne al posto della griglia automatica
-     560px  l'avatar non sta piu' accanto al nome (serve al distintivo:
-            "Organizza" e' una parola sola larga 114px e non va a capo, e
-            sotto questa soglia usciva dal bordo della card)
-     480px  le pill social con l'etichetta non stanno piu' in riga
-
-   Una soglia unica a 768px stringerebbe anche card da 348px, che di spazio ne
-   hanno; una unica a 480px lascerebbe il distintivo fuori dal bordo fra 481 e
-   560. Verificato a diciannove larghezze da 1280 a 320.
-   ====================================================================== */
-
-@media (max-width: 47.9375rem) {
-  .grid {
-    /* Due colonne fisse. `minmax(0, 1fr)` e non `1fr` secco: 1fr non scende
-       sotto il contenuto minimo, e un nome lungo allargherebbe la griglia
-       oltre il bordo dello schermo invece di andare a capo. */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 35rem) {
-  .grid {
-    gap: var(--space-4);
-  }
-
-  .card {
-    padding: var(--space-4);
-    gap: var(--space-3);
-  }
-
-  /* Avatar sopra, nome sotto. Affiancati si portano via 72px di riga, e quello
-     che resta non basta ne' al nome ne' al distintivo. */
-  .head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  .name {
-    font-size: var(--step-0);
-  }
-
-  /* Lo scheletro del caricamento deve avere la stessa forma della card vera,
-     altrimenti la pagina salta quando i dati arrivano: e' il motivo per cui
-     esiste invece di una rotella. */
-  .ghost {
-    padding: var(--space-4);
-    gap: var(--space-3);
-  }
-
-  .ghostHead {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  /* Le barre dello scheletro hanno la larghezza scritta inline (9rem per il
-     bottone finto): in una card da 132px sfondavano. max-inline-size le
-     riporta dentro senza toccare il componente, che serve a tutto il sito. */
-  .ghost span {
-    max-inline-size: 100%;
-  }
-}
-
-@media (max-width: 30rem) {
-  /* Il distintivo e' maiuscolo e spaziato: "IL TUO PROFILO" a corpo pieno
-     riempie da solo la larghezza della card. */
-  .badge {
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-  }
-
-  /* Le pill diventano SOLA ICONA. Con l'etichetta ce ne sta una per riga:
-     tre social si incolonnavano e da soli occupavano piu' spazio della bio.
-     Il nome del social non si perde, sta nell'aria-label del link, che c'e'
-     gia' e lo cita per esteso. La WCAG 2.5.3 (Label in Name) chiede che il
-     testo VISIBILE sia contenuto nel nome accessibile: senza testo visibile
-     il criterio non si applica, e il bersaglio resta di 44px. */
-  .social span {
-    display: none;
-  }
-
-  .social {
-    /* Quadrata come il bersaglio minimo, cosi' tre pill stanno in una riga. */
-    inline-size: 2.75rem;
-    justify-content: center;
-    padding-inline: 0;
-  }
-
-  .socials {
-    gap: var(--space-1);
-  }
-
-  /* L'anteprima della bio e' tagliata a 120 battute, che in una colonna larga
-     un terzo diventano otto o nove righe: la card cresceva a dismisura e le
-     due colonne finivano con altezze molto diverse. Qui si fermano a cinque
-     righe, e il resto sta dietro "Mostra tutto" come prima. */
-  .bioClamped {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
-    overflow: hidden;
-  }
+/* Il contenitore della rivelazione dentro il <li>: deve riempire la cella
+   della griglia, altrimenti la card si restringe al proprio contenuto e
+   l'allineamento fra le colonne salta. */
+.reveal {
+  display: flex;
+  width: 100%;
+  /* Deve riempire la cella in ALTEZZA, non solo in larghezza: senza, la card
+     dentro non ha da chi ereditare il 100% e la griglia a righe uguali non
+     serve a niente. */
+  height: 100%;
 }

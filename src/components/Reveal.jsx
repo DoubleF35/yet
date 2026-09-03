@@ -6,7 +6,7 @@ import s from './Reveal.module.css'
  * Avvolge un blocco e lo fa comparire quando entra nello schermo.
  *
  * Il movimento è volutamente piccolo: 14px di risalita e 520ms. Le animazioni
- * che si notano sono quelle sbagliate — se ti accorgi che è animato mentre
+ * che si notano sono quelle sbagliate: se ti accorgi che è animato mentre
  * leggi, l'animazione sta rubando attenzione al contenuto invece di
  * accompagnarlo.
  *

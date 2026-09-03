@@ -13,7 +13,7 @@ const COLORI = [
     nome: 'Coral',
     hex: '#D14A2C',
     ruolo: 'L’accento. La freccia del marchio, i dettagli, un solo elemento per schermata.',
-    nota: 'Su fondo scuro fa 4,2:1 — va bene per titoli e icone, non per il testo piccolo.',
+    nota: 'Su fondo scuro fa 4,2:1. Va bene per titoli e icone, non per il testo piccolo.',
   },
   {
     nome: 'Beige',
