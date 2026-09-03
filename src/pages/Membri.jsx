@@ -192,7 +192,7 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
         aria-labelledby={nameId}
       >
         <header className={s.head}>
-          <Avatar src={member.photoURL} name={name} size={56} />
+          <Avatar src={member.photoURL} name={name} fill />
           <div className={s.identity}>
             <h2 className={s.name} id={nameId}>
               {name}

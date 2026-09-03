@@ -39,3 +39,32 @@
      compensazione le centra davvero nel quadrato. */
   padding-block-start: 1px;
 }
+
+/* =========================================================================
+   MODALITA' "RIEMPI IL CONTENITORE"
+
+   Usata dalle tessere della Vetrina. Il quadrato lo tiene aspect-ratio, non
+   una misura in pixel: cosi' la foto si adatta alla colonna della griglia,
+   che cambia larghezza fra 375px e 1440px.
+   `flex: 0 0 auto` va annullato, altrimenti la banda non si allargherebbe.
+   ====================================================================== */
+
+.fill {
+  display: flex;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  /* Niente bordo attorno alla foto quando e' una banda: il bordo della
+     tessera basta, e due cornici concentriche a 3px di distanza sono il
+     classico dettaglio che fa sembrare un sito assemblato. */
+  border: 0;
+  border-block-end: var(--border);
+}
+
+.fill.image {
+  /* `center 30%` e non il centro geometrico: nei ritratti la testa sta nel
+     terzo superiore, e un ritaglio centrato taglia la fronte per mostrare il
+     petto. */
+  object-position: center 30%;
+}

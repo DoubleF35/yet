@@ -31,11 +31,16 @@ export function initialsFrom(name) {
  * Avatar quadrato: la foto se c'è ed è caricabile, altrimenti le iniziali su
  * fondo coral.
  *
- * @param {string} [src]  URL della foto
- * @param {string} [name] nome, per le iniziali e per il testo alternativo
- * @param {number} [size] lato in px (default 48)
+ * @param {string}  [src]  URL della foto
+ * @param {string}  [name] nome, per le iniziali e per il testo alternativo
+ * @param {number}  [size] lato in px (default 48)
+ * @param {boolean} [fill] se vero ignora `size` e riempie il contenitore,
+ *                  mantenendo il quadrato con aspect-ratio. Serve alle tessere
+ *                  della Vetrina, dove la foto e' una banda a piena larghezza
+ *                  e non un bollino accanto al nome: e' l'unico modo di vedere
+ *                  davvero chi c'e' nella foto.
  */
-export default function Avatar({ src, name, size = 48, className = '' }) {
+export default function Avatar({ src, name, size = 48, fill = false, className = '' }) {
   const [failed, setFailed] = useState(false)
 
   /* Se cambia la foto (succede nell'anteprima della pagina Join, a ogni tasto)
@@ -56,12 +61,17 @@ export default function Avatar({ src, name, size = 48, className = '' }) {
 
   // Le iniziali scalano col riquadro: a 32px un font fisso da 18px sborda,
   // a 96px sembra un francobollo.
-  const style = { '--avatar-size': `${size}px`, '--avatar-font': `${Math.round(size * 0.38)}px` }
+  /* In modalita' `fill` la dimensione la decide il contenitore, quindi non si
+     scrive nessuna misura fissa: si passa solo il corpo delle iniziali, che
+     resta proporzionato perche' e' espresso in unita' relative alla tessera. */
+  const style = fill
+    ? { '--avatar-font': 'clamp(2rem, 14vw, 3.5rem)' }
+    : { '--avatar-size': `${size}px`, '--avatar-font': `${Math.round(size * 0.38)}px` }
 
   if (showImage) {
     return (
       <img
-        className={`${s.avatar} ${s.image} ${className}`.trim()}
+        className={`${s.avatar} ${s.image} ${fill ? s.fill : ''} ${className}`.trim()}
         style={style}
         src={clean}
         // L'immagine è già accompagnata dal nome scritto accanto in ogni punto
@@ -69,8 +79,7 @@ export default function Avatar({ src, name, size = 48, className = '' }) {
         // a uno screen reader. Quindi alt vuoto e aria-hidden.
         alt=""
         aria-hidden="true"
-        width={size}
-        height={size}
+        {...(fill ? {} : { width: size, height: size })}
         loading="lazy"
         decoding="async"
         // Una foto Google che non carica (link scaduto, utente offline) deve
@@ -82,7 +91,15 @@ export default function Avatar({ src, name, size = 48, className = '' }) {
   }
 
   return (
-    <span className={`${s.avatar} ${s.fallback} ${className}`.trim()} style={style} aria-hidden="true">
+    /* Anche il ripiego con le iniziali deve prendere `fill`: senza, chi non ha
+       messo la foto avrebbe un quadratino da 48px dove gli altri hanno una
+       banda da 300, e la griglia tornerebbe irregolare proprio sulle tessere
+       piu' spoglie. */
+    <span
+      className={`${s.avatar} ${s.fallback} ${fill ? s.fill : ''} ${className}`.trim()}
+      style={style}
+      aria-hidden="true"
+    >
       {initialsFrom(label)}
     </span>
   )

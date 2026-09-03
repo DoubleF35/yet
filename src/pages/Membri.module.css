@@ -85,8 +85,11 @@
 .card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
+  align-items: stretch;
+  /* Niente gap: la foto sta attaccata al bordo e i distacchi fra i blocchi di
+     testo li danno i loro margini. Un gap qui aprirebbe una fessura fra la
+     banda e il bordo della tessera. */
+  gap: 0;
 
   inline-size: 100%;
   /* NIENTE aspect-ratio qui, e la ragione l'ho vista misurando.
@@ -100,7 +103,10 @@
      bio e' tagliata a tre righe. */
   block-size: 100%;
 
-  padding: var(--space-6);
+  /* Nessun padding sulla card: la foto e' una banda che deve arrivare fino ai
+     bordi. Il respiro lo danno i blocchi di testo, che hanno il loro. */
+  padding: 0;
+  overflow: hidden;
   border: var(--border);
   background-color: var(--surface);
   transition: border-color var(--transition);
@@ -124,10 +130,26 @@
 }
 
 .head {
+  /* In colonna e non in riga: la foto e' sopra, a piena larghezza, e il nome
+     sta sotto. Prima erano affiancati e la foto era un bollino da 56px, in cui
+     il soggetto non si distingueva. */
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
   inline-size: 100%;
+}
+
+/* Il testo della tessera, tutto quello che sta sotto la foto. */
+.body,
+.identity,
+.bio,
+.bioEmpty,
+.toggle,
+.socials {
+  padding-inline: var(--space-5);
+}
+
+.identity {
+  padding-block-start: var(--space-4);
 }
 
 .identity {
@@ -158,7 +180,7 @@
 }
 
 .bio {
-  margin: 0;
+  margin: var(--space-3) 0 0;
   line-height: var(--lh-relaxed);
   color: var(--ink);
   /* I ritorni a capo scritti dall'utente contano anche qui. */
@@ -179,8 +201,11 @@
   /* Tre righe e non quattro: e' il numero che tiene la tessera vicina al
      quadrato senza far sporgere i social. Cambiandolo cambia la proporzione di
      tutta la griglia, perche' l'altezza comune si adatta alla piu' alta. */
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  /* Due righe: con la banda quadrata in cima lo spazio per il testo si e'
+     dimezzato, e tre righe rendevano la tessera troppo alta rispetto alla
+     foto. Il testo intero resta nel DOM e "Mostra tutto" lo apre. */
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
 }
 
@@ -227,6 +252,7 @@
   /* auto in cima: spinge i social in fondo alla tessera, cosi' su tutte le
      card stanno alla stessa altezza invece di seguire la lunghezza della bio. */
   margin: auto 0 0;
+  padding-block-end: var(--space-5);
   padding: 0;
 
   display: flex;
