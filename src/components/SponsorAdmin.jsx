@@ -13,7 +13,7 @@ const VUOTO = { nome: '', url: '', nota: '', ordine: '500' }
  *
  * Volutamente più spartana della redazione delle notizie: gli sponsor si
  * aggiungono una volta ogni tanto e si toccano raramente. Niente modifica in
- * linea, si cancella e si rifà — con quattro campi è più veloce che gestire
+ * linea, si cancella e si rifà: con quattro campi è più veloce che gestire
  * uno stato di editing.
  */
 export default function SponsorAdmin() {

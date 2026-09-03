@@ -91,7 +91,7 @@ export default function Sponsor() {
         <h1 className={s.title}>Chi ci sostiene</h1>
         <p className={s.lead}>
           {COMMUNITY.name} non ha quote di iscrizione: chi entra non paga niente. Quello che serve
-          per organizzare un evento — una sala, il pranzo, il materiale — arriva da chi decide di
+          per organizzare un evento (una sala, il pranzo, il materiale) arriva da chi decide di
           darci una mano.
         </p>
       </header>
