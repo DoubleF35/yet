@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { COMMUNITY } from '../config/socials.js'
+import { useParallax } from '../lib/motion.js'
 
 import s from './Hero.module.css'
 
@@ -18,6 +19,8 @@ import s from './Hero.module.css'
  * cui è più grande.
  */
 export default function Hero() {
+  const { refContenitore, refBersaglio } = useParallax()
+
   const base = import.meta.env.BASE_URL
   const [taglineTesto, taglinePunto] = (() => {
     const t = COMMUNITY.tagline || 'Build ambition.'
@@ -25,11 +28,12 @@ export default function Hero() {
   })()
 
   return (
-    <header className={s.hero}>
+    <header className={s.hero} ref={refContenitore}>
       {/* La foto è decorativa: il contenuto informativo è tutto nel testo qui
           sotto. alt vuoto e aria-hidden, così uno screen reader non annuncia
           "immagine, platea sfocata" prima del titolo. */}
       <img
+        ref={refBersaglio}
         className={s.photo}
         src={`${base}hero-bg.jpg`}
         alt=""
