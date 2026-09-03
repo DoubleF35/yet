@@ -33,6 +33,17 @@
 .photo {
   position: absolute;
   inset: 0;
+  /* Il parallasse scrive `transform` e `opacity` da JavaScript. Dichiararle
+     qui come will-change dice al browser di tenere la foto su un livello suo
+     fin dall'inizio, invece di promuoverla al primo scroll: senza, il primo
+     movimento e' uno scatto.
+     transform-origin in alto: rimpicciolendo, la foto deve restare ancorata
+     al bordo superiore, altrimenti scopre una striscia nera sotto la navbar. */
+  will-change: transform, opacity;
+  transform-origin: center top;
+  /* Zoom di riposo, prima che il JS prenda il controllo: senza, al primo
+     fotogramma la foto e' a scala 1 e poi salta a 1.12. */
+  transform: scale(1.12);
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
@@ -238,8 +249,9 @@
    Tutta dentro `prefers-reduced-motion: no-preference`, e la scelta non e'
    stilistica ma strutturale: lo stato predefinito, fuori da questa media
    query, e' il contenuto VISIBILE. L'animazione e' un di piu' che si applica
-   solo a chi la vuole. Il contrario — nascondere di default e mostrare con
-   l'animazione — lascerebbe la schermata vuota a chi ha ridotto il movimento.
+   solo a chi la vuole. Il contrario, cioe' nascondere di default e mostrare
+   con l'animazione, lascerebbe la schermata vuota a chi ha ridotto il
+   movimento.
 
    Nessun ritardo supera i 320ms: oltre, chi apre il sito guarda un titolo che
    non c'e' ancora, e l'attesa si nota piu' dell'effetto.
@@ -262,10 +274,17 @@
 
   /* La foto entra da sola, piu' lentamente e senza spostarsi: una leggera
      dissolvenza con un accenno di zoom che si ferma. Il movimento e' 1.5%,
-     quasi impercettibile — serve a togliere la sensazione di immagine
+     quasi impercettibile: serve a togliere la sensazione di immagine
      incollata, non a fare un effetto. */
   .photo {
-    animation: respira 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    /* `backwards` e non `both`, ed e' la seconda meta' dello stesso problema.
+       `both` trattiene il valore finale dell'animazione per sempre, e siccome
+       le animazioni battono gli stili inline, l'opacita' scritta dal
+       parallasse non avrebbe mai effetto. `backwards` applica solo lo stato
+       INIZIALE prima che l'animazione parta: quando finisce, l'elemento torna
+       a obbedire allo stile inline, che e' quello che il parallasse aggiorna
+       a ogni fotogramma. */
+    animation: respira 1400ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 }
 
@@ -280,13 +299,20 @@
   }
 }
 
+/* SOLO opacita', nessuna trasformazione, e la ragione e' una regola della
+   cascata che si scopre a proprie spese: le animazioni CSS hanno la
+   precedenza sugli stili inline. Finche' questi fotogrammi contenevano un
+   `transform`, con animation-fill-mode: both il valore finale restava
+   applicato per sempre e sovrascriveva il transform che il parallasse scrive
+   da JavaScript: la foto sembrava semplicemente non muoversi, senza nessun
+   errore in console.
+   Lo zoom d'ingresso non serve piu' comunque: il parallasse parte gia' da
+   1.12 e scende, che e' lo stesso movimento fatto meglio. */
 @keyframes respira {
   from {
     opacity: 0;
-    transform: scale(1.015);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }

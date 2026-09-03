@@ -27,7 +27,7 @@ import {
 
 import { auth, db, isFirebaseConfigured } from './firebase.js'
 import { isAdminEmail } from '../config/admins.js'
-import { normalizeAttachments } from './attachments.js'
+import { normalizeAttachments, safeUrl } from './attachments.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
  *  della pagina Join sia, soprattutto, le regole in firestore.rules, che
@@ -638,7 +638,7 @@ export async function deleteMedia(id) {
 }
 
 /* --------------------------------------------------------------------------
-   sponsors/ — chi sostiene la community
+   sponsors/ : chi sostiene la community
 
    Il logo non sta qui dentro: sta in `media` come tutti gli altri file
    caricati, e qui resta solo il riferimento. Una collection in meno da
@@ -688,4 +688,142 @@ export async function deleteSponsor(id, logoMediaId) {
   // Il logo non serve piu' a nessuno: lo togliamo, ma senza far fallire la
   // cancellazione dello sponsor se per qualche motivo non ci riusciamo.
   if (logoMediaId) await deleteMedia(logoMediaId)
+}
+
+/* --------------------------------------------------------------------------
+   meetups/ : gli incontri veri, quelli con una data e un posto
+
+   Separati dalle notizie di proposito, e non e' una distinzione formale: un
+   incontro ha una DATA FUTURA, e questo cambia tutto. Si ordina al contrario
+   (prima il piu' vicino, non il piu' recente), si divide fra "in arrivo" e
+   "gia' fatti", e quando la data passa deve sparire dalla cima da solo, senza
+   che nessuno vada a spostarlo a mano. Una notizia invece invecchia e basta.
+-------------------------------------------------------------------------- */
+
+const MEETUPS = 'meetups'
+
+/** Limiti, allineati a quelli in firestore.rules. */
+export const MEETUP_TITLE_MAX = 120
+export const MEETUP_PLACE_MAX = 120
+export const MEETUP_BODY_MAX = 4000
+
+/**
+ * Ascolta gli incontri.
+ *
+ * Nessun orderBy nella query, per la stessa ragione del feed delle notizie:
+ * where + orderBy e' una query composta e Firestore pretende un indice creato
+ * a mano, che finche' non esiste fa fallire tutto con failed-precondition. Con
+ * i numeri di un club l'ordinamento lato client non si sente.
+ */
+export function listenMeetups({ onlyPublished = true } = {}, onData, onError) {
+  if (!isFirebaseConfigured) {
+    onError?.(notConfigured())
+    return () => {}
+  }
+
+  const vincoli = []
+  if (onlyPublished) vincoli.push(where('published', '==', true))
+  const q = query(collection(db, MEETUPS), ...vincoli)
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const tutti = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+
+      /* Il confronto e' sull'INIZIO DEL GIORNO, non sull'istante: un incontro
+         delle 18 non deve sparire dagli "in arrivo" alle 18:01 mentre e'
+         ancora in corso. Resta fra i prossimi per tutta la sua giornata. */
+      const oggi = new Date()
+      oggi.setHours(0, 0, 0, 0)
+
+      const conData = tutti.map((m) => ({ ...m, _quando: toDate(m.startsAt) }))
+
+      const prossimi = conData
+        .filter((m) => m._quando && m._quando >= oggi)
+        // crescente: il piu' vicino per primo, che e' quello che serve sapere
+        .sort((a, b) => a._quando - b._quando)
+
+      const passati = conData
+        .filter((m) => !m._quando || m._quando < oggi)
+        // decrescente: l'ultimo fatto per primo
+        .sort((a, b) => (b._quando ?? 0) - (a._quando ?? 0))
+
+      onData?.({ prossimi, passati, tutti: [...prossimi, ...passati] })
+    },
+    (error) => onError?.(error),
+  )
+}
+
+function puliscoMeetup({ title, startsAt, place, body, url, published }) {
+  const t = String(title ?? '').trim()
+  if (!t) throw new Error('Il titolo non puo’ essere vuoto.')
+  if (t.length > MEETUP_TITLE_MAX) {
+    throw new Error(`Il titolo supera i ${MEETUP_TITLE_MAX} caratteri.`)
+  }
+
+  /* La data arriva dall'input type="datetime-local" come stringa senza fuso.
+     Va convertita in Date QUI: salvarla come testo vorrebbe dire non poterla
+     piu' confrontare ne' ordinare, e scoprirlo fra sei mesi. */
+  const quando = startsAt ? new Date(startsAt) : null
+  if (!quando || Number.isNaN(quando.getTime())) {
+    throw new Error('Serve una data valida per l’incontro.')
+  }
+
+  const luogo = String(place ?? '').trim().slice(0, MEETUP_PLACE_MAX)
+  const testo = String(body ?? '').trim().slice(0, MEETUP_BODY_MAX)
+
+  // Solo http(s), stesso controllo degli allegati: un `javascript:` in un href
+  // e' codice che parte al clic.
+  const link = safeUrl(url) ?? ''
+
+  return { title: t, startsAt: quando, place: luogo, body: testo, url: link, published: Boolean(published) }
+}
+
+export async function createMeetup(dati, author) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  const p = puliscoMeetup(dati)
+
+  const ref = await addDoc(collection(db, MEETUPS), {
+    ...p,
+    authorUid: author?.uid ?? null,
+    authorName: author?.displayName || author?.name || 'Redazione YET',
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function updateMeetup(id, patch) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!id) throw new Error('Manca l’identificativo dell’incontro.')
+
+  const ammessi = {}
+  if (patch.title !== undefined || patch.startsAt !== undefined) {
+    // Titolo e data si validano insieme: sono i due campi obbligatori.
+    const p = puliscoMeetup({ ...patch })
+    Object.assign(ammessi, p)
+  } else {
+    if (typeof patch.published === 'boolean') ammessi.published = patch.published
+  }
+
+  if (Object.keys(ammessi).length === 0) return
+  await updateDoc(doc(db, MEETUPS, id), ammessi)
+}
+
+export async function deleteMeetup(id) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!id) throw new Error('Manca l’identificativo dell’incontro.')
+  await deleteDoc(doc(db, MEETUPS, id))
+}
+
+/** "giovedi 12 settembre, 18:30" */
+export function formatMeetupDate(value) {
+  const d = toDate(value)
+  if (!d) return 'data da definire'
+  const giorno = new Intl.DateTimeFormat('it-IT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(d)
+  const ora = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit' }).format(d)
+  return `${giorno}, ${ora}`
 }

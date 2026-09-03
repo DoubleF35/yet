@@ -24,14 +24,14 @@
 #
 # E una terza, sul lato Firebase, che si scopre sempre troppo tardi:
 # Authentication -> Settings -> Authorized domains -> aggiungi
-# <tuo-utente>.github.io. Senza, il login con Google funziona in locale e
+# yetcommunity.it. Senza, il login con Google funziona in locale e
 # fallisce in produzione con "auth/unauthorized-domain".
 #
 # -----------------------------------------------------------------------------
-# STATO DI QUESTO REPO (DoubleF35/yet), aggiornato all'8 agosto 2026:
+# STATO DI QUESTO REPO (DoubleF35/yet), aggiornato a settembre 2026:
 #   [x] Pages impostato su "GitHub Actions"
 #   [x] i sette secret creati
-#   [ ] doublef35.github.io fra i Domini autorizzati di Firebase
+#   [ ] yetcommunity.it fra i Domini autorizzati di Firebase
 #   [ ] firestore.rules pubblicate (il database è in modalità di produzione,
 #       quindi finché non lo fai ogni lettura e scrittura viene negata)
 # =============================================================================
@@ -82,11 +82,8 @@ jobs:
 
       - name: Build
         env:
-          # La base di Vite calcolata dal nome del repository, così resta
-          # giusta anche se il repo viene rinominato o forkato.
-          # vite.config.js legge process.env.VITE_BASE e lo preferisce alla
-          # costante scritta nel file.
-          VITE_BASE: /${{ github.event.repository.name }}/
+          # Impostato a '/' per servire le risorse correttamente dal dominio radice custom (yetcommunity.it)
+          VITE_BASE: /
 
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}

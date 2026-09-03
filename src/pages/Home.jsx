@@ -52,7 +52,11 @@ export default function Home() {
   const [membri, setMembri] = useState(null)
 
   /* Il conteggio si anima solo quando lo si guarda davvero. */
-  const contatore = useReveal({ threshold: 0.4 })
+  /* Soglia bassa: il numero sta in cima alla sezione, quindi deve partire
+     appena il bordo superiore entra nello schermo. Con una soglia alta si
+     vedeva la sezione comparire con lo zero e restare li' finche' non era
+     visibile per il 40%. */
+  const contatore = useReveal({ threshold: 0.05 })
   const numeroMostrato = useCountUp(membri ?? 0, { start: contatore.revealed })
 
   /* I contenuti dei file caricati, per id. Stanno qui e non dentro le card
@@ -147,7 +151,16 @@ export default function Home() {
           un numero in mezzo a due bottoni, e ruberebbe la scena alla frase che
           conta. Qui invece e' la prima cosa che si incontra scorrendo. */}
       {membri !== null && membri > 0 && (
-        <section className={`${s.tallyBlock} container`} ref={contatore.ref}>
+        /* La sezione resta invisibile finche' il conteggio non parte, ed e'
+           una correzione di sostanza, non di stile: mostrare "0 persone stanno
+           costruendo con noi" e' una frase FALSA, e restava a schermo per
+           tutto il tempo in cui la sezione era visibile ma non ancora
+           abbastanza da far scattare l'osservatore. Nascondendola, lo zero non
+           lo vede nessuno e il numero compare gia' mentre sale. */
+        <section
+          className={`${s.tallyBlock} container ${contatore.revealed ? s.tallyIn : s.tallyOut}`}
+          ref={contatore.ref}
+        >
           <Link className={s.tallyLink} to="/vetrina">
             {/* Il numero sale da zero quando la sezione entra nello schermo,
                 non al caricamento della pagina: partire mentre e' ancora

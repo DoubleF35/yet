@@ -457,6 +457,60 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // meetups/{id} : gli incontri veri, con data e luogo
+    //
+    // Separati dalle notizie perche' hanno una data FUTURA, e quindi un ordine
+    // e un ciclo di vita diversi: si mostrano dal piu' vicino, e quando la
+    // data passa scendono da soli fra quelli gia' fatti.
+    //
+    // Lettura pubblica come le notizie: chi deve decidere se venire a un
+    // incontro non puo' doversi prima iscrivere al sito.
+    // Scrittura ai soli admin.
+    // =========================================================================
+    match /meetups/{meetupId} {
+
+      allow read: if true;
+
+      function meetupKeysOk() {
+        return incoming().keys().hasOnly(
+          ['title', 'startsAt', 'place', 'body', 'url', 'published',
+           'authorUid', 'authorName', 'createdAt']
+        );
+      }
+
+      function meetupShapeOk() {
+        return meetupKeysOk()
+            && incoming().title is string
+            && incoming().title.size() >= 1
+            && incoming().title.size() <= 120
+            // timestamp e non stringa: e' cio' che permette di ordinare e di
+            // confrontare con "adesso". Salvarla come testo sarebbe comodo
+            // oggi e ingestibile fra sei mesi.
+            && incoming().startsAt is timestamp
+            && incoming().place is string
+            && incoming().place.size() <= 120
+            && incoming().body is string
+            && incoming().body.size() <= 4000
+            && incoming().url is string
+            && incoming().url.size() <= 2000
+            && (incoming().url == '' || incoming().url.matches('(?i)https?://.*'))
+            && incoming().published is bool;
+      }
+
+      allow create: if isAdmin()
+                    && meetupShapeOk()
+                    && incoming().authorUid == request.auth.uid
+                    && incoming().createdAt == request.time;
+
+      allow update: if isAdmin()
+                    && meetupShapeOk()
+                    && incoming().authorUid == stored().authorUid
+                    && incoming().createdAt == stored().createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
     // TUTTO IL RESTO: NEGATO
     //
     // Non è ridondante rispetto al comportamento predefinito di Firestore.

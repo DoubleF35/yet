@@ -1,6 +1,7 @@
 # YET, Young Entrepreneurs Together
 
-Sito della community YET: giovani builder dai 16 ai 23 anni, con base a Torino.
+Sito della community YET: giovani builder dai 16 ai 23 anni. I primi eventi
+saranno a Torino, l'obiettivo e' farne in tutta Italia.
 
 Sito statico in React, servito da GitHub Pages, con Firebase (Auth + Firestore)
 per il login e per i contenuti. **Niente backend, niente Cloud Functions**: tutto
@@ -16,13 +17,16 @@ sta nel piano gratuito Spark di Firebase.
 4. [Impostare i 4 admin](#impostare-i-4-admin)
 5. [Pubblicare le regole di sicurezza](#pubblicare-le-regole-di-sicurezza)
 6. [Deploy su GitHub Pages](#deploy-su-github-pages)
-7. [Allegati alle notizie](#allegati-alle-notizie)
-8. [Iscrizione con approvazione](#iscrizione-con-approvazione)
-9. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-10. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-11. [Struttura delle cartelle](#struttura-delle-cartelle)
-12. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-13. [Problemi comuni](#problemi-comuni)
+7. [Il tema scuro, e la regola di contrasto che sorprende](#il-tema-scuro-e-la-regola-di-contrasto-che-sorprende)
+8. [Gli incontri, e perche' non sono notizie](#gli-incontri-e-perche-non-sono-notizie)
+9. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
+10. [Allegati alle notizie](#allegati-alle-notizie)
+11. [Iscrizione con approvazione](#iscrizione-con-approvazione)
+12. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+13. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+14. [Struttura delle cartelle](#struttura-delle-cartelle)
+15. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+16. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -31,15 +35,21 @@ sta nel piano gratuito Spark di Firebase.
 | Rotta       | Pagina   | Cosa fa                                                                 | Serve il login? |
 | ----------- | -------- | ----------------------------------------------------------------------- | --------------- |
 | `/`         | Intro    | Video a schermo intero, poi passa alla home. Solo alla prima visita.     | no              |
-| `/home`     | Home     | Logo, tagline e feed delle notizie pubblicate.                           | no              |
-| `/membri`   | Membri   | Griglia dei profili, con bio espandibile e link social.                  | no              |
-| `/join`     | Join     | Cos'è YET; dopo il login, il form del proprio profilo.                   | per il form     |
-| `/contatti` | Contatti | Canali ufficiali e mail, presi da `src/config/socials.js`.               | no              |
-| `/privacy`  | Privacy  | Informativa GDPR. Descrive quello che il codice fa davvero.              | no              |
-| `/cookie`   | Cookie   | Cosa viene salvato sul dispositivo, e perché non c'è il banner.          | no              |
-| `/admin`    | Admin    | Scrivere, pubblicare, modificare ed eliminare le notizie.                | **solo admin**  |
+| `/home`     | Home     | Apertura fotografica, contatore dei membri, ultime notizie.             | no              |
+| `/vetrina`  | Vetrina  | Le persone di YET, a tessere con foto grande. (Si chiamava «Membri».)   | no              |
+| `/eventi`   | Eventi   | Gli incontri con data e luogo, poi le notizie.                          | no              |
+| `/join`     | Join     | Cos'e' YET; dopo il login, il form del proprio profilo.                 | per il form     |
+| `/contatti` | Contatti | Canali ufficiali e mail, presi da `src/config/socials.js`.              | no              |
+| `/brand`    | Brand    | Il kit di marca: logo, colori, tipografia, cosa non fare.               | no              |
+| `/sponsor`  | Sponsor  | Chi sostiene la community.                                              | no              |
+| `/privacy`  | Privacy  | Informativa GDPR. Descrive quello che il codice fa davvero.             | no              |
+| `/cookie`   | Cookie   | Cosa viene salvato sul dispositivo, e perche' non c'e' il banner.       | no              |
+| `/admin`    | Admin    | Notizie, richieste di iscrizione, sponsor.                              | **solo admin**  |
 
-Gli URL hanno il cancelletto: `https://…/yet/#/membri`. Il perché è
+`/vetrina` reindirizza a `/vetrina`: i link condivisi in giro prima della
+rinomina continuano a funzionare.
+
+Gli URL hanno il cancelletto: `https://…/yet/#/vetrina`. Il perché è
 [più sotto](#scelte-fatte-al-posto-tuo).
 
 ---
@@ -257,16 +267,35 @@ firebase deploy --only firestore:rules
 > scadere tutto smette di funzionare da solo. In entrambi i casi la risposta è
 > la stessa: pubblica le regole adesso, non "quando c'è tempo".
 
-Cosa fanno le regole, in breve:
+### Le cinque collection, e cosa fanno le regole
 
-- `users` e `news`: **lettura pubblica**, anche senza login.
-- `users/{uid}`: uno può creare e modificare **solo il proprio** documento, e
-  cancellare solo il proprio.
-- `news`: creare, modificare ed eliminare **solo** se l'email è nella allowlist.
-- Validazione dei campi lato server: lunghezze massime (la bio a 300 caratteri
-  è imposta **qui**, non solo dal contatore della UI), nessun campo estraneo,
-  `createdAt` che non può essere riscritto.
-- Tutto il resto: negato.
+| Collection  | Cosa contiene                                    | Chi legge | Chi scrive |
+| ----------- | ------------------------------------------------ | --------- | ---------- |
+| `users`     | i profili dei membri                             | chiunque, ma **solo gli approvati** | ognuno il proprio; gli admin solo lo `status` |
+| `news`      | le notizie                                       | chiunque  | admin      |
+| `meetups`   | gli incontri con data e luogo                    | chiunque  | admin      |
+| `media`     | i file caricati, un documento per file           | chiunque  | admin      |
+| `sponsors`  | chi sostiene la community                        | chiunque  | admin      |
+
+Campi principali:
+
+```
+users/{uid}   displayName, location, bio, photoURL, socials{linkedin,instagram,other},
+              role (admin|member), status (pending|approved|rejected),
+              createdAt, updatedAt
+news/{id}     title, body, attachments[], authorUid, authorName, createdAt, published
+meetups/{id}  title, startsAt (Timestamp), place, body, url, published,
+              authorUid, authorName, createdAt
+media/{id}    dataUrl, contentType, name, width, height, bytes, authorUid, createdAt
+sponsors/{id} nome, url, nota, logoMediaId, ordine
+```
+
+La validazione dei campi sta **nelle regole**, non solo nella UI: le lunghezze
+massime, l'assenza di campi estranei, `createdAt` che non può essere riscritto.
+Il limite della bio a 300 caratteri è imposto lì, non dal contatore della
+pagina Join, che è un aiuto per chi scrive e non un controllo.
+
+Tutto il resto: negato.
 
 Una cosa da sapere: **`published: false` nasconde una notizia, non la rende
 segreta.** La home filtra le bozze, ma la lettura della collection è pubblica e
@@ -330,6 +359,132 @@ L'action parte da sola (scheda **Actions**). Al termine il sito è su
 Da lì in poi ogni push su `main` ripubblica. Puoi anche lanciarlo a mano da
 **Actions** → **Deploy su GitHub Pages** → **Run workflow**: utile dopo aver
 cambiato un secret, che da solo non fa ripartire niente.
+
+---
+
+## Il tema scuro, e la regola di contrasto che sorprende
+
+Il sito e' scuro dal 31 agosto 2026. Non e' una palette nuova: e' la stessa
+identita' rovesciata. **Il beige del marchio e' diventato il testo e il nero il
+fondo**, e il coral e' rimasto l'accento.
+
+Tutto il CSS usa variabili semantiche (`--bg`, `--ink`, `--surface`, `--line`,
+`--muted`), quindi il ribaltamento e' stato un cambio di valori in
+`src/styles/theme.css` e nient'altro. E' il motivo per cui vale la pena non
+scrivere mai un colore a mano dentro un componente.
+
+I contrasti sono **calcolati con la formula WCAG**, non scelti a occhio:
+
+| Colore | Su `#14120F` | Uso |
+| ------ | ------------ | --- |
+| `#F2EFE9` testo | 16,3:1 | tutto il testo, AAA |
+| `#B5ACA3` attenuato | 8,4:1 | note e didascalie |
+| `#E2603C` coral chiaro | 5,3:1 | testo coral, link, riempimenti |
+| `#D14A2C` coral del marchio | 4,2:1 | **solo** titoli grandi, icone, bordi |
+
+> ### Sopra un riempimento coral il testo va SCURO, non bianco.
+>
+> E' controintuitivo e verificato: su `#E2603C` il nero caldo fa **5,32:1**, il
+> bianco solo **3,52:1**. Sul tema chiaro era esattamente l'opposto. Da qui
+> `--on-coral: #14120f`.
+
+Il coral del marchio a 4,2:1 **non basta per il testo piccolo**. Per quello c'e'
+`--coral-text`. Il nome `--coral-dark` e' rimasto come alias per i moduli che lo
+usavano gia', ma sul tema scuro il coral "sicuro" e' piu' chiaro, non piu'
+scuro: e' l'unico punto in cui un nome mente, ed e' scritto nel file.
+
+Il logo nero sarebbe sparito sul fondo scuro, quindi ne esiste una versione
+chiara (`public/logo-light.png`), ottenuta ricolorando **solo i pixel scuri** e
+lasciando intatto il coral: e' lo stesso segno, non un logo diverso.
+
+---
+
+## Gli incontri, e perche' non sono notizie
+
+`/eventi` mostra due cose diverse: in cima gli **incontri**, sotto le
+**notizie**.
+
+Un incontro ha una **data futura**, e questo cambia tutto: si ordina al
+contrario (prima il piu' vicino, non il piu' recente), si divide fra "in arrivo"
+e "gia' fatti", e quando la data passa deve scendere da solo senza che nessuno
+lo sposti a mano. Una notizia invece invecchia e basta. Da qui una collection
+separata.
+
+Il pannello per crearli sta **in cima alla pagina Eventi**, non in `/admin`, e
+si mostra da solo ai soli amministratori. E' li' perche' un incontro si scrive
+guardando quelli che ci sono gia': dover cambiare pagina per vedere il risultato
+e' il modo piu' sicuro di pubblicare due volte lo stesso.
+
+Tre dettagli che vengono da come la cosa verra' usata davvero:
+
+- Il confronto per decidere se un incontro e' passato e' sull'**inizio del
+  giorno**, non sull'istante. Uno delle 18 non deve sparire dai prossimi alle
+  18:01 mentre e' ancora in corso.
+- Il link **«Iscriviti» compare solo sui prossimi**. Su un incontro gia' fatto
+  sarebbe una porta che non porta da nessuna parte.
+- La data si salva come **Timestamp**, non come stringa. Come testo non si
+  potrebbe piu' ne' ordinare ne' confrontare, e lo si scoprirebbe fra sei mesi.
+
+Se non ci sono incontri, il blocco **non renderizza niente**. Uno stato vuoto ha
+senso quando si cerca qualcosa che manca, non in cima a una pagina che ha
+comunque altro da mostrare.
+
+---
+
+## Il movimento, e le due regole che non si toccano
+
+Le animazioni sono poche di proposito: sono il punto in cui un sito scivola nel
+"sembra fatto da un generatore". Quelle che ci sono servono al contenuto.
+
+### 1. Senza JavaScript il contenuto si vede
+
+Lo stato nascosto (`.out` in `Reveal.module.css`) e' applicato **dal
+JavaScript**, non e' il default del CSS. Scrivere `opacity: 0` in un foglio di
+stile e toglierlo con gli script significa che un errore di rete lascia la
+pagina con tutto il testo presente e invisibile. Cosi' il caso peggiore e' che
+il contenuto compaia senza animazione.
+
+### 2. Con «riduci animazioni» non si muove niente
+
+Non meno: **niente**. `prefersReducedMotion()` in `src/lib/motion.js` fa uscire
+subito ogni effetto, e ogni foglio di stile ha comunque la sua
+`@media (prefers-reduced-motion: reduce)` come seconda rete. Le regole di
+accessibilita' si scrivono due volte.
+
+### Cosa si muove
+
+- **La navbar** e' trasparente sopra la foto d'apertura e diventa vetro
+  smerigliato dopo il 12% di schermo scorso. Solo sulla home: altrove non c'e'
+  una foto sotto e il logo resterebbe sospeso nel vuoto.
+- **L'apertura** entra scaglionata, con nessun ritardo oltre i 340ms.
+- **Il parallasse**: la foto si rimpicciolisce da 1.12 a 1, sale del 12% e
+  sfuma. Tocca **solo `transform` e `opacity`**, che il compositor gestisce
+  senza ridisegnare, ed e' limitato da `requestAnimationFrame`: al massimo un
+  aggiornamento per fotogramma.
+- **Le tessere** entrano a cascata, 70ms l'una, con un tetto alla sesta: oltre,
+  l'ultima di una lista lunga aspetterebbe piu' di un secondo.
+- **Il contatore** sale da zero, ma solo quando la sezione entra davvero nello
+  schermo.
+
+### Due trappole trovate a caro prezzo
+
+**Le animazioni CSS battono gli stili inline.** Un'animazione d'entrata che
+finiva con `transform: scale(1)` e `animation-fill-mode: both` teneva quel
+valore per sempre e annullava il parallasse, senza nessun errore in console: la
+foto sembrava solo non muoversi. La soluzione e' `backwards` invece di `both`,
+che applica lo stato iniziale ma non trattiene quello finale.
+
+**Un elemento superato da uno scroll veloce non si rivela piu'.**
+`IntersectionObserver` smette di notificare quando l'elemento e' sopra il bordo
+alto della finestra, e succede saltando in fondo alla pagina, con un link ad
+ancora e quando il browser ripristina la posizione di scroll. In `useReveal` c'e'
+una rete di sicurezza sia al montaggio sia dentro l'osservatore.
+
+**`useReveal` usa un ref di CALLBACK e non `useRef`**, e non e' pignoleria: con
+`useRef` l'effetto gira una volta sola dopo il primo render, quindi un blocco
+dietro una condizione (`{conteggio > 0 && ...}`, con il conteggio che arriva
+dalla rete) non aggancia mai l'osservatore e resta invisibile per sempre. E' il
+bug che mostrava «0 persone stanno costruendo con noi».
 
 ---
 
@@ -445,7 +600,7 @@ in giro il nome di chi l'aveva fatta.
 > `where('status','==','approved')`. Firestore non filtra i risultati in base
 > alle regole, pretende che la query sia costruita in modo che ogni risultato
 > le soddisfi. Senza quel `where` la query viene rifiutata in blocco, non
-> ridotta. Se un giorno vedi `permission-denied` sulla pagina Membri, guarda
+> ridotta. Se un giorno vedi `permission-denied` sulla pagina Vetrina, guarda
 > lì per primo.
 
 Gli **admin nascono già approvati**. Non è una scorciatoia: se dovessero passare
@@ -478,7 +633,7 @@ né la storia della privacy. Dimmi se preferisci una delle altre due.
 
 ### Il campo `role`
 
-Serve alla sezione «Chi organizza» della pagina Membri. È scritto dal client ma
+Serve alla sezione «Chi organizza» della pagina Vetrina. È scritto dal client ma
 non deciso dal client: le regole pretendono che corrisponda esattamente
 all'esito del confronto fra l'email del token e la allowlist, quindi chi non è
 in lista e prova a salvarsi `role: 'admin'` si vede rifiutare l'intera
@@ -680,11 +835,11 @@ tutte, con il perché e come cambiarle.
 
 ### 1. `HashRouter`, quindi gli URL hanno il `#`
 
-GitHub Pages serve file statici e non sa riscrivere `/membri` su `index.html`:
+GitHub Pages serve file statici e non sa riscrivere `/vetrina` su `index.html`:
 con un router normale, ricaricare la pagina su una rotta profonda darebbe 404.
 Con l'hash il server vede sempre e solo `/`.
 
-Il prezzo sono URL come `…/yet/#/membri`. Se un domani metti un dominio tuo con
+Il prezzo sono URL come `…/yet/#/vetrina`. Se un domani metti un dominio tuo con
 un hosting che sa fare i rewrite, si passa a `BrowserRouter` cambiando una riga
 in `src/main.jsx`.
 

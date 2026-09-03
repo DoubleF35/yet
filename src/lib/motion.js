@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Movimento, con una regola sola: se JavaScript non parte, il contenuto si
@@ -43,11 +43,24 @@ export function prefersReducedMotion() {
  * sito fatto col pilota automatico.
  */
 export function useReveal({ threshold = 0.15, delay = 0 } = {}) {
-  const ref = useRef(null)
+  /* Un ref di CALLBACK, non useRef, e la differenza è tutto il punto di
+     questa funzione.
+     Con useRef, l'effetto gira una volta sola dopo il primo render. Se
+     l'elemento in quel momento non esiste ancora, perché il blocco che lo
+     contiene è dietro una condizione, per esempio `{conteggio > 0 && ...}` e
+     il conteggio arriva dalla rete, l'effetto trova `null`, esce, e non viene
+     più rieseguito: l'osservatore non si aggancia mai e il contenuto resta
+     nascosto per sempre.
+     È esattamente il bug che mostrava "0 persone stanno costruendo con noi":
+     la sezione del contatore compare solo quando il numero è arrivato, cioè
+     sempre DOPO il primo render.
+     Tenendo il nodo in uno stato, ogni volta che React lo attacca o lo stacca
+     lo stato cambia, e l'effetto riparte con l'elemento vero in mano. */
+  const [el, setEl] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  const ref = useCallback((node) => setEl(node), [])
 
   useEffect(() => {
-    const el = ref.current
     if (!el) return undefined
 
     /* Niente movimento richiesto, oppure browser senza IntersectionObserver:
@@ -110,7 +123,7 @@ export function useReveal({ threshold = 0.15, delay = 0 } = {}) {
       obs.disconnect()
       window.clearTimeout(timer)
     }
-  }, [threshold, delay])
+  }, [el, threshold, delay])
 
   return { ref, revealed }
 }
@@ -152,4 +165,96 @@ export function useCountUp(target, { duration = 900, start = false } = {}) {
   }, [target, duration, start])
 
   return value
+}
+
+/**
+ * Parallasse dell'apertura: la foto si allarga leggermente, si alza piu'
+ * lentamente della pagina e sfuma mentre si scorre.
+ *
+ * PERCHE' NON E' SCRITTO COME L'ESEMPIO DA CUI NASCE. Il codice di partenza
+ * faceva quattro cose che su un telefono si sentono tutte:
+ *
+ *  1. Scriveva `backgroundSize` e `filter` a OGNI evento di scroll, senza
+ *     alcuna limitazione. Gli eventi di scroll arrivano piu' spesso dei
+ *     fotogrammi, quindi si fa lo stesso lavoro due o tre volte per frame.
+ *     Qui c'e' requestAnimationFrame: al massimo un aggiornamento per
+ *     fotogramma, e nessuno se la posizione non e' cambiata.
+ *  2. Animava `background-size` e `filter: blur()`. Sono proprieta' che
+ *     obbligano il browser a ridisegnare l'immagine intera a ogni frame. Qui
+ *     si toccano solo `transform` e `opacity`, le due che il compositor
+ *     gestisce da solo senza ridisegnare niente.
+ *  3. Riconosceva il browser leggendo `navigator.vendor`. E' una tecnica che
+ *     sbaglia da anni e che qui non serviva a niente.
+ *  4. Non guardava `prefers-reduced-motion`. Una foto che si muove sotto il
+ *     testo mentre si scorre e' esattamente cio' che da' fastidio a chi ha
+ *     chiesto meno movimento.
+ *
+ * @param {object} [opts]
+ * @param {number} [opts.zoom]  quanto e' ingrandita a riposo (1.12 = 12%)
+ * @param {number} [opts.shift] di quanto sale, in frazione di altezza
+ */
+export function useParallax({ zoom = 1.12, shift = 0.12 } = {}) {
+  const [contenitore, setContenitore] = useState(null)
+  const bersaglio = useRef(null)
+
+  const refContenitore = useCallback((node) => setContenitore(node), [])
+
+  useEffect(() => {
+    if (!contenitore) return undefined
+
+    const img = bersaglio.current
+    if (!img) return undefined
+
+    if (prefersReducedMotion()) {
+      /* Nessun movimento, ma lo zoom di riposo resta: e' una scelta di
+         inquadratura, non un'animazione, e toglierlo cambierebbe il taglio
+         della foto invece di fermarla. */
+      img.style.transform = `scale(${zoom})`
+      return undefined
+    }
+
+    let raf = null
+    let ultimo = -1
+
+    const applica = () => {
+      raf = null
+      const h = contenitore.offsetHeight || window.innerHeight
+      const y = window.scrollY || document.documentElement.scrollTop || 0
+
+      /* Oltre l'altezza dell'apertura non serve piu' calcolare niente: la
+         foto e' fuori campo e continuare a scriverne lo stile sarebbe lavoro
+         buttato a ogni frame per tutta la pagina. */
+      const p = Math.min(1, Math.max(0, y / h))
+      if (p === ultimo) return
+      ultimo = p
+
+      /* La foto si RIMPICCIOLISCE scorrendo, da 1.12 a 1: e' il verso giusto.
+         Ingrandire mentre si scende schiaccia il soggetto contro il testo,
+         rimpicciolire lo allontana e da' profondita'. */
+      const scala = zoom - (zoom - 1) * p
+      const su = -(p * shift * h)
+
+      img.style.transform = `translate3d(0, ${su.toFixed(1)}px, 0) scale(${scala.toFixed(4)})`
+      /* Non scende sotto 0.35: a zero la foto sparisce del tutto e sotto
+         resta un rettangolo nero, che si nota piu' dell'effetto. */
+      img.style.opacity = String(1 - p * 0.65)
+    }
+
+    const onScroll = () => {
+      if (raf === null) raf = requestAnimationFrame(applica)
+    }
+
+    applica()
+    // passive: il browser non deve aspettare di sapere se annulliamo lo scroll
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf !== null) cancelAnimationFrame(raf)
+    }
+  }, [contenitore, zoom, shift])
+
+  return { refContenitore, refBersaglio: bersaglio }
 }

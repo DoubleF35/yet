@@ -186,11 +186,13 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
           restano attivabili da soli e non serve nessuno stopPropagation. */}
       <Reveal delay={revealDelay} className={s.reveal}>
       <article
-        className={[s.card, isMe && s.cardMe, isAdmin && s.cardAdmin].filter(Boolean).join(' ')}
+        className={[s.card, open && s.cardOpen, isMe && s.cardMe, isAdmin && s.cardAdmin]
+          .filter(Boolean)
+          .join(' ')}
         aria-labelledby={nameId}
       >
         <header className={s.head}>
-          <Avatar src={member.photoURL} name={name} size={56} />
+          <Avatar src={member.photoURL} name={name} fill />
           <div className={s.identity}>
             <h2 className={s.name} id={nameId}>
               {name}
@@ -207,12 +209,12 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
         </header>
 
         {bio.text ? (
-          /* La classe in piu' quando la bio e' chiusa serve solo al telefono,
-             dove il modulo la limita a cinque righe: in una colonna larga un
-             terzo, 120 battute diventano nove righe di card. Sta qui e non in
-             CSS perche' solo il JSX sa se la bio e' aperta. */
-          <p className={`${s.bio} ${open ? '' : s.bioClamped}`.trim()} id={bioId}>
-            {open ? bio.text : bio.preview}
+          /* Il testo INTERO sta sempre nel DOM: e' il CSS a tagliarlo a
+             quattro righe. Prima si mandava a schermo una versione accorciata
+             a mano, e cosi' la ricerca del browser non trovava le parole
+             nascoste e uno screen reader leggeva la bio mozzata. */
+          <p className={open ? `${s.bio} ${s.bioOpen}` : s.bio} id={bioId}>
+            {bio.text}
           </p>
         ) : (
           /* Niente card mezza vuota: una riga di riserva discreta, che dice
