@@ -408,10 +408,119 @@
   width: 100%;
 }
 
-/* Il contenitore della rivelazione dentro il <li>: deve riempire la cella
-   della griglia, altrimenti la card si restringe al proprio contenuto e
-   l'allineamento fra le colonne salta. */
-.reveal {
-  display: flex;
-  width: 100%;
+/* =========================================================================
+   7. TELEFONO: DUE CARD PER RIGA
+
+   La griglia automatica ha 17rem di colonna minima, che su un telefono non ci
+   sta due volte: usciva UNA card per riga, alta quasi uno schermo, e la
+   vetrina si guardava un profilo alla volta.
+
+   Cambiare il numero di colonne, da solo, non basta: la card scende da 349 a
+   132px e quello che dentro stava in riga non ci sta piu'. Ma non smette di
+   starci tutto insieme, ed e' per questo che qui sotto ci sono TRE soglie e
+   non una: ognuna e' la larghezza a cui un pezzo preciso sfonda, misurata.
+
+     768px  due colonne al posto della griglia automatica
+     560px  l'avatar non sta piu' accanto al nome (serve al distintivo:
+            "Organizza" e' una parola sola larga 114px e non va a capo, e
+            sotto questa soglia usciva dal bordo della card)
+     480px  le pill social con l'etichetta non stanno piu' in riga
+
+   Una soglia unica a 768px stringerebbe anche card da 348px, che di spazio ne
+   hanno; una unica a 480px lascerebbe il distintivo fuori dal bordo fra 481 e
+   560. Verificato a diciannove larghezze da 1280 a 320.
+   ====================================================================== */
+
+@media (max-width: 47.9375rem) {
+  .grid {
+    /* Due colonne fisse. `minmax(0, 1fr)` e non `1fr` secco: 1fr non scende
+       sotto il contenuto minimo, e un nome lungo allargherebbe la griglia
+       oltre il bordo dello schermo invece di andare a capo. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 35rem) {
+  .grid {
+    gap: var(--space-4);
+  }
+
+  .card {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  /* Avatar sopra, nome sotto. Affiancati si portano via 72px di riga, e quello
+     che resta non basta ne' al nome ne' al distintivo. */
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .name {
+    font-size: var(--step-0);
+  }
+
+  /* Lo scheletro del caricamento deve avere la stessa forma della card vera,
+     altrimenti la pagina salta quando i dati arrivano: e' il motivo per cui
+     esiste invece di una rotella. */
+  .ghost {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .ghostHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  /* Le barre dello scheletro hanno la larghezza scritta inline (9rem per il
+     bottone finto): in una card da 132px sfondavano. max-inline-size le
+     riporta dentro senza toccare il componente, che serve a tutto il sito. */
+  .ghost span {
+    max-inline-size: 100%;
+  }
+}
+
+@media (max-width: 30rem) {
+  /* Il distintivo e' maiuscolo e spaziato: "IL TUO PROFILO" a corpo pieno
+     riempie da solo la larghezza della card. */
+  .badge {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Le pill diventano SOLA ICONA. Con l'etichetta ce ne sta una per riga:
+     tre social si incolonnavano e da soli occupavano piu' spazio della bio.
+     Il nome del social non si perde, sta nell'aria-label del link, che c'e'
+     gia' e lo cita per esteso. La WCAG 2.5.3 (Label in Name) chiede che il
+     testo VISIBILE sia contenuto nel nome accessibile: senza testo visibile
+     il criterio non si applica, e il bersaglio resta di 44px. */
+  .social span {
+    display: none;
+  }
+
+  .social {
+    /* Quadrata come il bersaglio minimo, cosi' tre pill stanno in una riga. */
+    inline-size: 2.75rem;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .socials {
+    gap: var(--space-1);
+  }
+
+  /* L'anteprima della bio e' tagliata a 120 battute, che in una colonna larga
+     un terzo diventano otto o nove righe: la card cresceva a dismisura e le
+     due colonne finivano con altezze molto diverse. Qui si fermano a cinque
+     righe, e il resto sta dietro "Mostra tutto" come prima. */
+  .bioClamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+  }
 }

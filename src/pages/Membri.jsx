@@ -207,7 +207,11 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
         </header>
 
         {bio.text ? (
-          <p className={s.bio} id={bioId}>
+          /* La classe in piu' quando la bio e' chiusa serve solo al telefono,
+             dove il modulo la limita a cinque righe: in una colonna larga un
+             terzo, 120 battute diventano nove righe di card. Sta qui e non in
+             CSS perche' solo il JSX sa se la bio e' aperta. */
+          <p className={`${s.bio} ${open ? '' : s.bioClamped}`.trim()} id={bioId}>
             {open ? bio.text : bio.preview}
           </p>
         ) : (
