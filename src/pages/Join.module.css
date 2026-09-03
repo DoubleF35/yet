@@ -349,6 +349,12 @@
   line-height: var(--lh-base);
 }
 
+/* "Cosa cerchi" e "cosa sai fare" sono risposte da due righe: un riquadro da
+   8rem le farebbe sembrare campi lasciati vuoti a metà. */
+.textareaShort {
+  min-height: 5rem;
+}
+
 .hint {
   font-size: var(--step--1);
   color: var(--muted);

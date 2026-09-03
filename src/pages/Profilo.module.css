@@ -1,0 +1,280 @@
+/* =========================================================================
+   PAGINA DI UN SINGOLO PROFILO
+
+   Colonna stretta (.container-narrow, 720px) e non larga: qui si LEGGE, e una
+   riga da 1120px per un testo di duemila battute è troppo lunga per l'occhio.
+   La vetrina usa la colonna larga perché lì si scorre una griglia.
+   ====================================================================== */
+
+.page {
+  padding-block: var(--space-8) var(--space-10);
+}
+
+/* --- ritorno alla vetrina ------------------------------------------------ */
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  /* 44px pieni: su telefono è il modo con cui si esce da questa pagina. */
+  min-block-size: 2.75rem;
+
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.back:hover {
+  color: var(--ink);
+}
+
+.back:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- avviso "non ancora pubblico" ---------------------------------------- */
+
+.pending {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-4);
+
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+
+  border-inline-start: 3px solid var(--coral);
+  background-color: var(--coral-soft);
+  text-wrap: pretty;
+}
+
+/* --- testata ------------------------------------------------------------- */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(var(--space-5), 4vw, var(--space-7));
+  margin-block-start: var(--space-6);
+}
+
+/* La foto è grande, ma non a piena pagina: a 720px di colonna una banda
+   quadrata sarebbe alta 720px e il nome finirebbe sotto la piega. Qui è un
+   quadrato fisso che cresce col viewport e si affianca al nome. */
+.photo {
+  flex: 0 0 auto;
+  inline-size: clamp(7.5rem, 30vw, 12rem);
+  border: var(--border);
+  background-color: var(--surface);
+}
+
+.identity {
+  /* min-inline-size: 0 su un figlio flex è ciò che permette al testo di andare
+     a capo invece di allargare la riga: senza, un nome lungo sfonda. */
+  min-inline-size: 0;
+  flex: 1 1 16rem;
+}
+
+.name {
+  margin: 0;
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: var(--space-3) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.place {
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.since {
+  font-variant-numeric: tabular-nums;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-4);
+}
+
+/* Vuoto: senza contenuto il flex lascerebbe comunque il suo margine, e sotto
+   il nome comparirebbe un buco che sembra un errore di caricamento. */
+.badges:empty {
+  display: none;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  border: var(--border-coral);
+  background-color: var(--coral-soft);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.badgeMe {
+  border-color: var(--ink);
+  background-color: transparent;
+  color: var(--muted);
+}
+
+.edit {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  margin-block-start: var(--space-4);
+
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+
+  border: var(--border-strong);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.edit:hover {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+.edit:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* --- blocchi di testo ---------------------------------------------------- */
+
+.block {
+  margin-block-start: clamp(var(--space-7), 6vw, var(--space-9));
+}
+
+.blockTitle {
+  margin: 0 0 var(--space-3);
+  padding-block-end: var(--space-2);
+  border-block-end: var(--border);
+
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+  /* I ritorni a capo che la persona ha scritto sono parte di come si è
+     presentata: schiacciarli in un blocco unico cambia quello che ha scritto. */
+  white-space: pre-wrap;
+  /* Un URL incollato dentro la bio non deve mandare in scroll il telefono. */
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.empty {
+  margin-block-start: clamp(var(--space-7), 6vw, var(--space-9));
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* --- social -------------------------------------------------------------- */
+
+.socials {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  /* 44px pieni di bersaglio: stanno uno accanto all'altro, cioè il caso in cui
+     sbagliare tocco è più facile. */
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+
+  border: var(--border);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step-0);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.social:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.social:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.icon {
+  inline-size: 1em;
+  block-size: 1em;
+  font-size: var(--step-1);
+  flex: 0 0 auto;
+}
+
+/* --- stati --------------------------------------------------------------- */
+
+.title {
+  margin: var(--space-6) 0 0;
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+}
+
+.lead {
+  max-inline-size: var(--measure);
+  margin: var(--space-4) 0 var(--space-6);
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+}

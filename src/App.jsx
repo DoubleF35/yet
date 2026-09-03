@@ -7,6 +7,7 @@ import ScrollToTop from './components/ScrollToTop.jsx'
 import Intro from './pages/Intro.jsx'
 import Home from './pages/Home.jsx'
 import Vetrina from './pages/Membri.jsx'
+import Profilo from './pages/Profilo.jsx'
 import Eventi from './pages/Eventi.jsx'
 import Brand from './pages/Brand.jsx'
 import Sponsor from './pages/Sponsor.jsx'
@@ -27,6 +28,11 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/vetrina" element={<Vetrina />} />
+          {/* La pagina di un singolo membro. Annidata sotto /vetrina e non a
+              parte, perche' l'indirizzo dice da dove si arriva e dove si
+              torna. Pubblica come la vetrina: chi puo' essere letto lo
+              decidono le regole del database, non questa rotta. */}
+          <Route path="/vetrina/:uid" element={<Profilo />} />
           <Route path="/eventi" element={<Eventi />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/sponsor" element={<Sponsor />} />
