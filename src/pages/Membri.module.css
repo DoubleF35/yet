@@ -60,7 +60,14 @@
   padding: 0;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  /* 15rem e non 17rem, e cambia il conto delle colonne dove c'e' spazio:
+     a 1440px il contenitore e' 1040px, quindi con 240px di traccia minima e
+     20px di gap ne entrano QUATTRO invece di tre. La richiesta era vedere piu'
+     profili insieme, e su un monitor largo tre tessere da 330px lasciavano
+     mezza pagina di aria.
+     Sotto i 768px comanda comunque la media query piu' in basso, che impone
+     due colonne esatte: qui questo valore non ha effetto. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
   gap: var(--space-5);
   /* `stretch` e non `start`: e' questo che rende alte uguali le celle di una
      stessa riga. Con `start` ogni card prendeva l'altezza del proprio
@@ -548,7 +555,22 @@
     padding-inline: var(--space-4);
   }
 
+  /* Padding laterale ridotto SOLO qui, e serve a un conto preciso: tre pill
+     da 44px chiedono 132px, piu' due gap da 4px fanno 140. In una tessera da
+     160px, con 16px di padding per lato ne restavano 128 e la terza andava a
+     capo. Con 8px lo spazio disponibile veniva 140 e il fabbisogno 140:
+     ESATTAMENTE uguale, e con le larghezze frazionarie di una griglia a 1fr
+     il flex andava a capo comunque. Da qui 4px per lato, che lasciano 148
+     contro 140: otto pixel di margine vero. I bersagli restano di 44px.
+     L'alternativa era rimpicciolire le pill a 40px, ma sarebbe stato un passo
+     indietro sull'accessibilita' per guadagnare spazio che si poteva prendere
+     dal padding.
+     L'alternativa era rimpicciolire le pill a 40px, ma sarebbe stato un
+     passo indietro sull'accessibilita' per guadagnare spazio che si poteva
+     prendere dal padding. E siccome le tessere hanno tutte la stessa altezza,
+     quella riga in piu' costava 44px a TUTTE, non solo a chi ha tre social. */
   .socials {
+    padding-inline: var(--space-1);
     padding-block-end: var(--space-4);
     gap: var(--space-1);
   }
