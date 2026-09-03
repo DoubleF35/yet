@@ -5,6 +5,8 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
 import Reveal, { stagger } from '../components/Reveal.jsx'
+import MeetupAdmin from '../components/MeetupAdmin.jsx'
+import MeetupList from '../components/MeetupList.jsx'
 import { mediaIdsOf } from '../lib/attachments.js'
 import { getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
@@ -95,6 +97,17 @@ export default function Eventi() {
           l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.
         </p>
       </header>
+
+      <div className="container">
+        {/* Il pannello si mostra da solo ai soli admin: se non lo sei, questo
+            componente non renderizza niente. */}
+        <MeetupAdmin />
+
+        {/* Gli incontri stanno SOPRA le notizie, ed e' la gerarchia giusta:
+            chi apre questa pagina vuole sapere prima quando ci si vede, e poi
+            cos'e' successo. */}
+        <MeetupList />
+      </div>
 
       <section className={`${s.body} container`} aria-busy={status === 'loading'}>
         {/* Regione di stato sempre presente: se comparisse solo a caricamento

@@ -1,0 +1,133 @@
+.wrap {
+  margin-block-end: clamp(var(--space-8), 8vw, var(--space-10));
+}
+
+.titolo {
+  margin: 0 0 var(--space-5);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
+
+.sottotitolo {
+  margin: clamp(var(--space-7), 6vw, var(--space-8)) 0 var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.voce {
+  display: flex;
+}
+
+.scheda {
+  inline-size: 100%;
+  padding: clamp(var(--space-5), 5vw, var(--space-6));
+  /* Bordo pieno sui prossimi: sono la cosa piu' importante della pagina e
+     devono staccarsi da tutto il resto. */
+  border: var(--border-strong);
+  background-color: var(--surface);
+  transition: border-color var(--transition);
+}
+
+.scheda:hover {
+  border-color: var(--coral);
+}
+
+/* I passati: bordo leggero e testo attenuato. Restano leggibili, ma dicono a
+   colpo d'occhio che sono archivio e non programma. */
+.schedaPassata {
+  border: var(--border);
+  opacity: 0.72;
+}
+
+.schedaPassata:hover {
+  border-color: var(--line);
+}
+
+.quando {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--coral-text);
+}
+
+.schedaPassata .quando {
+  color: var(--muted);
+}
+
+.nome {
+  margin: 0;
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  text-wrap: balance;
+}
+
+.dove {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--step-0);
+  overflow-wrap: anywhere;
+}
+
+.testo {
+  max-inline-size: var(--measure);
+  margin: var(--space-4) 0 0;
+  line-height: var(--lh-relaxed);
+  /* Gli a capo scritti da chi organizza contano: e' un programma, non un
+     paragrafo. */
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 48px;
+  margin-block-start: var(--space-5);
+  padding-inline: var(--space-6);
+
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+
+  color: var(--on-coral);
+  background-color: var(--coral-text);
+  border: 2px solid var(--coral-text);
+  border-radius: 999px;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.cta:hover {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.cta:focus-visible {
+  outline: var(--focus-ring-invert);
+  outline-offset: var(--focus-offset);
+}
+
+/* L'archivio sta piu' stretto: due colonne dove c'e' spazio, perche' sono
+   voci brevi e una colonna sola le farebbe sembrare importanti quanto i
+   prossimi incontri, che invece devono restare i protagonisti. */
+.listaPassati {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+}
