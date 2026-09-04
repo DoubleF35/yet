@@ -10,6 +10,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { listUsers } from '../lib/db.js'
+import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Membri.module.css'
@@ -40,8 +41,9 @@ function sortMembers(list) {
 function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
   const reactId = useId()
   const nameId = `${reactId}-name`
+  const { t } = useI18n()
 
-  const name = memberName(member)
+  const name = memberName(member, t('vetrina.nomeRipiego'))
   const links = useMemo(() => memberLinks(member), [member])
   const bio = typeof member.bio === 'string' ? member.bio.trim() : ''
 
@@ -77,9 +79,9 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
             {/* Un distintivo solo per tessera: "Il tuo profilo" ha la
                 precedenza perché è l'informazione che serve a te che guardi. */}
             {isMe ? (
-              <p className={s.badge}>Il tuo profilo</p>
+              <p className={s.badge}>{t('vetrina.tuoProfilo')}</p>
             ) : isAdmin ? (
-              <p className={`${s.badge} ${s.badgeAdmin}`}>Organizza</p>
+              <p className={`${s.badge} ${s.badgeAdmin}`}>{t('vetrina.organizza')}</p>
             ) : null}
           </div>
         </header>
@@ -96,7 +98,7 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
         ) : (
           /* Niente tessera mezza vuota: una riga di riserva discreta, che dice
              cosa manca senza sembrare un errore di caricamento. */
-          <p className={s.bioEmpty}>Bio in arrivo - {name} non si è ancora presentato.</p>
+          <p className={s.bioEmpty}>{t('vetrina.bioVuota', { nome: name })}</p>
         )}
 
         {/* Sta dove stava "Mostra tutto", e serve per la stessa ragione: la
@@ -106,7 +108,7 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
             reader ha già il link del nome, e sentire due volte la stessa cosa
             per trenta tessere è solo rumore. */}
         <p className={s.more} aria-hidden="true">
-          Leggi il profilo
+          {t('vetrina.leggiProfilo')}
         </p>
 
         {links.length > 0 && (
@@ -123,12 +125,12 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${link.label} di ${name} (si apre in una nuova scheda)`}
+                  aria-label={t('social.aria', { social: t(link.chiaveEtichetta), nome: name })}
                 >
                   <svg className={s.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     {link.glyph}
                   </svg>
-                  <span>{link.label}</span>
+                  <span>{t(link.chiaveEtichetta)}</span>
                 </a>
               </li>
             ))}
@@ -171,6 +173,7 @@ function GhostCard() {
 
 export default function Membri() {
   const { user } = useAuth()
+  const { t } = useI18n()
 
   /* `isFirebaseConfigured === false` e non `!isFirebaseConfigured`: se per
      qualsiasi motivo il flag arrivasse undefined preferiamo provare a leggere
@@ -228,31 +231,26 @@ export default function Membri() {
   const count = members.length
   const liveMessage =
     status === 'loading'
-      ? 'Caricamento dei profili in corso.'
+      ? t('vetrina.liveCaricamento')
       : status === 'error'
-        ? 'Caricamento dei profili non riuscito.'
+        ? t('vetrina.liveErrore')
         : status === 'ready'
-          ? `${count} ${count === 1 ? 'profilo caricato' : 'profili caricati'}.`
+          ? t(count === 1 ? 'vetrina.liveCaricatoUno' : 'vetrina.liveCaricatiTanti', { n: count })
           : ''
 
   return (
     <>
       <section className={s.hero}>
         <div className="container">
-          <p className={s.eyebrow}>La community</p>
-          <h1 className={s.title}>Vetrina</h1>
+          <p className={s.eyebrow}>{t('vetrina.eyebrow')}</p>
+          <h1 className={s.title}>{t('vetrina.titolo')}</h1>
           {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
               cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
               sembrava attaccata alla parte sbagliata. Separare le due idee
               risolve il problema alla radice, invece di sperare in un
               text-wrap che dipende dalla larghezza dello schermo. */}
-          <p className={s.lead}>
-            Chi costruisce qualcosa dentro YET: studenti, autodidatti, fondatori alle prime armi,
-            da Torino e dal resto d’Italia.
-          </p>
-          <p className={s.leadSecond}>
-            Apri un profilo per leggere la presentazione completa e trovare i contatti.
-          </p>
+          <p className={s.lead}>{t('vetrina.lead')}</p>
+          <p className={s.leadSecond}>{t('vetrina.leadSecond')}</p>
 
           {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
               carica direbbe una cosa falsa, e su un club appena nato la
@@ -261,7 +259,7 @@ export default function Membri() {
             <p className={s.tally}>
               <span className={s.tallyNumber}>{count}</span>
               <span className={s.tallyLabel}>
-                {count === 1 ? 'persona nella community' : 'persone nella community'}
+                {count === 1 ? t('vetrina.contatoreUno') : t('vetrina.contatoreTanti')}
               </span>
             </p>
           )}
@@ -281,18 +279,15 @@ export default function Membri() {
 
           {status === 'unconfigured' && (
             <div className={s.notice}>
-              <h2 className={s.noticeTitle}>Elenco non disponibile</h2>
-              <p className={s.noticeText}>
-                Questa copia del sito non ha le chiavi di Firebase configurate, quindi i profili non
-                possono essere caricati. Il resto del sito funziona normalmente.
-              </p>
+              <h2 className={s.noticeTitle}>{t('vetrina.spentoTitolo')}</h2>
+              <p className={s.noticeText}>{t('vetrina.spentoTesto')}</p>
             </div>
           )}
 
           {status === 'loading' && (
             <>
               <p className={s.count} aria-hidden="true">
-                Caricamento…
+                {t('stati.caricamento')}
               </p>
               <ul className={s.grid}>
                 {Array.from({ length: SKELETON_CARDS }, (_, index) => (
@@ -304,11 +299,11 @@ export default function Membri() {
 
           {status === 'error' && (
             <ErrorState
-              title="Non riusciamo a caricare i profili"
+              title={t('vetrina.erroreTitolo')}
               message={
                 error?.code === 'permission-denied'
-                  ? 'La lettura dell’elenco è stata rifiutata dal server. Riprova, e se il problema resta scrivici.'
-                  : 'Qualcosa è andato storto nel leggere l’elenco dei membri. Può essere la connessione.'
+                  ? t('vetrina.errorePermessi')
+                  : t('vetrina.erroreGenerico')
               }
               onRetry={retry}
             />
@@ -316,15 +311,14 @@ export default function Membri() {
 
           {status === 'ready' && count === 0 && (
             <EmptyState
-              title="Ancora nessun profilo"
+              title={t('vetrina.vuotoTitolo')}
               action={
                 <Link className={s.cta} to="/join">
-                  Entra in YET
+                  {t('hero.entra')}
                 </Link>
               }
             >
-              Nessuno si è ancora presentato. Puoi essere il primo: iscriviti, accedi e scrivi due
-              righe su cosa stai costruendo.
+              {t('vetrina.vuotoTesto')}
             </EmptyState>
           )}
 
@@ -340,11 +334,9 @@ export default function Membri() {
                 <section className={s.group} aria-labelledby="chi-organizza">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="chi-organizza">
-                      Chi organizza
+                      {t('vetrina.chiOrganizza')}
                     </h2>
-                    <p className={s.groupNote}>
-                      Tengono in piedi la community e pubblicano le notizie del sito.
-                    </p>
+                    <p className={s.groupNote}>{t('vetrina.chiOrganizzaNota')}</p>
                   </div>
                   <ul className={s.grid}>
                     {admins.map((member, i) => (
@@ -365,10 +357,11 @@ export default function Membri() {
                 <section className={s.group} aria-labelledby="i-membri">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="i-membri">
-                      {admins.length > 0 ? 'I membri' : 'La community'}
+                      {admins.length > 0 ? t('vetrina.iMembri') : t('vetrina.laCommunity')}
                     </h2>
                     <p className={s.groupNote}>
-                      {regulars.length} {regulars.length === 1 ? 'profilo' : 'profili'}
+                      {regulars.length}{' '}
+                      {regulars.length === 1 ? t('vetrina.profiloUno') : t('vetrina.profiliTanti')}
                     </p>
                   </div>
                   <ul className={s.grid}>

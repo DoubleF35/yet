@@ -7,6 +7,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { formatDate, getMemberProfile } from '../lib/db.js'
+import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Profilo.module.css'
@@ -27,23 +28,12 @@ import s from './Profilo.module.css'
  * è iscritta.
  */
 
-/* I tre campi del profilo esteso, con la loro intestazione. In un array e non
-   tre blocchi copiati: l'ordine è una decisione di contenuto e si legge in un
-   punto solo. `chiave` è il nome del campo sul documento. */
-const SEZIONI = [
-  {
-    chiave: 'project',
-    titolo: 'Cosa sto costruendo',
-  },
-  {
-    chiave: 'looking',
-    titolo: 'Cosa cerco',
-  },
-  {
-    chiave: 'skills',
-    titolo: 'Cosa so fare',
-  },
-]
+/* I tre campi del profilo esteso. In un array e non tre blocchi copiati:
+   l'ordine è una decisione di contenuto e si legge in un punto solo.
+   `chiave` è il nome del campo sul documento E il pezzo finale della chiave di
+   traduzione (`profilo.project`): un nome solo per le due cose evita che
+   aggiungendo un campo si aggiorni una lista e non l'altra. */
+const SEZIONI = [{ chiave: 'project' }, { chiave: 'looking' }, { chiave: 'skills' }]
 
 function testo(value) {
   return typeof value === 'string' ? value.trim() : ''
@@ -54,6 +44,8 @@ function testo(value) {
 -------------------------------------------------------------------------- */
 
 function Caricamento() {
+  const { t } = useI18n()
+
   return (
     <div className="container-narrow">
       <div className={s.loading} aria-hidden="true">
@@ -63,22 +55,21 @@ function Caricamento() {
         <Skeleton count={4} height="0.8rem" />
       </div>
       <p className="sr-only" role="status">
-        Sto caricando il profilo.
+        {t('profilo.caricamento')}
       </p>
     </div>
   )
 }
 
 function NonTrovato() {
+  const { t } = useI18n()
+
   return (
     <div className="container-narrow">
-      <h1 className={s.title}>Questo profilo non c’è</h1>
-      <p className={s.lead}>
-        Può essere stato cancellato, oppure il link è incompleto. L’elenco di chi c’è adesso è
-        nella vetrina.
-      </p>
+      <h1 className={s.title}>{t('profilo.nonTrovatoTitolo')}</h1>
+      <p className={s.lead}>{t('profilo.nonTrovatoTesto')}</p>
       <Link className={s.back} to="/vetrina">
-        Torna alla vetrina
+        {t('profilo.tornaVetrina')}
       </Link>
     </div>
   )
@@ -91,6 +82,7 @@ function NonTrovato() {
 export default function Profilo() {
   const { uid } = useParams()
   const { user } = useAuth()
+  const { lang, t } = useI18n()
 
   const configured = isFirebaseConfigured !== false
   const [stato, setStato] = useState(configured ? 'loading' : 'unconfigured')
@@ -135,14 +127,10 @@ export default function Profilo() {
     return (
       <section className={s.page}>
         <div className="container-narrow">
-          <h1 className={s.title}>Profilo non disponibile</h1>
-          <p className={s.lead}>
-            Manca la configurazione di Firebase, quindi i profili non possono essere letti. Non è
-            un errore del sito: è il passo che manca alla prima installazione, ed è spiegato nel
-            README.
-          </p>
+          <h1 className={s.title}>{t('profilo.spentoTitolo')}</h1>
+          <p className={s.lead}>{t('profilo.spentoTesto')}</p>
           <Link className={s.back} to="/vetrina">
-            Torna alla vetrina
+            {t('profilo.tornaVetrina')}
           </Link>
         </div>
       </section>
@@ -162,11 +150,11 @@ export default function Profilo() {
       <section className={s.page}>
         <div className="container-narrow">
           <ErrorState
-            title="Non riesco a leggere questo profilo"
-            message={errore?.message || 'Riprova fra poco.'}
+            title={t('profilo.erroreTitolo')}
+            message={errore?.message || t('profilo.erroreTesto')}
           />
           <Link className={s.back} to="/vetrina">
-            Torna alla vetrina
+            {t('profilo.tornaVetrina')}
           </Link>
         </div>
       </section>
@@ -181,7 +169,7 @@ export default function Profilo() {
     )
   }
 
-  const nome = memberName(membro)
+  const nome = memberName(membro, t('vetrina.nomeRipiego'))
   const links = memberLinks(membro)
   const bio = testo(membro.bio)
   const sezioni = SEZIONI.map((sez) => ({ ...sez, valore: testo(membro[sez.chiave]) })).filter(
@@ -197,7 +185,7 @@ export default function Profilo() {
         {/* Il ritorno sta in cima e non in fondo: chi apre un profilo per
             sbaglio non deve scorrere tutta la pagina per uscirne. */}
         <Link className={s.back} to="/vetrina">
-          <span aria-hidden="true">←</span> Vetrina
+          <span aria-hidden="true">←</span> {t('profilo.vetrina')}
         </Link>
 
         {/* Solo il proprietario e gli admin possono leggere un profilo non
@@ -205,8 +193,7 @@ export default function Profilo() {
             soltanto chi ha senso che lo veda. */}
         {inAttesa && (
           <p className={s.pending} role="note">
-            <strong>Questo profilo non è ancora pubblico.</strong> Lo vedi perché è il tuo, o
-            perché organizzi la community. Comparirà nella vetrina appena approvato.
+            <strong>{t('profilo.attesaTitolo')}</strong> {t('profilo.attesaTesto')}
           </p>
         )}
 
@@ -222,22 +209,26 @@ export default function Profilo() {
 
             <p className={s.meta}>
               {membro.location ? <span className={s.place}>{membro.location}</span> : null}
-              {/* formatDate risponde "in pubblicazione" quando createdAt non
-                  è ancora tornato dal server: qui quel testo non avrebbe
-                  senso, quindi la riga compare solo se la data c'è. */}
+              {/* La riga compare solo se la data c'è: createdAt torna dal
+                  server un istante dopo la creazione del profilo, e "nel club
+                  dal ..." senza data non vuol dire niente. */}
               {membro.createdAt ? (
-                <span className={s.since}>Nel club dal {formatDate(membro.createdAt)}</span>
+                <span className={s.since}>
+                  {t('profilo.nelClubDal', { data: formatDate(membro.createdAt, lang) })}
+                </span>
               ) : null}
             </p>
 
             <div className={s.badges}>
-              {organizza && <span className={s.badge}>Organizza</span>}
-              {sonoIo && <span className={`${s.badge} ${s.badgeMe}`}>Il tuo profilo</span>}
+              {organizza && <span className={s.badge}>{t('vetrina.organizza')}</span>}
+              {sonoIo && (
+                <span className={`${s.badge} ${s.badgeMe}`}>{t('vetrina.tuoProfilo')}</span>
+              )}
             </div>
 
             {sonoIo && (
               <Link className={s.edit} to="/join">
-                Modifica il profilo
+                {t('profilo.modifica')}
               </Link>
             )}
           </div>
@@ -245,26 +236,26 @@ export default function Profilo() {
 
         {bio ? (
           <div className={s.block}>
-            <h2 className={s.blockTitle}>Chi sono</h2>
+            <h2 className={s.blockTitle}>{t('profilo.chiSono')}</h2>
             {/* pre-wrap: i ritorni a capo che la persona ha scritto sono parte
                 di come si è presentata, e schiacciarli in un blocco unico
                 cambia quello che ha scritto. */}
             <p className={s.text}>{bio}</p>
           </div>
         ) : (
-          <p className={s.empty}>{nome} non ha ancora scritto la sua presentazione.</p>
+          <p className={s.empty}>{t('profilo.presentazioneVuota', { nome })}</p>
         )}
 
         {sezioni.map((sez) => (
           <div className={s.block} key={sez.chiave}>
-            <h2 className={s.blockTitle}>{sez.titolo}</h2>
+            <h2 className={s.blockTitle}>{t(`profilo.${sez.chiave}`)}</h2>
             <p className={s.text}>{sez.valore}</p>
           </div>
         ))}
 
         {links.length > 0 && (
           <div className={s.block}>
-            <h2 className={s.blockTitle}>Dove trovarlo</h2>
+            <h2 className={s.blockTitle}>{t('profilo.doveTrovarlo')}</h2>
             <ul className={s.socials}>
               {links.map((link) => (
                 <li key={link.key}>
@@ -273,12 +264,12 @@ export default function Profilo() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`${link.label} di ${nome} (si apre in una nuova scheda)`}
+                    aria-label={t('social.aria', { social: t(link.chiaveEtichetta), nome })}
                   >
                     <svg className={s.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                       {link.glyph}
                     </svg>
-                    <span>{link.label}</span>
+                    <span>{t(link.chiaveEtichetta)}</span>
                   </a>
                 </li>
               ))}

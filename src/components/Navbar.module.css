@@ -448,11 +448,47 @@
   outline-offset: -3px;
 }
 
+/* --- lingua -------------------------------------------------------------- */
+
+/* Nella barra: nascosto su telefono, dove il selettore vive nel pannello.
+   Il display sta su questo <span> e non sul componente perché sovrascrivere
+   una classe di un ALTRO modulo CSS dipenderebbe dall'ordine con cui i due
+   file finiscono nel foglio, che è un dettaglio del bundler. */
+.langBar {
+  display: none;
+}
+
+/* Nel pannello: staccato dall'elenco delle pagine da una linea, così si legge
+   come "un'altra cosa" e non come l'ottava voce di menu. */
+.panelLang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  margin-block-start: var(--space-6);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border);
+}
+
+.panelLangLabel {
+  margin: 0;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* --- oltre i 768px ------------------------------------------------------- */
 
 @media (min-width: 768px) {
   .links {
     display: flex;
+  }
+
+  .langBar {
+    display: inline-flex;
   }
 
   .burger {

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 
 import Navbar from './Navbar.jsx'
 import Footer from './Footer.jsx'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Layout.module.css'
 
@@ -13,10 +14,12 @@ import s from './Layout.module.css'
  * cambio pagina prima di arrivare al contenuto.
  */
 export default function Layout() {
+  const { t } = useI18n()
+
   return (
     <>
       <a className="skip-link" href="#main">
-        Vai al contenuto
+        {t('nav.vaiAlContenuto')}
       </a>
 
       <Navbar />

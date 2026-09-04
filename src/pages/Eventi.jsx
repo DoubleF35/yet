@@ -10,6 +10,7 @@ import MeetupList from '../components/MeetupList.jsx'
 import { mediaIdsOf } from '../lib/attachments.js'
 import { getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Eventi.module.css'
 
@@ -20,19 +21,22 @@ import s from './Eventi.module.css'
  * ci sono tutti, lì solo i primi tre. Una fonte sola, due viste.
  */
 export default function Eventi() {
+  const { t } = useI18n()
   const [news, setNews] = useState([])
   const [status, setStatus] = useState(isFirebaseConfigured ? 'loading' : 'unconfigured')
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [media, setMedia] = useState({})
 
+  /* `t` fra le dipendenze: cambiando lingua l'effetto rigira e la linguetta
+     del browser si riscrive. Senza, resterebbe quella di prima. */
   useEffect(() => {
     const previous = document.title
-    document.title = 'Eventi · YET'
+    document.title = t('titoli.eventi')
     return () => {
       document.title = previous
     }
-  }, [])
+  }, [t])
 
   /* Il listener può emettere dopo lo smontaggio, o dopo un "Riprova" che ne ha
      già creato un altro: senza questa guardia il primo sovrascriverebbe i dati
@@ -90,12 +94,9 @@ export default function Eventi() {
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
-        <p className={s.eyebrow}>Eventi</p>
-        <h1 className={s.title}>Cosa succede</h1>
-        <p className={s.lead}>
-          Incontri, annunci e cose che stiamo costruendo. I primi eventi saranno a Torino, ma
-          l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.
-        </p>
+        <p className={s.eyebrow}>{t('eventi.eyebrow')}</p>
+        <h1 className={s.title}>{t('eventi.titolo')}</h1>
+        <p className={s.lead}>{t('eventi.lead')}</p>
       </header>
 
       <div className="container">
@@ -114,18 +115,15 @@ export default function Eventi() {
             finito, il cambiamento non verrebbe annunciato, perché la live
             region non era in pagina al momento in cui è avvenuto. */}
         <p className="sr-only" role="status">
-          {status === 'loading' ? 'Caricamento degli eventi in corso.' : ''}
-          {status === 'ready' ? `${news.length} eventi caricati.` : ''}
-          {status === 'empty' ? 'Non c’è ancora nessun evento.' : ''}
+          {status === 'loading' ? t('eventi.liveCaricamento') : ''}
+          {status === 'ready' ? t('eventi.liveCaricati', { n: news.length }) : ''}
+          {status === 'empty' ? t('eventi.liveVuoto') : ''}
         </p>
 
         {status === 'unconfigured' && (
           <div className={s.notice}>
-            <p className={s.noticeTitle}>Gli eventi non sono collegati</p>
-            <p className={s.noticeText}>
-              Manca la configurazione di Firebase. Non è un errore del sito: è il passo che manca
-              alla prima installazione, ed è spiegato nel README.
-            </p>
+            <p className={s.noticeTitle}>{t('eventi.spentoTitolo')}</p>
+            <p className={s.noticeText}>{t('eventi.spentoTesto')}</p>
           </div>
         )}
 
@@ -139,11 +137,9 @@ export default function Eventi() {
 
         {status === 'error' && (
           <ErrorState
-            title="Non riusciamo a caricare gli eventi"
+            title={t('eventi.erroreTitolo')}
             message={
-              error?.code === 'permission-denied'
-                ? 'Il server ha rifiutato la lettura: le regole Firestore non sono ancora state pubblicate, oppure quelle pubblicate sono più vecchie del sito.'
-                : 'Qualcosa è andato storto. Il dettaglio è nella console del browser.'
+              error?.code === 'permission-denied' ? t('errori.regoleVecchie') : t('errori.generico')
             }
             onRetry={retry}
           />
@@ -151,21 +147,21 @@ export default function Eventi() {
 
         {status === 'empty' && (
           <EmptyState
-            title="Ancora nessun evento"
+            title={t('eventi.vuotoTitolo')}
             action={
               <Link className={s.cta} to="/join">
-                Entra in YET
+                {t('hero.entra')}
               </Link>
             }
           >
-            Il primo lo stiamo organizzando. Iscriviti e lo saprai prima degli altri.
+            {t('eventi.vuotoTesto')}
           </EmptyState>
         )}
 
         {status === 'ready' && (
           <>
             <p className={s.count}>
-              {news.length} {news.length === 1 ? 'evento' : 'eventi'}
+              {news.length} {news.length === 1 ? t('eventi.unoEvento') : t('eventi.tantiEventi')}
             </p>
             <div className={s.grid}>
               {news.map((item, index) => (

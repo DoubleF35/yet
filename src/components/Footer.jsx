@@ -1,10 +1,28 @@
 import { Link } from 'react-router-dom'
 
-import { COMMUNITY, CONTACT_EMAIL, SOCIALS } from '../config/socials.js'
+import { COMMUNITY, CONTACT_EMAIL } from '../config/socials.js'
+import { useI18n } from '../lib/i18n.jsx'
+import { useSocials } from '../lib/socials.jsx'
 
 import s from './Footer.module.css'
 
+/* Le pagine del sito, con la chiave dell'etichetta. Stesso elenco della barra
+   in cima ma con "Brand identity" al posto di "Brand": qui c'è spazio per il
+   nome intero, e in fondo alla pagina serve, perché chi arriva qui non ha il
+   contesto della navigazione principale. */
+const PAGINE = [
+  { to: '/home', chiave: 'nav.home' },
+  { to: '/vetrina', chiave: 'nav.vetrina' },
+  { to: '/eventi', chiave: 'nav.eventi' },
+  { to: '/join', chiave: 'nav.join' },
+  { to: '/contatti', chiave: 'nav.contatti' },
+  { to: '/brand', chiave: 'footer.brandIdentity' },
+  { to: '/sponsor', chiave: 'nav.sponsor' },
+]
+
 export default function Footer() {
+  const { t } = useI18n()
+  const socials = useSocials()
   const logo = `${import.meta.env.BASE_URL}logo-light.png`
   const year = new Date().getFullYear()
 
@@ -12,19 +30,19 @@ export default function Footer() {
     <footer className={s.footer}>
       <div className={s.inner}>
         <div className={s.brandBlock}>
-          <Link to="/home" className={s.brand} aria-label="YET, vai alla home">
+          <Link to="/home" className={s.brand} aria-label={t('nav.vaiAllaHome')}>
             <img className={s.logo} src={logo} alt="YET" width="486" height="291" />
           </Link>
-          <p className={s.tagline}>{COMMUNITY.tagline}</p>
+          <p className={s.tagline}>{t('community.tagline')}</p>
           {/* Non la sola città: da sola suggerirebbe che se non sei a Torino
               la cosa non ti riguarda. */}
-          <p className={s.city}>{COMMUNITY.reach}</p>
+          <p className={s.city}>{t('community.reach')}</p>
         </div>
 
-        <nav className={s.linksBlock} aria-label="Canali social">
-          <h2 className={s.heading}>Dove trovarci</h2>
+        <nav className={s.linksBlock} aria-label={t('footer.canaliSocial')}>
+          <h2 className={s.heading}>{t('footer.doveTrovarci')}</h2>
           <ul className={s.links}>
-            {SOCIALS.map((item) => {
+            {socials.map((item) => {
               const external = !item.href.startsWith('mailto:')
               return (
                 <li key={item.id}>
@@ -34,7 +52,7 @@ export default function Footer() {
                     {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   >
                     {item.label}
-                    {external && <span className="sr-only"> (si apre in una nuova scheda)</span>}
+                    {external && <span className="sr-only">{t('footer.nuovaScheda')}</span>}
                   </a>
                 </li>
               )
@@ -42,44 +60,16 @@ export default function Footer() {
           </ul>
         </nav>
 
-        <nav className={s.linksBlock} aria-label="Pagine del sito">
-          <h2 className={s.heading}>Il sito</h2>
+        <nav className={s.linksBlock} aria-label={t('footer.pagineDelSito')}>
+          <h2 className={s.heading}>{t('footer.ilSito')}</h2>
           <ul className={s.links}>
-            <li>
-              <Link className={s.link} to="/home">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/vetrina">
-                Vetrina
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/eventi">
-                Eventi
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/join">
-                Join
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/contatti">
-                Contatti
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/brand">
-                Brand identity
-              </Link>
-            </li>
-            <li>
-              <Link className={s.link} to="/sponsor">
-                Sponsor
-              </Link>
-            </li>
+            {PAGINE.map((pagina) => (
+              <li key={pagina.to}>
+                <Link className={s.link} to={pagina.to}>
+                  {t(pagina.chiave)}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>
@@ -93,15 +83,15 @@ export default function Footer() {
             posto dove la gente le cerca, e non devono rubare spazio alla
             navigazione vera. Devono però essere raggiungibili da OGNI pagina,
             ed è il motivo per cui vivono nel footer e non solo nei contatti. */}
-        <nav className={s.legal} aria-label="Informative">
+        <nav className={s.legal} aria-label={t('footer.informative')}>
           <Link className={s.legalLink} to="/privacy">
-            Privacy
+            {t('footer.privacy')}
           </Link>
           <span className={s.legalSep} aria-hidden="true">
             ·
           </span>
           <Link className={s.legalLink} to="/cookie">
-            Cookie
+            {t('footer.cookie')}
           </Link>
           <span className={s.legalSep} aria-hidden="true">
             ·

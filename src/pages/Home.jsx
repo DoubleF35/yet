@@ -7,7 +7,6 @@ import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
-import { COMMUNITY } from '../config/socials.js'
 import {
   mediaIdsOf,
   normalizeAttachments,
@@ -17,6 +16,7 @@ import {
 } from '../lib/attachments.js'
 import { countApprovedUsers, formatDate, getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Home.module.css'
 
@@ -37,6 +37,7 @@ import { useCountUp, useReveal } from '../lib/motion.js'
    La pagina
 -------------------------------------------------------------------------- */
 export default function Home() {
+  const { t } = useI18n()
   const [news, setNews] = useState([])
   const [status, setStatus] = useState(isFirebaseConfigured ? 'loading' : 'unconfigured')
   const [error, setError] = useState(null)
@@ -134,11 +135,6 @@ export default function Home() {
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
 
-  const [taglineText, taglineDot] = (() => {
-    const t = COMMUNITY.tagline || 'Build ambition.'
-    return t.endsWith('.') ? [t.slice(0, -1), '.'] : [t, '']
-  })()
-
   return (
     <div>
       {/* L'apertura vive in un componente suo: e' l'unico pezzo del sito con
@@ -170,12 +166,10 @@ export default function Home() {
                 valore finale. */}
             <span className={s.tallyNumber}>{numeroMostrato}</span>
             <span className={s.tallyLabel}>
-              {membri === 1
-                ? 'persona sta costruendo con noi'
-                : 'persone stanno costruendo con noi'}
+              {membri === 1 ? t('home.contatorePersona') : t('home.contatorePersone')}
             </span>
           </Link>
-          <p className={s.tallyLead}>{COMMUNITY.description}</p>
+          <p className={s.tallyLead}>{t('community.descrizione')}</p>
         </section>
       )}
 
@@ -192,11 +186,11 @@ export default function Home() {
       >
         <div className={s.newsHead}>
           <h2 className={s.newsTitle} id="notizie">
-            Notizie
+            {t('home.notizie')}
           </h2>
           {status === 'ready' && (
             <p className={s.newsCount}>
-              {news.length} {news.length === 1 ? 'notizia' : 'notizie'}
+              {news.length} {news.length === 1 ? t('home.unaNotizia') : t('home.tanteNotizie')}
             </p>
           )}
         </div>
@@ -205,22 +199,24 @@ export default function Home() {
             caricamento, gli screen reader non annuncerebbero il cambiamento
             perché l'elemento con aria-live non era ancora presente. */}
         <p className="sr-only" role="status">
-          {status === 'loading' ? 'Caricamento delle notizie in corso.' : ''}
-          {status === 'ready' ? `${news.length} notizie caricate.` : ''}
-          {status === 'empty' ? 'Non ci sono ancora notizie.' : ''}
+          {status === 'loading' ? t('home.caricamento') : ''}
+          {status === 'ready' ? t('home.caricate', { n: news.length }) : ''}
+          {status === 'empty' ? t('home.nessunaAncora') : ''}
         </p>
 
         {status === 'unconfigured' && (
           <div className={s.notice}>
-            <p className={s.noticeTitle}>Le notizie non sono collegate</p>
+            <p className={s.noticeTitle}>{t('home.nonCollegateTitolo')}</p>
+            <p className={s.noticeText}>{t('home.nonCollegateTesto1')}</p>
+            {/* Il paragrafo è spezzato perché ha tre <code> dentro: una
+                stringa con l'HTML richiederebbe dangerouslySetInnerHTML, e da
+                quel momento ogni traduzione sarebbe un posto in cui può
+                entrare uno script. */}
             <p className={s.noticeText}>
-              Manca la configurazione di Firebase, quindi il feed non può caricarsi. Non è un errore
-              del sito: è il passo che manca alla prima installazione.
-            </p>
-            <p className={s.noticeText}>
-              Copia <code className={s.code}>.env.example</code> in{' '}
-              <code className={s.code}>.env</code>, riempi le sei chiavi dalla console Firebase e
-              riavvia <code className={s.code}>npm run dev</code>. I dettagli sono nel README.
+              {t('home.nonCollegateTesto2a')} <code className={s.code}>.env.example</code>{' '}
+              {t('home.nonCollegateTesto2b')} <code className={s.code}>.env</code>
+              {t('home.nonCollegateTesto2c')} <code className={s.code}>npm run dev</code>
+              {t('home.nonCollegateTesto2d')}
             </p>
           </div>
         )}
@@ -235,18 +231,18 @@ export default function Home() {
 
         {status === 'error' && (
           <ErrorState
-            title="Non riusciamo a caricare le notizie"
+            title={t('home.erroreTitolo')}
             /* Ogni codice ha la sua causa tipica e la sua mossa successiva.
                Il ramo generico è l'ultima spiaggia: quando ci finisce qualcosa
                di ricorrente, gli si dà una riga sua invece di lasciarlo lì. */
             message={
               error?.code === 'permission-denied'
-                ? 'Il server ha rifiutato la lettura: le regole Firestore non sono ancora state pubblicate, oppure quelle pubblicate sono più vecchie del sito.'
+                ? t('errori.regoleVecchie')
                 : error?.code === 'failed-precondition'
-                  ? 'Firestore chiede un indice per questa ricerca. Nella console del browser c’è un link che lo crea con un clic.'
+                  ? t('errori.indiceMancante')
                   : error?.code === 'unavailable'
-                    ? 'Non riusciamo a raggiungere il server. Di solito è la connessione: riprova fra un momento.'
-                    : 'Qualcosa è andato storto nel leggere il feed. Il dettaglio è nella console del browser.'
+                    ? t('errori.serverGiu')
+                    : t('errori.generico')
             }
             onRetry={retry}
           />
@@ -254,18 +250,17 @@ export default function Home() {
 
         {status === 'empty' && (
           <EmptyState
-            title="Ancora nessuna notizia"
+            title={t('home.vuotoTitolo')}
             action={
               <Link className={s.cta} to="/join">
-                Entra in YET
+                {t('hero.entra')}
                 <span className={s.ctaArrow} aria-hidden="true">
                   →
                 </span>
               </Link>
             }
           >
-            Qui finiranno gli incontri, i progetti e le cose che succedono nella community. Nel
-            frattempo puoi già presentarti.
+            {t('home.vuotoTesto')}
           </EmptyState>
         )}
 

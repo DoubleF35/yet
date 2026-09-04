@@ -11,6 +11,7 @@ import {
   updateMeetup,
 } from '../lib/db.js'
 import { useAuth } from '../lib/auth.jsx'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './MeetupAdmin.module.css'
 
@@ -26,6 +27,7 @@ const VUOTO = { title: '', startsAt: '', place: '', body: '', url: '', published
  */
 export default function MeetupAdmin() {
   const { user, isAdmin } = useAuth()
+  const { lang, t } = useI18n()
 
   const [form, setForm] = useState(VUOTO)
   const [salvataggio, setSalvataggio] = useState(false)
@@ -61,22 +63,18 @@ export default function MeetupAdmin() {
       try {
         await createMeetup(form, user)
         setForm(VUOTO)
-        setFatto(
-          form.published
-            ? 'Incontro pubblicato: e’ gia’ visibile qui sotto.'
-            : 'Bozza salvata. Non si vede sul sito finche’ non la pubblichi.',
-        )
+        setFatto(form.published ? t('incontriAdmin.pubblicatoOk') : t('incontriAdmin.bozzaOk'))
       } catch (err) {
         setErrore(
           err?.code === 'permission-denied'
-            ? 'Il server ha rifiutato la scrittura. Controlla che la tua email sia nella allowlist dentro firestore.rules e che le regole siano state ripubblicate.'
-            : err?.message || 'Non sono riuscito a salvare.',
+            ? t('incontriAdmin.errorePermessi')
+            : err?.message || t('incontriAdmin.erroreGenerico'),
         )
       } finally {
         setSalvataggio(false)
       }
     },
-    [form, user],
+    [form, user, t],
   )
 
   const azione = useCallback(async (id, fn, etichetta) => {
@@ -98,7 +96,7 @@ export default function MeetupAdmin() {
     <section className={s.wrap} aria-labelledby="gestione-incontri">
       <div className={s.head}>
         <h2 className={s.title} id="gestione-incontri">
-          Organizza un incontro
+          {t('incontriAdmin.titolo')}
         </h2>
         <button
           type="button"
@@ -106,20 +104,17 @@ export default function MeetupAdmin() {
           onClick={() => setAperto((v) => !v)}
           aria-expanded={aperto}
         >
-          {aperto ? 'Chiudi' : 'Nuovo incontro'}
+          {aperto ? t('incontriAdmin.chiudi') : t('incontriAdmin.nuovo')}
         </button>
       </div>
 
-      <p className={s.intro}>
-        Un incontro non e’ una notizia: ha una data e un posto, compare in cima finche’ non e’
-        passato, e poi scende da solo fra quelli gia’ fatti. Lo vedete solo voi organizzatori.
-      </p>
+      <p className={s.intro}>{t('incontriAdmin.intro')}</p>
 
       {aperto && (
         <form className={s.form} onSubmit={invia}>
           <div className={s.riga}>
             <label className={s.campo}>
-              <span className={s.etichetta}>Titolo</span>
+              <span className={s.etichetta}>{t('incontriAdmin.titoloCampo')}</span>
               <input
                 className={s.input}
                 type="text"
@@ -127,13 +122,13 @@ export default function MeetupAdmin() {
                 maxLength={MEETUP_TITLE_MAX}
                 value={form.title}
                 onChange={aggiorna('title')}
-                placeholder="Primo incontro di settembre"
+                placeholder={t('incontriAdmin.titoloPlaceholder')}
                 disabled={salvataggio}
               />
             </label>
 
             <label className={s.campo}>
-              <span className={s.etichetta}>Quando</span>
+              <span className={s.etichetta}>{t('incontriAdmin.quando')}</span>
               {/* datetime-local e non due campi separati: sul telefono apre il
                   selettore nativo, che e' molto piu' veloce di far scrivere
                   una data a mano e molto piu' difficile da sbagliare. */}
@@ -150,21 +145,22 @@ export default function MeetupAdmin() {
 
           <div className={s.riga}>
             <label className={s.campo}>
-              <span className={s.etichetta}>Dove</span>
+              <span className={s.etichetta}>{t('incontriAdmin.dove')}</span>
               <input
                 className={s.input}
                 type="text"
                 maxLength={MEETUP_PLACE_MAX}
                 value={form.place}
                 onChange={aggiorna('place')}
-                placeholder="Toolbox Coworking, via Agostino da Montefeltro 2, Torino"
+                placeholder={t('incontriAdmin.dovePlaceholder')}
                 disabled={salvataggio}
               />
             </label>
 
             <label className={s.campo}>
               <span className={s.etichetta}>
-                Link per iscriversi <span className={s.opzionale}>(facoltativo)</span>
+                {t('incontriAdmin.link')}{' '}
+                <span className={s.opzionale}>{t('incontriAdmin.facoltativo')}</span>
               </span>
               <input
                 className={s.input}
@@ -178,14 +174,14 @@ export default function MeetupAdmin() {
           </div>
 
           <label className={s.campo}>
-            <span className={s.etichetta}>Di cosa si parla</span>
+            <span className={s.etichetta}>{t('incontriAdmin.diCosa')}</span>
             <textarea
               className={s.textarea}
               rows={4}
               maxLength={MEETUP_BODY_MAX}
               value={form.body}
               onChange={aggiorna('body')}
-              placeholder="Ognuno porta il proprio progetto e mostra cosa e’ cambiato dall’ultima volta."
+              placeholder={t('incontriAdmin.diCosaPlaceholder')}
               disabled={salvataggio}
             />
           </label>
@@ -197,12 +193,12 @@ export default function MeetupAdmin() {
               onChange={aggiorna('published')}
               disabled={salvataggio}
             />
-            <span>Pubblicato subito</span>
+            <span>{t('incontriAdmin.pubblicaSubito')}</span>
           </label>
 
           <div className={s.azioni}>
             <button type="submit" className={s.primario} disabled={salvataggio}>
-              {salvataggio ? 'Salvataggio…' : 'Salva incontro'}
+              {salvataggio ? t('incontriAdmin.salvataggio') : t('incontriAdmin.salva')}
             </button>
           </div>
 
@@ -228,11 +224,13 @@ export default function MeetupAdmin() {
                 <div className={s.voceTesto}>
                   <p className={s.voceTitolo}>
                     {m.title}
-                    {!m.published && <span className={s.bozza}>Bozza</span>}
-                    {passato && <span className={s.passato}>Gia’ fatto</span>}
+                    {!m.published && <span className={s.bozza}>{t('incontriAdmin.bozza')}</span>}
+                    {passato && (
+                      <span className={s.passato}>{t('incontriAdmin.giaFatto')}</span>
+                    )}
                   </p>
                   <p className={s.voceMeta}>
-                    {formatMeetupDate(m.startsAt)}
+                    {formatMeetupDate(m.startsAt, lang) ?? t('incontri.dataDaDefinire')}
                     {m.place ? ` · ${m.place}` : ''}
                   </p>
                 </div>
@@ -246,7 +244,7 @@ export default function MeetupAdmin() {
                       azione(m.id, () => updateMeetup(m.id, { published: !m.published }), 'pub')
                     }
                   >
-                    {m.published ? 'Nascondi' : 'Pubblica'}
+                    {m.published ? t('incontriAdmin.nascondi') : t('incontriAdmin.pubblica')}
                   </button>
                   <ConfermaElimina
                     disabled={!!inCorso[m.id]}
@@ -270,6 +268,7 @@ export default function MeetupAdmin() {
  * definitiva.
  */
 function ConfermaElimina({ onConferma, disabled }) {
+  const { t } = useI18n()
   const [chiede, setChiede] = useState(false)
 
   if (!chiede) {
@@ -280,24 +279,24 @@ function ConfermaElimina({ onConferma, disabled }) {
         onClick={() => setChiede(true)}
         disabled={disabled}
       >
-        Elimina
+        {t('incontriAdmin.elimina')}
       </button>
     )
   }
 
   return (
     <span className={s.conferma}>
-      <span className={s.confermaTesto}>Sicuro?</span>
+      <span className={s.confermaTesto}>{t('incontriAdmin.sicuro')}</span>
       <button
         type="button"
         className={`${s.piccolo} ${s.pericolo}`}
         onClick={onConferma}
         disabled={disabled}
       >
-        Si’
+        {t('incontriAdmin.si')}
       </button>
       <button type="button" className={s.piccolo} onClick={() => setChiede(false)}>
-        No
+        {t('incontriAdmin.no')}
       </button>
     </span>
   )

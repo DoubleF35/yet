@@ -28,11 +28,15 @@ export const LEGAL = {
   updatedAt: '2026-08-19',
 }
 
-/** Formatta LEGAL.updatedAt in italiano, con un ripiego se la data è scritta male. */
-export function legalUpdatedAt() {
+/**
+ * Formatta LEGAL.updatedAt nella lingua scelta, con un ripiego se la data è
+ * scritta male (meglio la stringa ISO grezza che "Invalid Date" in fondo a
+ * un'informativa).
+ */
+export function legalUpdatedAt(lang = 'it') {
   const d = new Date(`${LEGAL.updatedAt}T00:00:00`)
   if (Number.isNaN(d.getTime())) return LEGAL.updatedAt
-  return new Intl.DateTimeFormat('it-IT', {
+  return new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'it-IT', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

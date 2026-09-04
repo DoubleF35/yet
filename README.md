@@ -24,9 +24,10 @@ sta nel piano gratuito Spark di Firebase.
 11. [Iscrizione con approvazione](#iscrizione-con-approvazione)
 12. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
 13. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-14. [Struttura delle cartelle](#struttura-delle-cartelle)
-15. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-16. [Problemi comuni](#problemi-comuni)
+14. [Le due lingue](#le-due-lingue)
+15. [Struttura delle cartelle](#struttura-delle-cartelle)
+16. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+17. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -773,6 +774,88 @@ utente è vietato dalle regole a chiunque, amministratori compresi.
 
 ---
 
+## Le due lingue
+
+Il sito si legge in italiano o in inglese. Il selettore `IT / EN` sta nella
+barra in alto sul desktop e in fondo al pannello del panino su telefono, e la
+scelta resta salvata (`yet_lang` in `localStorage`).
+
+**Dove sta il testo.** Tutte le frasi del sito stanno in due file:
+
+```
+src/i18n/it.js     il catalogo ITALIANO, la lingua di riferimento
+src/i18n/en.js     il catalogo INGLESE
+```
+
+Nei componenti non c'è testo scritto a mano:
+
+```jsx
+const { t } = useI18n()
+<h1>{t('vetrina.titolo')}</h1>
+<p>{t('home.caricate', { n: 12 })}</p>     // segnaposti {nome}
+```
+
+**La regola, una sola:** una chiave nasce in `it.js` e poi si traduce in
+`en.js`. I due file devono avere le STESSE chiavi, e lo verifica uno script:
+
+```bash
+node scripts/i18n-check.mjs
+```
+
+Segnala una chiave presente in una lingua e non nell'altra, una stringa vuota e
+un tipo diverso fra i due cataloghi, ed esce con codice 1 se trova qualcosa.
+Vale la pena lanciarlo prima di ogni commit che tocca il testo: l'errore tipico
+non è una frase tradotta male, è una chiave aggiunta in italiano e dimenticata
+in inglese. Se capita, `t()` ripiega sulla frase italiana invece di mostrare il
+nome della chiave: a schermo si legge una riga italiana in mezzo all'inglese,
+che è brutto ma non è un buco.
+
+**Quello che NON sta nei cataloghi.**
+
+- Le due informative, `src/pages/Privacy.jsx` e `src/pages/Cookie.jsx`. Hanno
+  due componenti interi per lingua (`PrivacyIt` / `PrivacyEn`) invece di una
+  lista di chiavi: sono paragrafi con dentro `<strong>`, link e tabelle, e
+  spezzarli in chiavi vorrebbe dire trenta frammenti per pagina ricomposti in
+  un ordine che l'inglese non rispetta. **Se tocchi una versione, tocca anche
+  l'altra**: la versione inglese porta in cima la nota che, in caso di
+  discordanza, fa fede l'italiano.
+- Gli indirizzi, gli id dei canali social e i path delle icone, che stanno in
+  `src/config/socials.js` e non sono testo. Il nome che si legge a schermo
+  ("Gruppo WhatsApp" / "WhatsApp group") sì, ed è nei cataloghi sotto
+  `socials.<id>`: le due metà le ricuce `src/lib/socials.jsx`.
+- I messaggi di `console.warn` e `console.error`, che parlano a chi sviluppa.
+
+**Le date e i numeri** si formattano nella lingua scelta: `formatDate(valore,
+lang)` e `formatMeetupDate(valore, lang)` in `src/lib/db.js` prendono la lingua
+come secondo argomento (`it-IT` oppure `en-GB`, non `en-US`: "12 September" e
+le 18:30, che è come le legge chi sta in Italia).
+
+**Gli errori che nascono in `src/lib/`** non hanno un `t()` sotto mano, perché
+sono moduli e non componenti. Allegano quindi all'eccezione la chiave della
+frase da mostrare, e chi renderizza la traduce:
+
+```js
+const e = new Error('[YET] file illeggibile')   // per la console
+e.chiaveI18n = 'errori.fileIlleggibile'
+throw e
+```
+
+```jsx
+setError(messaggioErrore(t, err, 'allegati.erroreCaricamento'))
+```
+
+**Con quale lingua si apre.** Quella scelta l'ultima volta; se non c'è, quella
+del browser; se non è né italiano né inglese, italiano. Per partire SEMPRE in
+italiano, togli il blocco `navigator.languages` da `lingueIniziale()` in
+`src/lib/i18n.jsx`.
+
+**Per aggiungere una terza lingua** servono: un file in `src/i18n/`, una riga in
+`CATALOGHI` e una in `LINGUE` dentro `src/lib/i18n.jsx`, una voce in
+`tagLingua()` in `db.js`, e una terza versione delle due informative. Il
+selettore si allarga da solo.
+
+---
+
 ## Struttura delle cartelle
 
 ```
@@ -793,16 +876,24 @@ yet/
 │   │   ├── socials.js         canali, mail e testi della community
 │   │   └── legal.js           titolare del trattamento e data delle informative
 │   │
+│   ├── i18n/
+│   │   ├── it.js              catalogo italiano: la lingua di riferimento
+│   │   └── en.js              catalogo inglese, stesse chiavi
+│   │
 │   ├── lib/
 │   │   ├── firebase.js        init difensiva; espone isFirebaseConfigured
 │   │   ├── auth.jsx           AuthProvider + useAuth()
+│   │   ├── i18n.jsx           I18nProvider + useI18n(): t(), lang, setLang
+│   │   ├── socials.jsx        i canali, con le etichette tradotte
+│   │   ├── members.jsx        quel che sanno in comune vetrina e profilo
 │   │   └── db.js              tutte le query Firestore, in un posto solo
 │   │
 │   ├── components/            Navbar, Layout, Footer, Avatar, Skeleton,
-│   │                          EmptyState, ErrorState, HandsDivider,
-│   │                          RequireAdmin, ScrollToTop
+│   │                          LangSwitch, EmptyState, ErrorState,
+│   │                          HandsDivider, RequireAdmin, ScrollToTop
 │   │
-│   ├── pages/                 Intro, Home, Membri, Join, Contatti, Admin,
+│   ├── pages/                 Intro, Home, Membri, Profilo, Eventi, Join,
+│   │                          Contatti, Brand, Sponsor, Admin,
 │   │                          Privacy, Cookie
 │   │
 │   └── styles/
@@ -812,7 +903,8 @@ yet/
 │
 ├── scripts/
 │   ├── backup.mjs             export di Firestore in JSON  (npm run backup)
-│   └── restore.mjs            ripristino, dry-run di default (npm run restore)
+│   ├── restore.mjs            ripristino, dry-run di default (npm run restore)
+│   └── i18n-check.mjs         controlla che i due cataloghi combacino
 │
 ├── firestore.rules            la protezione VERA. Va pubblicata.
 ├── .env.example               le chiavi da riempire
@@ -825,6 +917,11 @@ Due regole che tengono in piedi il resto:
   `src/lib/db.js`. Cambiare modello dati significa toccare un file.
 - **Nessun colore scritto a mano fuori da `theme.css`.** Tutto il CSS usa le
   variabili. Cambiare la palette significa cambiare tre righe.
+- **Nessuna frase scritta a mano dentro un componente.** Il testo sta nei due
+  cataloghi in `src/i18n/`, tranne le due informative (vedi
+  [Le due lingue](#le-due-lingue)). Cambiare una parola significa toccare un
+  file per lingua, e `node scripts/i18n-check.mjs` dice se ne hai dimenticata
+  una.
 
 ---
 

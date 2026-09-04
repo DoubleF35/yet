@@ -17,6 +17,7 @@ import {
 } from '../lib/imageCompress.js'
 import { createMedia, deleteMedia } from '../lib/db.js'
 import { useAuth } from '../lib/auth.jsx'
+import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 
 import s from './AttachmentEditor.module.css'
 
@@ -32,6 +33,7 @@ import s from './AttachmentEditor.module.css'
  */
 export default function AttachmentEditor({ value = [], onChange, disabled = false }) {
   const { user } = useAuth()
+  const { t } = useI18n()
 
   const [url, setUrl] = useState('')
   const [label, setLabel] = useState('')
@@ -43,9 +45,11 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
   const [progress, setProgress] = useState(null)
   const fileRef = useRef(null)
 
-  /* Testo dello stato durante il caricamento: la compressione di una foto da
-     dodici megapixel dura qualche secondo, e senza una parola a schermo sembra
-     che il sito si sia piantato. */
+  /* Stato del caricamento: la compressione di una foto da dodici megapixel
+     dura qualche secondo, e senza una parola a schermo sembra che il sito si
+     sia piantato.
+     Porta un CODICE e non la frase: la frase la decide t() al render, così
+     cambiando lingua non resta appesa quella di prima. */
   const [fase, setFase] = useState(null)
 
   const reactId = useId()
@@ -59,19 +63,15 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
     const pulito = safeUrl(url)
 
     if (!pulito) {
-      setError(
-        url.trim()
-          ? 'Serve un indirizzo che inizi per http:// o https://. Altri tipi di link non vengono accettati.'
-          : 'Incolla un indirizzo.',
-      )
+      setError(url.trim() ? t('allegati.urlNonValido') : t('allegati.urlVuoto'))
       return
     }
     if (value.some((a) => a.url === pulito)) {
-      setError('Questo allegato c’è già.')
+      setError(t('allegati.doppione'))
       return
     }
     if (pieno) {
-      setError(`Massimo ${MAX_ATTACHMENTS} allegati per notizia.`)
+      setError(t('allegati.troppi', { max: MAX_ATTACHMENTS }))
       return
     }
 
@@ -109,15 +109,14 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
     setError(null)
 
     if (value.length >= MAX_ATTACHMENTS) {
-      setError(`Massimo ${MAX_ATTACHMENTS} allegati per notizia.`)
+      setError(t('allegati.troppi', { max: MAX_ATTACHMENTS }))
       return
     }
 
     const isImmagine = COMPRESSIBLE.includes(file.type)
     if (!isImmagine && file.type !== 'application/pdf') {
       setError(
-        `Tipo di file non ammesso (${file.type || 'sconosciuto'}). ` +
-          'Puoi caricare immagini JPEG, PNG, WebP, AVIF oppure un PDF.',
+        t('allegati.tipoNonAmmesso', { tipo: file.type || t('allegati.tipoSconosciuto') }),
       )
       if (fileRef.current) fileRef.current.value = ''
       return
@@ -125,11 +124,11 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
 
     setProgress(0)
     try {
-      setFase(isImmagine ? 'Comprimo l’immagine…' : 'Leggo il file…')
+      setFase(isImmagine ? 'comprimo' : 'leggo')
       const esito = isImmagine ? await compressImage(file) : await readAsDataUrl(file)
       setProgress(50)
 
-      setFase('Salvo…')
+      setFase('salvo')
       const mediaId = await createMedia(
         {
           dataUrl: esito.dataUrl,
@@ -161,7 +160,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       ])
       setLabel('')
     } catch (err) {
-      setError(err?.message || 'Caricamento non riuscito.')
+      setError(messaggioErrore(t, err, 'allegati.erroreCaricamento'))
     } finally {
       setProgress(null)
       setFase(null)
@@ -183,13 +182,13 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
     )
   }
 
+  /* La frase della fase in corso, o stringa vuota. In un posto solo: la usano
+     il bottone del file e la live region qui sotto. */
+  const faseTesto = fase ? t(`allegati.${fase}`) : ''
+
   return (
     <div className={s.wrap}>
-      <p className={s.hint}>
-        Carica un file dal tuo dispositivo, oppure incolla l’indirizzo di qualcosa che è già
-        online. Le immagini vengono mostrate dentro la notizia, tutto il resto come elenco di
-        link sotto al testo.
-      </p>
+      <p className={s.hint}>{t('allegati.hint')}</p>
 
       {value.length > 0 && (
         <ul className={s.list}>
@@ -207,7 +206,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
                 <span className={s.info}>
                   <span className={s.label}>{a.label}</span>
                   <span className={s.url}>
-                    {a.mediaId ? 'file caricato sul sito' : a.url}
+                    {a.mediaId ? t('allegati.fileCaricato') : a.url}
                   </span>
                 </span>
 
@@ -222,7 +221,9 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
                       onClick={() => cambiaTipo(a.url)}
                       disabled={disabled}
                     >
-                      {a.type === 'image' ? 'Tratta come link' : 'Tratta come immagine'}
+                      {a.type === 'image'
+                        ? t('allegati.trattaComeLink')
+                        : t('allegati.trattaComeImmagine')}
                     </button>
                   )}
                   <button
@@ -230,9 +231,9 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
                     className={`${s.small} ${s.remove}`}
                     onClick={() => rimuovi(chiave)}
                     disabled={disabled}
-                    aria-label={`Togli l’allegato ${a.label}`}
+                    aria-label={t('allegati.togliAria', { nome: a.label })}
                   >
-                    Togli
+                    {t('allegati.togli')}
                   </button>
                 </span>
               </li>
@@ -244,7 +245,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       <div className={s.form}>
         <div className={s.field}>
           <label className={s.fieldLabel} htmlFor={urlId}>
-            Indirizzo
+            {t('allegati.indirizzo')}
           </label>
           <input
             id={urlId}
@@ -274,13 +275,14 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
 
         <div className={s.field}>
           <label className={s.fieldLabel} htmlFor={labelId}>
-            Come si chiama <span className={s.optional}>(facoltativo)</span>
+            {t('allegati.comeSiChiama')}{' '}
+            <span className={s.optional}>{t('allegati.facoltativo')}</span>
           </label>
           <input
             id={labelId}
             className={s.input}
             type="text"
-            placeholder="Volantino dell’incontro"
+            placeholder={t('allegati.nomePlaceholder')}
             maxLength={LABEL_MAX}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
@@ -295,7 +297,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
         </div>
 
         <button type="button" className={s.add} onClick={aggiungi} disabled={disabled || pieno}>
-          Aggiungi
+          {t('allegati.aggiungi')}
         </button>
       </div>
 
@@ -309,12 +311,10 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
             onChange={(e) => carica(e.target.files?.[0])}
             disabled={disabled || pieno || progress !== null}
           />
-          <span className={s.fileButton}>{fase ?? 'Carica una foto o un file'}</span>
+          <span className={s.fileButton}>{faseTesto || t('allegati.caricaFile')}</span>
         </label>
         <span className={s.uploadHint}>
-          Le foto vengono rimpicciolite e compresse qui nel browser, fino a{' '}
-          {humanBytes(MAX_INLINE_BYTES)} ciascuna. Puoi caricarne quante ne vuoi: ognuna viene
-          salvata a parte.
+          {t('allegati.uploadHint', { peso: humanBytes(MAX_INLINE_BYTES) })}
         </span>
 
         {progress !== null && (
@@ -330,7 +330,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
           di un bottone che nello stesso istante viene disabilitato, e un
           controllo disabilitato non viene riletto. */}
       <p className="sr-only" role="status">
-        {fase ?? ''}
+        {faseTesto}
       </p>
 
       {error && (
@@ -340,9 +340,7 @@ export default function AttachmentEditor({ value = [], onChange, disabled = fals
       )}
 
       {pieno && (
-        <p className={s.full}>
-          Hai raggiunto il massimo di {MAX_ATTACHMENTS} allegati. Togline uno per aggiungerne altri.
-        </p>
+        <p className={s.full}>{t('allegati.pieno', { max: MAX_ATTACHMENTS })}</p>
       )}
     </div>
   )

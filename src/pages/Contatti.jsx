@@ -2,7 +2,9 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import EmptyState from '../components/EmptyState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
-import { CONTACT_EMAIL, COMMUNITY, SOCIALS } from '../config/socials.js'
+import { CONTACT_EMAIL } from '../config/socials.js'
+import { useI18n } from '../lib/i18n.jsx'
+import { useSocials } from '../lib/socials.jsx'
 
 import s from './Contatti.module.css'
 
@@ -56,6 +58,9 @@ async function copyToClipboard(text) {
 }
 
 export default function Contatti() {
+  const { t } = useI18n()
+  const tuttiISocial = useSocials()
+
   // useId e non stringhe fisse: se un giorno questa pagina venisse montata
   // due volte (una sezione riusata altrove) gli id resterebbero unici.
   const mailHeadingId = useId()
@@ -74,11 +79,11 @@ export default function Contatti() {
      tutte le pagine che non lo impostano. */
   useEffect(() => {
     const previous = document.title
-    document.title = `Contatti - ${COMMUNITY?.name || 'YET'}`
+    document.title = t('titoli.contatti')
     return () => {
       document.title = previous
     }
-  }, [])
+  }, [t])
 
   // Un timer in volo che scrive lo stato di un componente già smontato è un
   // warning e un piccolo leak: lo puliamo sempre.
@@ -113,24 +118,25 @@ export default function Contatti() {
   /* Difensivo di proposito: questa pagina non deve andare in bianco se il file
      di configurazione è momentaneamente vuoto o mal formato. Scartiamo le voci
      senza href, che renderebbero un link che non porta da nessuna parte. */
-  const socials = (Array.isArray(SOCIALS) ? SOCIALS : []).filter((item) => item && item.href)
+  const socials = (Array.isArray(tuttiISocial) ? tuttiISocial : []).filter(
+    (item) => item && item.href,
+  )
 
-  const city = COMMUNITY?.city || 'Torino'
+  /* Dal catalogo e non da config: in inglese la città si chiama "Turin", e un
+     esonimo è testo da tradurre come il resto. */
+  const city = t('community.citta')
 
   return (
     <div className={s.page}>
       <div className="container">
         <header className={s.head}>
-          <p className={s.eyebrow}>Contatti</p>
+          <p className={s.eyebrow}>{t('contatti.eyebrow')}</p>
           <h1 className={s.title}>
-            Parliamone.
+            {t('contatti.titolo1')}
             <br />
-            <span className={s.titleAccent}>Scegli il canale.</span>
+            <span className={s.titleAccent}>{t('contatti.titolo2')}</span>
           </h1>
-          <p className={s.lead}>
-            Che sia un&apos;idea da costruire, una domanda o solo curiosità: qui trovi tutti i modi
-            per raggiungerci. Rispondiamo appena possibile.
-          </p>
+          <p className={s.lead}>{t('contatti.lead')}</p>
         </header>
 
         {/* ------------------------------------------------------------------
@@ -139,7 +145,7 @@ export default function Contatti() {
             ------------------------------------------------------------------ */}
         <section className={s.mailBlock} aria-labelledby={mailHeadingId}>
           <h2 className={s.mailLabel} id={mailHeadingId}>
-            Scrivici una mail
+            {t('contatti.mailTitolo')}
           </h2>
 
           {CONTACT_EMAIL ? (
@@ -153,7 +159,7 @@ export default function Contatti() {
                   type="button"
                   className={s.copyButton}
                   onClick={handleCopy}
-                  aria-label={`Copia l'indirizzo ${CONTACT_EMAIL}`}
+                  aria-label={t('contatti.copiaAria', { email: CONTACT_EMAIL })}
                 >
                   <svg
                     className={s.copyIcon}
@@ -169,7 +175,7 @@ export default function Contatti() {
                       strokeLinecap="square"
                     />
                   </svg>
-                  Copia
+                  {t('contatti.copia')}
                 </button>
               </div>
 
@@ -190,16 +196,12 @@ export default function Contatti() {
                 role="status"
                 aria-live="polite"
               >
-                {copyState === 'ok' && 'Indirizzo copiato negli appunti.'}
-                {copyState === 'error' &&
-                  'Non è stato possibile copiare automaticamente: l’indirizzo è selezionato, usa Ctrl+C (⌘+C su Mac).'}
+                {copyState === 'ok' && t('contatti.copiato')}
+                {copyState === 'error' && t('contatti.copiaFallita')}
               </p>
             </>
           ) : (
-            <p className={s.mailMissing}>
-              L&apos;indirizzo non è configurato. Nel frattempo scrivici su uno dei canali qui
-              sotto.
-            </p>
+            <p className={s.mailMissing}>{t('contatti.mailMancante')}</p>
           )}
         </section>
 
@@ -209,7 +211,7 @@ export default function Contatti() {
             ------------------------------------------------------------------ */}
         <section className={s.section} aria-labelledby={socialsHeadingId}>
           <h2 className={s.sectionTitle} id={socialsHeadingId}>
-            Dove ci trovi
+            {t('contatti.doveCiTrovi')}
           </h2>
 
           {socials.length > 0 ? (
@@ -259,9 +261,7 @@ export default function Contatti() {
                         {item.handle && <span className={s.rowHandle}>{item.handle}</span>}
                       </span>
 
-                      {isExternal && (
-                        <span className="sr-only"> (si apre in una nuova scheda)</span>
-                      )}
+                      {isExternal && <span className="sr-only">{t('stati.nuovaScheda')}</span>}
 
                       <svg
                         className={s.arrow}
@@ -283,9 +283,8 @@ export default function Contatti() {
               })}
             </ul>
           ) : (
-            <EmptyState title="Nessun canale pubblico, per ora">
-              Stiamo sistemando i nostri profili. Nel frattempo la mail qui sopra funziona
-              benissimo.
+            <EmptyState title={t('contatti.nessunCanaleTitolo')}>
+              {t('contatti.nessunCanaleTesto')}
             </EmptyState>
           )}
         </section>
@@ -300,17 +299,11 @@ export default function Contatti() {
             ------------------------------------------------------------------ */}
         <section className={s.place} aria-labelledby={placeHeadingId}>
           <h2 className={s.sectionTitle} id={placeHeadingId}>
-            Dove siamo
+            {t('contatti.doveSiamo')}
           </h2>
-          <p className={s.placeCity}>Si parte da {city}, si va verso tutta Italia</p>
-          <p className={s.placeNote}>
-            I primi eventi saranno a {city}, ma l’obiettivo è espandersi in tutta Italia: se vivi
-            a Palermo o a Udine, puoi trovare gente della tua stessa città e contribuire a fare
-            eventi proprio dove sei tu.
-          </p>
-          <p className={s.placeNote}>
-            E, ovvio: se sei di passaggio a {city}, scrivici e ci prendiamo un caffè.
-          </p>
+          <p className={s.placeCity}>{t('contatti.partenza', { citta: city })}</p>
+          <p className={s.placeNote}>{t('contatti.raggio', { citta: city })}</p>
+          <p className={s.placeNote}>{t('contatti.caffe', { citta: city })}</p>
         </section>
       </div>
     </div>

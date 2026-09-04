@@ -1,3 +1,5 @@
+import { useI18n } from '../lib/i18n.jsx'
+
 import s from './ErrorState.module.css'
 
 /**
@@ -12,6 +14,8 @@ import s from './ErrorState.module.css'
  * @param {Function} [onRetry]  se manca, il bottone non compare
  */
 export default function ErrorState({ title, message, onRetry, className = '' }) {
+  const { t } = useI18n()
+
   return (
     <div
       className={`${s.error} ${className}`.trim()}
@@ -24,7 +28,7 @@ export default function ErrorState({ title, message, onRetry, className = '' }) 
 
       {typeof onRetry === 'function' ? (
         <button type="button" className={s.retry} onClick={onRetry}>
-          Riprova
+          {t('stati.riprova')}
         </button>
       ) : null}
     </div>

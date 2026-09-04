@@ -1,4 +1,5 @@
-import { WHATSAPP } from '../config/socials.js'
+import { useI18n } from '../lib/i18n.jsx'
+import { useWhatsapp } from '../lib/socials.jsx'
 
 import s from './WhatsAppCta.module.css'
 
@@ -17,13 +18,19 @@ import s from './WhatsAppCta.module.css'
  *   'block' , una fascia con titolo e spiegazione, per chiudere una pagina.
  */
 export default function WhatsAppCta({ variant = 'block', className = '' }) {
-  if (!WHATSAPP?.href) return null
+  /* Gli hook prima dell'uscita anticipata: chiamarne uno dopo un `return`
+     cambierebbe il loro numero fra un render e l'altro, che è l'errore che
+     React segnala come "rendered fewer hooks than expected". */
+  const { t } = useI18n()
+  const whatsapp = useWhatsapp()
+
+  if (!whatsapp?.href) return null
 
   /* Il gruppo è pubblico e chiunque abbia il link entra: aprirlo in una scheda
      nuova evita di far perdere il sito a chi stava leggendo, e rel="noopener"
      è comunque d'obbligo su un target _blank. */
   const linkProps = {
-    href: WHATSAPP.href,
+    href: whatsapp.href,
     target: '_blank',
     rel: 'noopener noreferrer',
   }
@@ -32,8 +39,8 @@ export default function WhatsAppCta({ variant = 'block', className = '' }) {
     return (
       <a className={`${s.button} ${className}`.trim()} {...linkProps}>
         <Icona />
-        <span>Entra nel gruppo</span>
-        <span className="sr-only"> WhatsApp di YET (si apre in una nuova scheda)</span>
+        <span>{t('whatsapp.bottone')}</span>
+        <span className="sr-only">{t('whatsapp.srSuffisso')}</span>
       </a>
     )
   }
@@ -41,21 +48,17 @@ export default function WhatsAppCta({ variant = 'block', className = '' }) {
   return (
     <section className={`${s.block} ${className}`.trim()} aria-labelledby="gruppo-whatsapp">
       <div className={s.blockText}>
-        <p className={s.eyebrow}>Il posto dove succedono le cose</p>
+        <p className={s.eyebrow}>{t('whatsapp.eyebrow')}</p>
         <h2 className={s.title} id="gruppo-whatsapp">
-          Il gruppo WhatsApp
+          {t('whatsapp.titolo')}
         </h2>
-        <p className={s.text}>
-          È lì che ci si organizza fra un incontro e l’altro: si chiede una mano, si mostra a che
-          punto si è, si decide quando vedersi. Il sito racconta cosa facciamo, il gruppo è dove lo
-          facciamo. Si entra subito, senza aspettare approvazioni.
-        </p>
+        <p className={s.text}>{t('whatsapp.testo')}</p>
       </div>
 
       <a className={s.blockButton} {...linkProps}>
         <Icona />
-        <span>Entra nel gruppo</span>
-        <span className="sr-only"> WhatsApp di YET (si apre in una nuova scheda)</span>
+        <span>{t('whatsapp.bottone')}</span>
+        <span className="sr-only">{t('whatsapp.srSuffisso')}</span>
       </a>
     </section>
   )

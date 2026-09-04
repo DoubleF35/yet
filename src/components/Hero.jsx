@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-import { COMMUNITY } from '../config/socials.js'
+import { useI18n } from '../lib/i18n.jsx'
 import { useParallax } from '../lib/motion.js'
 
 import s from './Hero.module.css'
@@ -20,11 +20,17 @@ import s from './Hero.module.css'
  */
 export default function Hero() {
   const { refContenitore, refBersaglio } = useParallax()
+  const { t } = useI18n()
 
   const base = import.meta.env.BASE_URL
+
+  /* Il punto finale della tagline si stacca dal resto perché va in coral: è
+     il solo segno di colore del titolo. Lo spezziamo qui invece di scrivere
+     due stringhe nel catalogo, così chi traduce non deve sapere niente di
+     questo dettaglio grafico. */
   const [taglineTesto, taglinePunto] = (() => {
-    const t = COMMUNITY.tagline || 'Build ambition.'
-    return t.endsWith('.') ? [t.slice(0, -1), '.'] : [t, '']
+    const frase = t('community.tagline')
+    return frase.endsWith('.') ? [frase.slice(0, -1), '.'] : [frase, '']
   })()
 
   return (
@@ -57,19 +63,20 @@ export default function Hero() {
           <span className={s.dot}>{taglinePunto}</span>
         </h1>
 
-        <p className={s.lead}>{COMMUNITY.tagline2 || COMMUNITY.shortDescription}</p>
+        <p className={s.lead}>{t('community.descrizioneBreve')}</p>
 
         <div className={s.actions}>
           <Link className={s.primary} to="/join">
-            Entra in YET
+            {t('hero.entra')}
           </Link>
           <Link className={s.secondary} to="/eventi">
-            Guarda gli eventi
+            {t('hero.eventi')}
           </Link>
         </div>
 
         <p className={s.meta}>
-          Dai {COMMUNITY.ageRange} anni <span aria-hidden="true">·</span> {COMMUNITY.reach}
+          {t('hero.meta', { eta: t('community.fasciaEta') })}{' '}
+          <span aria-hidden="true">·</span> {t('community.reach')}
         </p>
       </div>
 

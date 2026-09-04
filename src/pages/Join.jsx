@@ -6,8 +6,8 @@ import DeleteAccount from '../components/DeleteAccount.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import Skeleton from '../components/Skeleton.jsx'
-import { COMMUNITY } from '../config/socials.js'
-import { isInAppBrowser, useAuth } from '../lib/auth.jsx'
+import { authErrorText, isInAppBrowser, useAuth } from '../lib/auth.jsx'
+import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 import { memberPath } from '../lib/members.jsx'
 import {
   BIO_MAX,
@@ -64,59 +64,26 @@ function isHttpUrl(value) {
   }
 }
 
-// L'oggetto `error` può arrivare come Error di Firebase (con .code), come Error
-// generico o come semplice stringa: normalizziamo tutto in italiano invece di
-// stampare in faccia all'utente "auth/popup-closed-by-user".
-function signInErrorText(err) {
-  if (!err) return ''
-  const code = typeof err === 'object' ? err.code : ''
-  switch (code) {
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-      return 'Hai chiuso la finestra di Google prima di finire. Puoi riprovare quando vuoi.'
-    case 'auth/popup-blocked':
-    case 'auth/operation-not-supported-in-this-environment':
-      return 'Il browser ha bloccato la finestra di Google. Consenti i popup per questo sito e riprova, oppure apri il sito in Safari o Chrome.'
-    /* Codice nostro, non di Firebase: lo mette lib/auth.jsx quando riconosce
-       il browser interno di un'app, dove Google rifiuta l'accesso. */
-    case 'yet/in-app-browser':
-      return 'Stai navigando dentro un’altra app (Instagram, LinkedIn o simili), e Google non permette l’accesso da qui. Apri il sito in Safari o in Chrome e riprova.'
-    case 'auth/network-request-failed':
-      return 'Connessione assente o instabile. Controlla la rete e riprova.'
-    case 'auth/unauthorized-domain':
-      return 'Questo indirizzo non è fra i domini autorizzati del progetto Firebase.'
-    case 'auth/operation-not-allowed':
-      return 'Il login con Google non è ancora attivo su questo progetto Firebase.'
-    default:
-      if (typeof err === 'string') return err
-      return err.message || 'Accesso non riuscito. Riprova fra un momento.'
-  }
-}
-
-function saveErrorText(err) {
+// `t` come primo argomento e non un hook dentro: questa funzione sta fuori dal
+// componente perché è pura, ed è il posto giusto per lei. Chi la chiama ha già
+// `t` sotto mano.
+function saveErrorText(t, err) {
   const code = err && typeof err === 'object' ? err.code : ''
   switch (code) {
     case 'permission-denied':
-      /* Messaggio lungo di proposito. "Le regole non permettono questa
-         operazione" è vero e inutile: chi lo legge non sa da dove cominciare.
-         In pratica la causa è quasi sempre una sola, le regole pubblicate sul
-         database sono una versione più vecchia di quelle nel repo, e non
-         conoscono i campi che il sito scrive adesso. Dirlo qui fa risparmiare
-         mezz'ora a chiunque incontri l'errore. */
-      return (
-        'Firestore ha rifiutato il salvataggio. Quasi sempre vuol dire che le regole ' +
-        'pubblicate sul database sono più vecchie di quelle del progetto: apri la console ' +
-        'Firebase → Firestore Database → Regole e incolla il contenuto aggiornato di ' +
-        'firestore.rules, poi premi Pubblica.'
-      )
+      /* Il messaggio è lungo di proposito, vedi join.salvataggio.permessi nel
+         catalogo: "le regole non permettono questa operazione" è vero e
+         inutile, e la causa vera è quasi sempre una sola. */
+      return t('join.salvataggio.permessi')
     case 'unavailable':
     case 'deadline-exceeded':
-      return 'Firestore non ha risposto in tempo. Probabilmente è la connessione: riprova fra un momento.'
+      return t('join.salvataggio.lento')
     case 'unauthenticated':
-      return 'La sessione è scaduta. Esci e rientra con Google, poi riprova.'
+      return t('join.salvataggio.sessione')
     default:
-      if (typeof err === 'string') return err
-      return (err && err.message) || 'Qualcosa è andato storto durante il salvataggio.'
+      /* Un errore che porta con sé una chiave (li lancia lib/db.js: la foto
+         troppo grande, per esempio) vince sul suo messaggio. */
+      return messaggioErrore(t, err, 'join.salvataggio.generico')
   }
 }
 
@@ -147,23 +114,26 @@ export default function Join() {
 
 /** Avviso di configurazione mancante. Il sito deve aprirsi comunque. */
 function ConfigNotice() {
+  const { t } = useI18n()
+
   return (
     <p className={s.configNotice}>
-      <strong>Firebase non è configurato.</strong> Le variabili <code>VITE_FIREBASE_*</code> non sono
-      state impostate, quindi accesso e salvataggio non possono funzionare. Il resto del sito si
-      naviga normalmente.
+      <strong>{t('join.configTitolo')}</strong> {t('join.configTesto1')}{' '}
+      <code>VITE_FIREBASE_*</code> {t('join.configTesto2')}
     </p>
   )
 }
 
 /** Primo istante: onAuthStateChanged non ha ancora risposto. */
 function JoinLoading() {
+  const { t } = useI18n()
+
   return (
     <div className="container">
       <header className={s.head}>
         <img className={s.mark} src={LOGO_SRC} alt="YET" />
         <h1 id="join-title" className={s.title}>
-          Unisciti al club
+          {t('join.titolo')}
         </h1>
       </header>
 
@@ -175,7 +145,7 @@ function JoinLoading() {
         <Skeleton height="3rem" width="14rem" />
       </div>
       <p className="sr-only" role="status">
-        Sto controllando se hai già effettuato l&apos;accesso.
+        {t('join.liveControllo')}
       </p>
     </div>
   )
@@ -186,6 +156,7 @@ function JoinLoading() {
 /** Faccia A, visitatore non autenticato. */
 function JoinPitch({ firebaseMissing }) {
   const { signIn, error } = useAuth()
+  const { t } = useI18n()
   const [pending, setPending] = useState(false)
   const [localError, setLocalError] = useState(null)
 
@@ -193,47 +164,28 @@ function JoinPitch({ firebaseMissing }) {
      rifarlo a ogni render sarebbe lavoro buttato. */
   const [inApp] = useState(isInAppBrowser)
 
-  // COMMUNITY arriva da config/socials.js: destrutturiamo con dei default così
-  // un campo aggiunto dopo (o rimasto vuoto) non lascia buchi nel testo.
-  const {
-    name = 'YET',
-    tagline = '',
-    city = 'Torino',
-    ageRange = '16 ai 23',
-    description = '',
-  } = COMMUNITY || {}
 
+  /* I cinque punti. Il numero è decorazione, il testo sta nel catalogo: qui
+     resta solo l'ordine, che è una decisione di contenuto.
+     Il primo punto riusa la descrizione lunga del club, la stessa della home:
+     due copie della stessa presentazione divergerebbero al primo ritocco. */
   const points = [
-    {
-      n: '01',
-      title: 'Chi siamo',
-      text:
-        description ||
-        `${name} è un club di giovani che costruiscono cose: progetti, prodotti, associazioni, idee ancora confuse.`,
-    },
+    { n: '01', title: t('join.punti.chiSiamo.titolo'), text: t('community.descrizione') },
     {
       n: '02',
-      title: 'Per chi',
-      text: `Dai ${ageRange} anni, da tutta Italia. I primi eventi saranno a ${city}, ma l’obiettivo è espandersi: se vivi a Palermo o a Udine puoi trovare gente della tua città e contribuire a farne proprio dove sei tu.`,
+      title: t('join.punti.perChi.titolo'),
+      text: t('join.punti.perChi.testo', {
+        eta: t('community.fasciaEta'),
+        citta: t('community.citta'),
+      }),
     },
-    {
-      n: '03',
-      title: 'Cosa si fa',
-      text:
-        'Ognuno porta il proprio progetto e mostra cosa è cambiato dall’ultima volta. Si fanno domande scomode, si presta una mano, si trova chi ha già risolto il tuo problema.',
-    },
+    { n: '03', title: t('join.punti.cosaSiFa.titolo'), text: t('join.punti.cosaSiFa.testo') },
     {
       n: '04',
-      title: 'Come si entra',
-      text:
-        'Accedi con Google e scrivi due righe su di te. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione: il passaggio serve solo a tenere fuori gli account finti.',
+      title: t('join.punti.comeSiEntra.titolo'),
+      text: t('join.punti.comeSiEntra.testo'),
     },
-    {
-      n: '05',
-      title: 'Se non hai ancora niente',
-      text:
-        'Va bene lo stesso. Non serve un progetto avviato, né un’idea già chiara: quello che cerchiamo è l’attitudine. Se ti viene voglia di costruire qualcosa e non sai da dove partire, questo è esattamente il posto giusto in cui trovarti.',
-    },
+    { n: '05', title: t('join.punti.seNonHai.titolo'), text: t('join.punti.seNonHai.testo') },
   ]
 
   async function handleSignIn() {
@@ -254,9 +206,9 @@ function JoinPitch({ firebaseMissing }) {
 
   const shownError = localError || error
   const statusText = pending
-    ? 'Sto aprendo la finestra di Google…'
+    ? t('join.aperturaGoogle')
     : shownError
-      ? signInErrorText(shownError)
+      ? authErrorText(t, shownError)
       : ''
 
   return (
@@ -264,11 +216,9 @@ function JoinPitch({ firebaseMissing }) {
       <header className={s.head}>
         <img className={s.mark} src={LOGO_SRC} alt="YET" />
         <h1 id="join-title" className={s.title}>
-          Unisciti al club
+          {t('join.titolo')}
         </h1>
-        <p className={s.lead}>
-          {tagline || `Giovani builder ${ageRange} anni, con base a ${city}.`}
-        </p>
+        <p className={s.lead}>{t('community.descrizioneBreve')}</p>
       </header>
 
       {firebaseMissing && <ConfigNotice />}
@@ -300,9 +250,7 @@ function JoinPitch({ firebaseMissing }) {
             sbagliare: non gli lasciamo il potere di bloccare l'accesso. */}
         {inApp && (
           <p className={s.inAppNotice} role="note">
-            <strong>Sei nel browser interno di un’app.</strong> Google non permette l’accesso da
-            qui, per nessun sito. Apri questa pagina in Safari o in Chrome (dal menu dell’app, la
-            voce “Apri nel browser”) e l’accesso funziona.
+            <strong>{t('join.inAppTitolo')}</strong> {t('join.inAppTesto')}
           </p>
         )}
 
@@ -313,13 +261,10 @@ function JoinPitch({ firebaseMissing }) {
           disabled={pending || firebaseMissing}
           aria-busy={pending || undefined}
         >
-          {pending ? 'Attendi…' : 'Accedi con Google'}
+          {pending ? t('nav.attendi') : t('gate.accediGoogle')}
         </button>
 
-        <p className={s.ctaNote}>
-          Serve solo un account Google. Niente password nuove, niente newsletter: usiamo nome, email
-          e foto per farti comparire fra i membri.
-        </p>
+        <p className={s.ctaNote}>{t('join.ctaNota')}</p>
 
         {/* Il paragrafo di stato resta SEMPRE nel DOM, anche vuoto: uno
             role="status" inserito insieme al suo testo spesso non viene
@@ -371,6 +316,7 @@ function formFromProfile(profile, user) {
 /** Faccia B, utente autenticato: crea o aggiorna il proprio profilo. */
 function ProfileForm({ firebaseMissing }) {
   const { user, profile, profileLoading, refreshProfile } = useAuth()
+  const { t } = useI18n()
   const fid = useId()
 
   const [form, setForm] = useState(EMPTY_FORM)
@@ -395,7 +341,7 @@ function ProfileForm({ firebaseMissing }) {
       setForm((prev) => ({ ...prev, photoURL: esito.dataUrl }))
       setErrors((prev) => ({ ...prev, photoURL: undefined }))
     } catch (err) {
-      setAvatarError(err?.message || 'Non riesco a usare questa immagine.')
+      setAvatarError(messaggioErrore(t, err, 'join.form.fotoNonUsabile'))
     } finally {
       setAvatarBusy(false)
       // Senza azzerare, riscegliere lo STESSO file non fa scattare onChange e
@@ -514,16 +460,19 @@ function ProfileForm({ firebaseMissing }) {
     const nextErrors = {}
 
     if (!displayName) {
-      nextErrors.displayName = 'Serve un nome: è quello con cui compari fra i membri.'
+      nextErrors.displayName = t('join.form.nomeErrore')
     }
     // Validiamo la lunghezza in JS anche se il textarea ha maxLength: maxLength
     // non tocca i valori impostati da programma, e un profilo salvato prima che
     // il limite esistesse può arrivare già più lungo di BIO_MAX.
     if (bioOver) {
-      nextErrors.bio = `La bio supera ${BIO_MAX} caratteri: togline ${Math.abs(bioRemaining)}.`
+      nextErrors.bio = t('join.form.bioErrore', {
+        max: BIO_MAX,
+        troppi: Math.abs(bioRemaining),
+      })
     }
     if (photoURL && !photoURL.startsWith('data:') && !isHttpUrl(photoURL)) {
-      nextErrors.photoURL = 'Il link della foto deve iniziare con http:// o https://.'
+      nextErrors.photoURL = t('join.form.fotoErrore')
     }
 
     setErrors(nextErrors)
@@ -585,32 +534,29 @@ function ProfileForm({ firebaseMissing }) {
 
   const statusText =
     saveState === 'saving'
-      ? 'Sto salvando il profilo…'
+      ? t('join.form.statoSalvando')
       : saveState === 'saved'
-        ? 'Profilo salvato. Ora compari fra i membri.'
+        ? t('join.form.statoSalvato')
         : saveState === 'error'
-          ? `Salvataggio non riuscito. ${saveErrorText(saveError)}`
+          ? t('join.form.statoErrore', { dettaglio: saveErrorText(t, saveError) })
           : ''
 
   const photoMessage =
     photoCheck === 'badUrl'
-      ? 'Ci vuole un indirizzo completo, che inizi con http:// o https://.'
+      ? t('join.form.fotoIncompleto')
       : photoCheck === 'checking'
-        ? 'Sto controllando il link…'
+        ? t('join.form.fotoControllo')
         : photoCheck === 'error'
-          ? 'Non riesco a caricare quell’immagine. Controlla il link, oppure lascialo vuoto: le iniziali stanno benissimo.'
+          ? t('join.form.fotoNonCarica')
           : ''
 
   return (
     <div className="container-narrow">
       <header className={s.head}>
         <h1 id="join-title" className={s.title}>
-          Il tuo profilo
+          {t('join.form.titolo')}
         </h1>
-        <p className={s.lead}>
-          È quello che gli altri vedono nella pagina Membri. Due righe fatte bene valgono più di un
-          curriculum.
-        </p>
+        <p className={s.lead}>{t('join.form.lead')}</p>
       </header>
 
       {firebaseMissing && <ConfigNotice />}
@@ -627,15 +573,15 @@ function ProfileForm({ firebaseMissing }) {
       ) : (
         <form className={s.form} onSubmit={handleSubmit} noValidate>
           <fieldset className={s.group}>
-            <legend className={s.legend}>Chi sei</legend>
+            <legend className={s.legend}>{t('join.form.chiSei')}</legend>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-name`}>
-                Nome e cognome
+                {t('join.form.nome')}
                 <span className={s.req} aria-hidden="true">
                   *
                 </span>
-                <span className="sr-only">{' (obbligatorio)'}</span>
+                <span className="sr-only">{t('join.form.obbligatorio')}</span>
               </label>
               <input
                 className={cx(s.input, errors.displayName && s.inputInvalid)}
@@ -655,7 +601,7 @@ function ProfileForm({ firebaseMissing }) {
                 )}
               />
               <p className={s.hint} id={`${fid}-name-hint`}>
-                Come vuoi essere chiamato. Anche solo il nome va bene.
+                {t('join.form.nomeHint')}
               </p>
               {errors.displayName && (
                 <p className={s.fieldError} id={`${fid}-name-err`}>
@@ -666,7 +612,7 @@ function ProfileForm({ firebaseMissing }) {
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-place`}>
-                Da dove scrivi
+                {t('join.form.luogo')}
               </label>
               <input
                 className={s.input}
@@ -683,14 +629,13 @@ function ProfileForm({ firebaseMissing }) {
                 aria-describedby={`${fid}-place-hint`}
               />
               <p className={s.hint} id={`${fid}-place-hint`}>
-                La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese
-                e a farti trovare da chi ti sta vicino. Puoi lasciarlo vuoto.
+                {t('join.form.luogoHint')}
               </p>
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-bio`}>
-                Presentati
+                {t('join.form.bio')}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, (errors.bio || bioOver) && s.inputInvalid)}
@@ -709,8 +654,7 @@ function ProfileForm({ firebaseMissing }) {
               />
               <div className={s.bioFoot}>
                 <p className={s.hint} id={`${fid}-bio-hint`}>
-                  Raccontati con calma: nella vetrina si vedono le prime due righe, il resto si
-                  legge aprendo il tuo profilo. I ritorni a capo restano.
+                  {t('join.form.bioHint')}
                 </p>
                 {/* Nessun aria-live su questo contatore: cambiando a ogni tasto
                     farebbe parlare lo screen reader sopra alla digitazione.
@@ -724,7 +668,7 @@ function ProfileForm({ firebaseMissing }) {
                     {bioLength}/{BIO_MAX}
                   </span>
                   <span className="sr-only">
-                    {bioLength} caratteri su {BIO_MAX} disponibili
+                    {t('join.form.bioConteggio', { n: bioLength, max: BIO_MAX })}
                   </span>
                 </p>
               </div>
@@ -737,13 +681,13 @@ function ProfileForm({ firebaseMissing }) {
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-photo`}>
-                Foto del profilo (link)
+                {t('join.form.foto')}
               </label>
               <div className={s.photoRow}>
                 <div className={s.photoPreview}>
                   <Avatar
                     src={photoValue.startsWith('data:') || isHttpUrl(photoValue) ? photoValue : ''}
-                    name={form.displayName || (user && user.displayName) || 'Tu'}
+                    name={form.displayName || (user && user.displayName) || t('join.form.fotoNomeTu')}
                     size={80}
                   />
                 </div>
@@ -761,7 +705,7 @@ function ProfileForm({ firebaseMissing }) {
                         onChange={(e) => caricaAvatar(e.target.files?.[0], e.target)}
                       />
                       <span className={s.photoFileButton}>
-                        {avatarBusy ? 'Preparo la foto…' : 'Carica una foto'}
+                        {avatarBusy ? t('join.form.preparoFoto') : t('join.form.caricaFoto')}
                       </span>
                     </label>
                     {form.photoURL && (
@@ -771,7 +715,7 @@ function ProfileForm({ firebaseMissing }) {
                         onClick={() => setForm((prev) => ({ ...prev, photoURL: '' }))}
                         disabled={saving || avatarBusy}
                       >
-                        Togli
+                        {t('join.form.togli')}
                       </button>
                     )}
                   </div>
@@ -789,9 +733,7 @@ function ProfileForm({ firebaseMissing }) {
                       scorre all'infinito su base64 illeggibile. */}
                   {form.photoURL.startsWith('data:') ? (
                     <p className={s.hint}>
-                      Foto caricata dal tuo dispositivo, ridotta a{' '}
-                      {humanBytes(form.photoURL.length)}. Usa «Togli» per sceglierne un’altra o
-                      per tornare a un indirizzo.
+                      {t('join.form.fotoCaricata', { peso: humanBytes(form.photoURL.length) })}
                     </p>
                   ) : (
                   <input
@@ -814,10 +756,7 @@ function ProfileForm({ firebaseMissing }) {
                   />
                   )}
                   <p className={s.hint} id={`${fid}-photo-hint`}>
-                    Facoltativo: se non metti niente usiamo le tue iniziali. Puoi caricare una foto
-                    dal dispositivo oppure incollare qui sopra l’indirizzo di una già online. Le
-                    foto caricate vengono ritagliate quadrate e rimpicciolite a{' '}
-                    {humanBytes(AVATAR_MAX_BYTES)}.
+                    {t('join.form.fotoHint', { peso: humanBytes(AVATAR_MAX_BYTES) })}
                   </p>
                   {photoMessage && (
                     <p className={s.photoNote} id={`${fid}-photo-note`}>
@@ -841,15 +780,12 @@ function ProfileForm({ firebaseMissing }) {
               legittimo. Si vedono nella pagina del profilo, non nella
               tessera. */}
           <fieldset className={s.group}>
-            <legend className={s.legend}>Cosa fai</legend>
-            <p className={s.groupHint}>
-              Facoltativi, e sono quelli che fanno la differenza: chi cerca una mano o un socio
-              legge questi tre. Compaiono nella pagina del tuo profilo.
-            </p>
+            <legend className={s.legend}>{t('join.form.cosaFai')}</legend>
+            <p className={s.groupHint}>{t('join.form.cosaFaiHint')}</p>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-project`}>
-                Cosa stai costruendo
+                {t('join.form.project')}
               </label>
               <textarea
                 className={cx(s.input, s.textarea)}
@@ -861,14 +797,13 @@ function ProfileForm({ firebaseMissing }) {
                 aria-describedby={`${fid}-project-hint`}
               />
               <p className={s.hint} id={`${fid}-project-hint`}>
-                Il progetto, il prodotto, l&apos;idea. Anche se è appena cominciata, o se è ancora
-                confusa: scrivere com&apos;è adesso vale più di una descrizione perfetta.
+                {t('join.form.projectHint')}
               </p>
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-looking`}>
-                Cosa cerchi
+                {t('join.form.looking')}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, s.textareaShort)}
@@ -880,14 +815,13 @@ function ProfileForm({ firebaseMissing }) {
                 aria-describedby={`${fid}-looking-hint`}
               />
               <p className={s.hint} id={`${fid}-looking-hint`}>
-                Una mano su qualcosa, un socio, qualcuno che ha già risolto il tuo problema, o
-                solo due opinioni sincere. Chiedere è il motivo per cui esiste il club.
+                {t('join.form.lookingHint')}
               </p>
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-skills`}>
-                Cosa sai fare
+                {t('join.form.skills')}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, s.textareaShort)}
@@ -899,21 +833,18 @@ function ProfileForm({ firebaseMissing }) {
                 aria-describedby={`${fid}-skills-hint`}
               />
               <p className={s.hint} id={`${fid}-skills-hint`}>
-                Quello su cui gli altri possono chiedere a te. Non serve un titolo: &ldquo;monto
-                video&rdquo;, &ldquo;parlo inglese bene&rdquo;, &ldquo;so fare un sito&rdquo;.
+                {t('join.form.skillsHint')}
               </p>
             </div>
           </fieldset>
 
           <fieldset className={s.group}>
-            <legend className={s.legend}>Dove trovarti</legend>
-            <p className={s.groupHint}>
-              Tutti facoltativi. Servono a chi vede il tuo progetto e vuole scriverti.
-            </p>
+            <legend className={s.legend}>{t('join.form.doveTrovarti')}</legend>
+            <p className={s.groupHint}>{t('join.form.doveTrovartiHint')}</p>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-linkedin`}>
-                LinkedIn
+                {t('social.linkedin')}
               </label>
               {/* `type="text"` e non `url` di proposito: questi campi accettano
                   anche un handle nudo ("mario-rossi") e la validazione del
@@ -931,7 +862,7 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.linkedin}
                 onChange={update('linkedin')}
-                placeholder="https://www.linkedin.com/in/nomecognome"
+                placeholder={t('join.form.linkedinPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -941,7 +872,7 @@ function ProfileForm({ firebaseMissing }) {
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-instagram`}>
-                Instagram
+                {t('social.instagram')}
               </label>
               <input
                 className={s.input}
@@ -950,7 +881,7 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.instagram}
                 onChange={update('instagram')}
-                placeholder="@nomeutente"
+                placeholder={t('join.form.instagramPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -960,7 +891,7 @@ function ProfileForm({ firebaseMissing }) {
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-other`}>
-                Altro
+                {t('join.form.altro')}
               </label>
               <input
                 className={s.input}
@@ -969,7 +900,7 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.other}
                 onChange={update('other')}
-                placeholder="https://ilmiosito.it, o GitHub, o TikTok"
+                placeholder={t('join.form.altroPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -985,7 +916,11 @@ function ProfileForm({ firebaseMissing }) {
               disabled={saving || firebaseMissing}
               aria-busy={saving || undefined}
             >
-              {saving ? 'Salvataggio…' : profile ? 'Salva le modifiche' : 'Crea il mio profilo'}
+              {saving
+                ? t('join.form.inCorso')
+                : profile
+                  ? t('join.form.salva')
+                  : t('join.form.crea')}
             </button>
 
             {/* Porta alla PAGINA del proprio profilo e non piu' all'elenco:
@@ -994,7 +929,7 @@ function ProfileForm({ firebaseMissing }) {
                 quello che vedono gli altri aprendo la tessera. */}
             {canSeeMembers && (
               <Link className={s.secondary} to={memberPath(user.uid)}>
-                Vedi come ti vedono
+                {t('join.form.vediComeTiVedono')}
               </Link>
             )}
           </div>
@@ -1019,22 +954,15 @@ function ProfileForm({ firebaseMissing }) {
           lavoro dell'approvazione. */}
       {profile?.status === 'pending' && (
         <div className={s.statusBox}>
-          <p className={s.statusBoxTitle}>Richiesta inviata, in attesa di approvazione</p>
-          <p className={s.statusBoxText}>
-            Il tuo profilo è arrivato agli organizzatori. Finché non lo approvano non compare fra i
-            membri e non lo vede nessun altro: puoi comunque modificarlo quando vuoi da questa
-            pagina, e le modifiche restano.
-          </p>
+          <p className={s.statusBoxTitle}>{t('join.form.attesaTitolo')}</p>
+          <p className={s.statusBoxText}>{t('join.form.attesaTesto')}</p>
         </div>
       )}
 
       {profile?.status === 'rejected' && (
         <div className={`${s.statusBox} ${s.statusBoxRejected}`}>
-          <p className={s.statusBoxTitle}>Richiesta non approvata</p>
-          <p className={s.statusBoxText}>
-            Al momento il tuo profilo non è pubblicato fra i membri. Se pensi che sia un errore, o
-            vuoi capire perché, scrivici: la decisione non è definitiva e si può rivedere.
-          </p>
+          <p className={s.statusBoxTitle}>{t('join.form.rifiutataTitolo')}</p>
+          <p className={s.statusBoxText}>{t('join.form.rifiutataTesto')}</p>
         </div>
       )}
 
