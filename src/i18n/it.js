@@ -299,6 +299,7 @@ export default {
     sponsor: 'Sponsor · YET',
     privacy: 'Privacy · YET',
     cookie: 'Cookie · YET',
+    notFound: 'Pagina non trovata · YET',
   },
 
   /* --- eventi ------------------------------------------------------------ */
@@ -798,5 +799,17 @@ export default {
       'Tipo di file non ammesso ({tipo}). Puoi caricare immagini JPEG, PNG, WebP, AVIF oppure un PDF.',
     tipoSconosciuto: 'sconosciuto',
     erroreCaricamento: 'Caricamento non riuscito.',
+  },
+
+  /* --- pagina non trovata (la rotta *) ------------------------------------ */
+  notFound: {
+    codice: 'Errore 404',
+    titolo: 'Questa pagina non esiste.',
+    lead:
+      'Forse il link era vecchio, o c’è un errore di battitura nell’indirizzo. Il resto del sito funziona: da qui torni a casa.',
+    haiChiesto: 'Hai chiesto',
+    scrivici: 'Scrivici',
+    paginePrincipali: 'Pagine principali',
+    oppure: 'Oppure vai diretto a',
   },
 }

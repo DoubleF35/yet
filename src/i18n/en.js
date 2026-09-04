@@ -68,11 +68,11 @@ export default {
     fasciaEta: '16 to 23',
     citta: 'Turin',
     raggio: 'all of Italy',
-    reach: 'First events in Turin, the goal is all of Italy',
+    reach: 'First events in Turin, aiming for all of Italy',
     descrizioneBreve:
       'The club for young people building something. Even if you have nothing in your hands yet: what counts is the attitude, not a project that is already running.',
     descrizione:
-      'YET, Young Entrepreneurs Together, is the club for young people building something: a product, an association, a project, an idea that is still unclear. And if you have nothing in your hands yet, that is fine too: what we look for is the attitude, not a project that is already running. The first events will be in Turin, but the goal is to spread across all of Italy. No selection, no membership fee.',
+      'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. The first events will be in Turin, but the plan is to spread across Italy. No selection, no membership fee.',
   },
 
   /* --- channels --------------------------------------------------------- */
@@ -283,6 +283,7 @@ export default {
     sponsor: 'Sponsor · YET',
     privacy: 'Privacy · YET',
     cookie: 'Cookies · YET',
+    notFound: 'Page not found · YET',
   },
 
   /* --- events ------------------------------------------------------------ */
@@ -767,5 +768,17 @@ export default {
       'File type not allowed ({tipo}). You can upload JPEG, PNG, WebP or AVIF images, or a PDF.',
     tipoSconosciuto: 'unknown',
     erroreCaricamento: 'The upload failed.',
+  },
+
+  /* --- page not found (the * route) --------------------------------------- */
+  notFound: {
+    codice: 'Error 404',
+    titolo: 'This page doesn’t exist.',
+    lead:
+      'The link may be old, or there’s a typo in the address. The rest of the site works fine: head back from here.',
+    haiChiesto: 'You asked for',
+    scrivici: 'Get in touch',
+    paginePrincipali: 'Main pages',
+    oppure: 'Or go straight to',
   },
 }
