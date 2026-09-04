@@ -1,64 +1,36 @@
 import { useEffect, useState } from 'react'
 
 import { COMMUNITY } from '../config/socials.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Brand.module.css'
 
-/* I colori del marchio, con i rapporti di contrasto MISURATI e non stimati.
-   Stanno qui come dato e non come testo scritto a mano perché la pagina li
-   mostra e li fa copiare: un valore sbagliato qui diventa un logo sbagliato
-   sulla locandina di qualcun altro. */
+/* I colori del marchio. Qui resta il DATO, cioè il codice esadecimale: un
+   valore sbagliato qui diventa un logo sbagliato sulla locandina di qualcun
+   altro, e non è una cosa che si traduce. Il nome, il ruolo e la nota sul
+   contrasto sono testo e stanno nel catalogo, sotto `brand.colori.<id>`. */
 const COLORI = [
-  {
-    nome: 'Coral',
-    hex: '#D14A2C',
-    ruolo: 'L’accento. La freccia del marchio, i dettagli, un solo elemento per schermata.',
-    nota: 'Su fondo scuro fa 4,2:1. Va bene per titoli e icone, non per il testo piccolo.',
-  },
-  {
-    nome: 'Beige',
-    hex: '#ECEAE4',
-    ruolo: 'Il fondo delle stampe e il testo sul sito scuro. È il colore che si vede di più.',
-    nota: 'Sul nero caldo fa 16,3:1, il massimo della scala.',
-  },
-  {
-    nome: 'Nero caldo',
-    hex: '#1E1B18',
-    ruolo: 'Il testo sulle stampe, il fondo del sito. Non è il nero puro, tira al marrone.',
-    nota: 'Il nero assoluto (#000) accanto al beige sembra un buco: non usarlo.',
-  },
+  { id: 'coral', hex: '#D14A2C' },
+  { id: 'beige', hex: '#ECEAE4' },
+  { id: 'nero', hex: '#1E1B18' },
 ]
 
-const REGOLE = [
-  {
-    si: 'Lascia respirare il marchio: almeno l’altezza della “Y” di spazio vuoto tutto intorno.',
-    no: 'Non stringerlo fra altri elementi.',
-  },
-  {
-    si: 'Usa la versione chiara sui fondi scuri e quella scura sui fondi chiari.',
-    no: 'Non mettere quella scura su una foto scura: la parte nera sparisce e resta una freccia sospesa.',
-  },
-  {
-    si: 'Scalalo tenendo le proporzioni.',
-    no: 'Non allargarlo, non stringerlo, non inclinarlo.',
-  },
-  {
-    si: 'Se ti serve monocromatico, usa il beige o il nero pieni.',
-    no: 'Non ricolorarlo di altri colori, e non mettere la freccia di un colore diverso dal coral.',
-  },
-]
+/* Le quattro regole d'uso. Solo gli id: le due frasi di ognuna stanno in
+   `brand.regole.<id>.si` e `.no`. L'ordine dell'array è l'ordine a schermo. */
+const REGOLE = ['spazio', 'versione', 'scala', 'mono']
 
 export default function Brand() {
+  const { t } = useI18n()
   const base = import.meta.env.BASE_URL
   const [copiato, setCopiato] = useState(null)
 
   useEffect(() => {
     const previous = document.title
-    document.title = 'Brand · YET'
+    document.title = t('titoli.brand')
     return () => {
       document.title = previous
     }
-  }, [])
+  }, [t])
 
   /* clipboard può non esistere (http non sicuro) o essere negata: senza il
      catch il bottone resterebbe muto e sembrerebbe rotto. */
@@ -76,77 +48,64 @@ export default function Brand() {
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
-        <p className={s.eyebrow}>Brand identity</p>
-        <h1 className={s.title}>Il marchio</h1>
-        <p className={s.lead}>
-          Se devi mettere {COMMUNITY.name} su una locandina, una slide o un post, i file e le
-          regole sono qui. Serve a evitare la fine che fanno tutti i loghi delle associazioni:
-          sette versioni diverse in giro, nessuna giusta.
-        </p>
+        <p className={s.eyebrow}>{t('brand.eyebrow')}</p>
+        <h1 className={s.title}>{t('brand.titolo')}</h1>
+        <p className={s.lead}>{t('brand.lead', { nome: COMMUNITY.name })}</p>
       </header>
 
       <div className="container">
         {/* --- il logo ---------------------------------------------------- */}
         <section className={s.section} aria-labelledby="logo">
           <h2 className={s.h2} id="logo">
-            Il logo
+            {t('brand.logoTitolo')}
           </h2>
 
           <div className={s.loghi}>
             <figure className={s.provaScura}>
-              <img src={`${base}logo-light.png`} alt="Il logo YET nella versione chiara" />
+              <img src={`${base}logo-light.png`} alt={t('brand.logoChiaroAlt')} />
               <figcaption>
-                Versione chiara, per fondi scuri
+                {t('brand.logoChiaro')}
                 <a className={s.download} href={`${base}logo-light.png`} download="yet-logo-chiaro.png">
-                  Scarica PNG
+                  {t('brand.scarica')}
                 </a>
               </figcaption>
             </figure>
 
             <figure className={s.provaChiara}>
-              <img src={`${base}logo.png`} alt="Il logo YET nella versione scura" />
+              <img src={`${base}logo.png`} alt={t('brand.logoScuroAlt')} />
               <figcaption>
-                Versione scura, per fondi chiari
+                {t('brand.logoScuro')}
                 <a className={s.download} href={`${base}logo.png`} download="yet-logo-scuro.png">
-                  Scarica PNG
+                  {t('brand.scarica')}
                 </a>
               </figcaption>
             </figure>
           </div>
 
-          <p className={s.nota}>
-            Il marchio è un’immagine, non una scritta: non va mai ricomposto scrivendo «YET» con un
-            carattere qualsiasi. La lettera finale è fatta di due segni, e quelli sono il simbolo.
-          </p>
+          <p className={s.nota}>{t('brand.logoNota')}</p>
         </section>
 
         {/* --- le lancette ------------------------------------------------ */}
         <section className={s.section} aria-labelledby="lancette">
           <h2 className={s.h2} id="lancette">
-            Le lancette
+            {t('brand.lancetteTitolo')}
           </h2>
 
           <div className={s.lancetteRiga}>
             <img
               className={s.lancette}
               src={`${base}hands-light.png`}
-              alt="Le due lancette del marchio YET: una freccia coral e una barra diagonale"
+              alt={t('brand.lancetteAlt')}
             />
             <div>
-              <p className={s.nota}>
-                La lettera finale del marchio è fatta di due segni che sembrano le lancette di un
-                orologio. Presi da soli diventano un elemento grafico riutilizzabile: divisori fra
-                le sezioni, decorazione, icona.
-              </p>
-              <p className={s.nota}>
-                Si possono ruotare e scalare. Non si deformano e non si ricolorano.
-              </p>
+              <p className={s.nota}>{t('brand.lancetteNota1')}</p>
+              <p className={s.nota}>{t('brand.lancetteNota2')}</p>
               <a
                 className={s.download}
                 href={`${base}hands-light.png`}
                 download="yet-lancette-chiaro.png"
               >
-                Scarica PNG
+                {t('brand.scarica')}
               </a>
             </div>
           </div>
@@ -155,13 +114,9 @@ export default function Brand() {
         {/* --- i colori --------------------------------------------------- */}
         <section className={s.section} aria-labelledby="colori">
           <h2 className={s.h2} id="colori">
-            I colori
+            {t('brand.coloriTitolo')}
           </h2>
-          <p className={s.nota}>
-            Tre, e bastano. I rapporti di contrasto qui sotto sono calcolati con la formula WCAG,
-            non stimati a occhio: servono a sapere quando un colore si può usare per il testo e
-            quando no.
-          </p>
+          <p className={s.nota}>{t('brand.coloriNota')}</p>
 
           <ul className={s.colori}>
             {COLORI.map((c) => (
@@ -172,17 +127,17 @@ export default function Brand() {
                   aria-hidden="true"
                 />
                 <div className={s.coloreInfo}>
-                  <p className={s.coloreNome}>{c.nome}</p>
+                  <p className={s.coloreNome}>{t(`brand.colori.${c.id}.nome`)}</p>
                   <button
                     type="button"
                     className={s.hex}
                     onClick={() => copia(c.hex)}
-                    aria-label={`Copia il codice colore ${c.hex}`}
+                    aria-label={t('brand.copiaColore', { hex: c.hex })}
                   >
-                    {copiato === c.hex ? 'Copiato' : c.hex}
+                    {copiato === c.hex ? t('brand.copiato') : c.hex}
                   </button>
-                  <p className={s.coloreRuolo}>{c.ruolo}</p>
-                  <p className={s.coloreNota}>{c.nota}</p>
+                  <p className={s.coloreRuolo}>{t(`brand.colori.${c.id}.ruolo`)}</p>
+                  <p className={s.coloreNota}>{t(`brand.colori.${c.id}.nota`)}</p>
                 </div>
               </li>
             ))}
@@ -190,27 +145,24 @@ export default function Brand() {
 
           <p className="sr-only" role="status">
             {copiato === 'errore'
-              ? 'Non riesco a copiare. Selezionalo a mano.'
+              ? t('brand.copiaErroreLive')
               : copiato
-                ? `${copiato} copiato negli appunti.`
+                ? t('brand.copiatoLive', { hex: copiato })
                 : ''}
           </p>
           {copiato === 'errore' && (
-            <p className={s.erroreCopia}>
-              Il browser non mi lascia copiare. Selezionalo a mano, è {COLORI[0].hex} e simili.
-            </p>
+            <p className={s.erroreCopia}>{t('brand.copiaErrore', { hex: COLORI[0].hex })}</p>
           )}
         </section>
 
         {/* --- il carattere ----------------------------------------------- */}
         <section className={s.section} aria-labelledby="carattere">
           <h2 className={s.h2} id="carattere">
-            Il carattere
+            {t('brand.carattereTitolo')}
           </h2>
           <p className={s.campioneFont}>Inter</p>
           <p className={s.nota}>
-            Un solo carattere per tutto. Titoli in Extrabold (800), testo in Regular (400),
-            etichette e bottoni in Semibold (600). È gratuito e si scarica da{' '}
+            {t('brand.carattereNota1')}{' '}
             <a
               className={s.link}
               href="https://rsms.me/inter/"
@@ -219,7 +171,7 @@ export default function Brand() {
             >
               rsms.me/inter
             </a>
-            <span className="sr-only"> (si apre in una nuova scheda)</span>.
+            <span className="sr-only">{t('stati.nuovaScheda')}</span>.
           </p>
           <div className={s.pesi}>
             <span style={{ fontWeight: 400 }}>400 Regular</span>
@@ -231,22 +183,22 @@ export default function Brand() {
         {/* --- cosa non fare ---------------------------------------------- */}
         <section className={s.section} aria-labelledby="regole">
           <h2 className={s.h2} id="regole">
-            Sì e no
+            {t('brand.regoleTitolo')}
           </h2>
           <ul className={s.regole}>
-            {REGOLE.map((r) => (
-              <li className={s.regola} key={r.si}>
+            {REGOLE.map((id) => (
+              <li className={s.regola} key={id}>
                 <p className={s.si}>
                   <span className={s.segno} aria-hidden="true">
-                    Sì
+                    {t('brand.si')}
                   </span>
-                  {r.si}
+                  {t(`brand.regole.${id}.si`)}
                 </p>
                 <p className={s.no}>
                   <span className={s.segno} aria-hidden="true">
-                    No
+                    {t('brand.no')}
                   </span>
-                  {r.no}
+                  {t(`brand.regole.${id}.no`)}
                 </p>
               </li>
             ))}

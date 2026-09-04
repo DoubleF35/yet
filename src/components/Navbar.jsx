@@ -2,24 +2,30 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
+import LangSwitch from './LangSwitch.jsx'
 import { useAuth } from '../lib/auth.jsx'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Navbar.module.css'
 
+/* Le voci portano la CHIAVE e non l'etichetta: l'etichetta la risolve t() al
+   momento del render, così cambiando lingua la barra si riscrive da sola.
+   Con le etichette qui dentro resterebbero congelate a quelle italiane. */
 const LINKS = [
-  { to: '/home', label: 'Home' },
-  { to: '/vetrina', label: 'Vetrina' },
-  { to: '/eventi', label: 'Eventi' },
-  { to: '/join', label: 'Join' },
-  { to: '/contatti', label: 'Contatti' },
-  { to: '/brand', label: 'Brand' },
-  { to: '/sponsor', label: 'Sponsor' },
+  { to: '/home', chiave: 'nav.home' },
+  { to: '/vetrina', chiave: 'nav.vetrina' },
+  { to: '/eventi', chiave: 'nav.eventi' },
+  { to: '/join', chiave: 'nav.join' },
+  { to: '/contatti', chiave: 'nav.contatti' },
+  { to: '/brand', chiave: 'nav.brand' },
+  { to: '/sponsor', chiave: 'nav.sponsor' },
 ]
 
 export default function Navbar() {
   const { user, profile, loading, isAdmin, signIn, signOutUser } = useAuth()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   /* La barra è trasparente sopra la foto d'apertura e diventa piena appena si
      scorre. Senza, un rettangolo nero taglia in due l'immagine proprio nel
@@ -66,7 +72,8 @@ export default function Navbar() {
   const navRef = useRef(null)
 
   const logo = `${import.meta.env.BASE_URL}logo-light.png`
-  const displayName = profile?.displayName || user?.displayName || user?.email || 'Il tuo profilo'
+  const displayName =
+    profile?.displayName || user?.displayName || user?.email || t('nav.ilTuoProfilo')
 
   /* Cambio pagina: chiudiamo tutto. Senza, si clicca un link dal panino e il
      pannello resta aperto sopra la pagina nuova. */
@@ -199,9 +206,9 @@ export default function Navbar() {
       className={`${s.header} ${scrolled ? s.headerSolid : s.headerClear}`}
       ref={navRef}
     >
-      <nav className={s.bar} aria-label="Navigazione principale">
+      <nav className={s.bar} aria-label={t('nav.principale')}>
         {/* --- logo ------------------------------------------------------ */}
-        <Link to="/home" className={s.brand} aria-label="YET, vai alla home">
+        <Link to="/home" className={s.brand} aria-label={t('nav.vaiAllaHome')}>
           <img className={s.logo} src={logo} alt="YET" width="486" height="291" />
         </Link>
 
@@ -210,14 +217,14 @@ export default function Navbar() {
           {LINKS.map((link) => (
             <li key={link.to}>
               <NavLink to={link.to} className={linkClass}>
-                {link.label}
+                {t(link.chiave)}
               </NavLink>
             </li>
           ))}
           {isAdmin && (
             <li>
               <NavLink to="/admin" className={({ isActive }) => `${s.link} ${s.admin} ${isActive ? s.linkActive : ''}`.trim()}>
-                Admin
+                {t('nav.admin')}
               </NavLink>
             </li>
           )}
@@ -225,6 +232,14 @@ export default function Navbar() {
 
         {/* --- zona destra ------------------------------------------------ */}
         <div className={s.right}>
+          {/* Il selettore sta qui solo da 768px in su. Sotto, nella barra ci
+              sono già l'avatar e il panino: due bersagli in più a fianco li
+              schiacciano tutti, e su un telefono da 320px il logo perde
+              spazio. La versione mobile è in fondo al pannello. */}
+          <span className={s.langBar}>
+            <LangSwitch compatta />
+          </span>
+
           {loading ? (
             /* Segnaposto della stessa dimensione dell'avatar: senza, la barra
                si allarga di colpo quando Firebase risponde. */
@@ -239,7 +254,7 @@ export default function Navbar() {
                 aria-expanded={userOpen}
                 aria-haspopup="menu"
                 aria-controls={userMenuId}
-                aria-label={`Menu utente, ${displayName}`}
+                aria-label={t('nav.menuUtente', { nome: displayName })}
               >
                 <Avatar src={profile?.photoURL || user.photoURL} name={displayName} size={36} />
               </button>
@@ -250,22 +265,22 @@ export default function Navbar() {
                     {displayName}
                   </p>
                   <Link to="/join" className={s.userItem} role="menuitem" onClick={() => setUserOpen(false)}>
-                    Il mio profilo
+                    {t('nav.ilTuoProfilo')}
                   </Link>
                   {isAdmin && (
                     <Link to="/admin" className={`${s.userItem} ${s.userItemAdmin}`} role="menuitem" onClick={() => setUserOpen(false)}>
-                      Admin
+                      {t('nav.admin')}
                     </Link>
                   )}
                   <button type="button" className={s.userItem} role="menuitem" onClick={handleSignOut}>
-                    Esci
+                    {t('nav.esci')}
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <button type="button" className={s.signIn} onClick={handleSignIn} disabled={signingIn}>
-              {signingIn ? 'Attendi…' : 'Accedi'}
+              {signingIn ? t('nav.attendi') : t('nav.accedi')}
             </button>
           )}
 
@@ -276,7 +291,7 @@ export default function Navbar() {
             onClick={toggleMenu}
             aria-expanded={menuOpen}
             aria-controls={menuId}
-            aria-label={menuOpen ? 'Chiudi il menu' : 'Apri il menu'}
+            aria-label={menuOpen ? t('nav.chiudiMenu') : t('nav.apriMenu')}
           >
             <span className={`${s.burgerBar} ${menuOpen ? s.burgerBarTop : ''}`.trim()} />
             <span className={`${s.burgerBar} ${menuOpen ? s.burgerBarMid : ''}`.trim()} />
@@ -298,7 +313,7 @@ export default function Navbar() {
                   className={({ isActive }) => `${s.panelLink} ${isActive ? s.panelLinkActive : ''}`.trim()}
                   onClick={() => setMenuOpen(false)}
                 >
-                  {link.label}
+                  {t(link.chiave)}
                 </NavLink>
               </li>
             ))}
@@ -309,11 +324,19 @@ export default function Navbar() {
                   className={({ isActive }) => `${s.panelLink} ${s.admin} ${isActive ? s.panelLinkActive : ''}`.trim()}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Admin
+                  {t('nav.admin')}
                 </NavLink>
               </li>
             )}
           </ul>
+
+          {/* In fondo e non in cima: chi apre il panino cerca una pagina, non
+              la lingua. Con l'etichetta scritta, perché "IT / EN" da solo in
+              mezzo a un elenco di pagine non si capisce cosa sia. */}
+          <div className={s.panelLang}>
+            <p className={s.panelLangLabel}>{t('lingua.etichetta')}</p>
+            <LangSwitch />
+          </div>
         </div>
       )}
     </header>

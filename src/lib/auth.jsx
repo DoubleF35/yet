@@ -31,6 +31,7 @@ import {
   reconcileUserRole,
 } from './db.js'
 import { isAdminEmail } from '../config/admins.js'
+import { messaggioErrore } from './i18n.jsx'
 
 const AuthContext = createContext(null)
 
@@ -79,49 +80,61 @@ export function isInAppBrowser() {
 const IN_APP_BROWSER = 'yet/in-app-browser'
 
 /**
- * I codici di errore di Firebase in italiano.
+ * Da un codice di errore dell'accesso alla CHIAVE della frase da mostrare.
  *
- * Non è cosmesi: "auth/unauthorized-domain" non dice a nessuno che deve
- * aggiungere il dominio in console, ed è esattamente l'errore che prende
- * chiunque deployi per la prima volta su GitHub Pages.
+ * Non è cosmesi tradurre questi codici: "auth/unauthorized-domain" non dice a
+ * nessuno che deve aggiungere il dominio in console, ed è esattamente
+ * l'errore che prende chiunque deployi per la prima volta su GitHub Pages.
+ *
+ * Restituisce una CHIAVE e non una frase perché questo file è un modulo e non
+ * ha un t() sotto mano: la frase la compone chi renderizza. Sta qui, e non nei
+ * due componenti che mostrano l'errore (la pagina Join e il cancello
+ * dell'area riservata), perché due copie di questo switch divergerebbero al
+ * primo codice nuovo.
+ *
+ * `null` per un codice che non conosciamo: chi chiama ricade sul messaggio
+ * dell'errore, che è meglio di una frase generica quando c'è.
  */
-function describeAuthError(error) {
-  const code = error?.code ?? ''
+export function authErrorKey(error) {
+  const code = typeof error === 'string' ? error : (error?.code ?? '')
   switch (code) {
     case 'auth/popup-closed-by-user':
     case 'auth/cancelled-popup-request':
-      return 'Accesso annullato: la finestra di Google è stata chiusa.'
+      return 'join.accesso.popupChiuso'
     case 'auth/popup-blocked':
     case 'auth/operation-not-supported-in-this-environment':
-      return (
-        'Il browser ha bloccato la finestra di Google. Consenti i popup per questo sito e ' +
-        'riprova, oppure apri il sito in Safari o Chrome.'
-      )
+      return 'join.accesso.popupBloccato'
     case IN_APP_BROWSER:
-      return (
-        'Stai navigando dentro un’altra app (Instagram, LinkedIn o simili), e Google non ' +
-        'permette l’accesso da qui. Apri il sito in Safari o in Chrome e riprova: dal menu ' +
-        'dell’app, la voce “Apri nel browser”.'
-      )
+      return 'join.accesso.inApp'
     case 'auth/network-request-failed':
-      return 'Nessuna connessione con Google. Controlla la rete e riprova.'
+      return 'join.accesso.rete'
     case 'auth/unauthorized-domain':
-      return (
-        'Questo dominio non è autorizzato in Firebase. Aggiungilo in ' +
-        'Authentication → Settings → Authorized domains.'
-      )
+      return 'join.accesso.dominio'
     case 'auth/operation-not-allowed':
-      return (
-        'L’accesso con Google non è attivo sul progetto Firebase. ' +
-        'Attivalo in Authentication → Sign-in method.'
-      )
+      return 'join.accesso.nonAttivo'
     case 'auth/too-many-requests':
-      return 'Troppi tentativi ravvicinati. Aspetta qualche minuto e riprova.'
+      return 'join.accesso.troppiTentativi'
     case 'app/not-configured':
-      return error.message
+      return 'join.accesso.nonConfigurato'
     default:
-      return error?.message || 'Accesso non riuscito. Riprova fra poco.'
+      return null
   }
+}
+
+/**
+ * La frase da mostrare per un errore dell'accesso, nella lingua scelta.
+ *
+ *     const { error } = useAuth()
+ *     <p>{authErrorText(t, error)}</p>
+ *
+ * `t` arriva da fuori perche' questo e' un modulo e non un componente. Sta qui
+ * e non nei due componenti che la usano (la pagina Join e il cancello
+ * dell'area riservata) per la ragione di sempre: una copia sola.
+ */
+export function authErrorText(t, error) {
+  if (!error) return ''
+  const chiave = authErrorKey(error)
+  return chiave ? t(chiave) : messaggioErrore(t, error, 'join.accesso.generico')
 }
 
 export function AuthProvider({ children }) {
@@ -131,10 +144,12 @@ export function AuthProvider({ children }) {
   // per sempre perché onAuthStateChanged non verrà mai chiamato.
   const [loading, setLoading] = useState(isFirebaseConfigured)
   const [profileLoading, setProfileLoading] = useState(false)
+  /* Lo stato porta l'ERRORE GREZZO (o un codice), non una frase pronta: la
+     frase la compone chi renderizza, nella lingua scelta. Con la frase qui
+     dentro, un errore preso in italiano restava in italiano anche dopo aver
+     cambiato lingua, e questo file non ha un t() per rifarla. */
   const [error, setError] = useState(
-    isFirebaseConfigured
-      ? null
-      : 'Firebase non è configurato: copia .env.example in .env e riavvia il server.',
+    isFirebaseConfigured ? null : { code: 'app/not-configured' },
   )
 
   /* L'uid di cui stiamo caricando il profilo. Confrontarlo alla fine della
@@ -199,7 +214,7 @@ export function AuthProvider({ children }) {
        precedente del sito e torna qui a giro iniziato. Senza redirect in
        corso risolve con null e non fa niente. */
     getRedirectResult(auth).catch((err) => {
-      if (err?.code !== 'auth/no-auth-event') setError(describeAuthError(err))
+      if (err?.code !== 'auth/no-auth-event') setError(err)
     })
 
     const unsubscribe = onAuthStateChanged(
@@ -210,7 +225,7 @@ export function AuthProvider({ children }) {
         loadProfile(nextUser)
       },
       (err) => {
-        setError(describeAuthError(err))
+        setError(err)
         setLoading(false)
       },
     )
@@ -224,7 +239,7 @@ export function AuthProvider({ children }) {
        annullato", perche' nel primo caso serve portarlo dove la spiegazione
        si vede e nel secondo no. */
     if (!isFirebaseConfigured) {
-      setError('Firebase non è configurato: l’accesso non è disponibile.')
+      setError({ code: 'app/not-configured' })
       return { ok: false, code: 'app/not-configured' }
     }
 
@@ -233,9 +248,9 @@ export function AuthProvider({ children }) {
     /* Dentro il browser interno di un'app non si prova nemmeno: Google
        risponderebbe 403 e l'utente resterebbe davanti a una pagina di errore
        di Google, senza capire che deve cambiare browser. Meglio dirglielo
-       prima, in italiano, sulla nostra pagina. */
+       prima, con parole nostre, sulla nostra pagina. */
     if (isInAppBrowser()) {
-      setError(describeAuthError({ code: IN_APP_BROWSER }))
+      setError({ code: IN_APP_BROWSER })
       return { ok: false, code: IN_APP_BROWSER }
     }
 
@@ -273,7 +288,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       // Il popup chiuso a mano non è un errore da sbandierare, ma va comunque
       // riportato: altrimenti il bottone resta in "caricamento" senza spiegazioni.
-      setError(describeAuthError(err))
+      setError(err)
       return { ok: false, code: err?.code ?? '' }
     }
   }, [])
@@ -288,7 +303,7 @@ export function AuthProvider({ children }) {
       pendingUidRef.current = null
       setProfile(null)
     } catch (err) {
-      setError(describeAuthError(err))
+      setError(err)
     }
   }, [])
 
@@ -311,8 +326,8 @@ export function AuthProvider({ children }) {
    *
    * `deleteUser` pretende un login recente: Firebase non lascia cancellare un
    * account con un token vecchio di ore. Non è un errore da nascondere, è una
-   * cosa che l'utente può risolvere da solo, quindi la traduciamo in
-   * un'istruzione invece che in un codice.
+   * cosa che l'utente può risolvere da solo, quindi gli si dà un'istruzione
+   * invece di un codice.
    */
   const deleteAccount = useCallback(async () => {
     if (!isFirebaseConfigured) throw new Error('Firebase non è configurato.')
@@ -327,11 +342,9 @@ export function AuthProvider({ children }) {
       if (err?.code === 'auth/requires-recent-login') {
         // I dati pubblici sono già spariti: è la parte che conta, e va detto.
         await firebaseSignOut(auth).catch(() => {})
-        throw new Error(
-          'Il tuo profilo è stato cancellato. Per rimuovere anche l’account di accesso ' +
-            'rientra con Google e ripeti l’operazione entro pochi minuti: per sicurezza ' +
-            'Firebase non cancella un account con un accesso vecchio.',
-        )
+        const e = new Error('[YET] serve un accesso recente per cancellare l’account')
+        e.chiaveI18n = 'errori.rientraPerCancellare'
+        throw e
       }
       throw err
     }

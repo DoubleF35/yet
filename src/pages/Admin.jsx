@@ -10,6 +10,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { BODY_MAX, createNews, deleteNews, formatDate, listenNews, updateNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { useI18n } from '../lib/i18n.jsx'
 import s from './Admin.module.css'
 
 /* Limite del titolo: non è una regola di Firestore, è una scelta editoriale.
@@ -26,44 +27,41 @@ const EMPTY_DRAFT = { title: '', body: '', published: false, attachments: [] }
    `permission-denied` è l'errore che farà chiunque configuri il progetto la
    prima volta: l'email è in src/config/admins.js (che nasconde solo il menu)
    ma non nella allowlist di firestore.rules (che è la protezione vera). */
-function describeError(error) {
+function describeError(t, error) {
   const code = error?.code ?? ''
   const message = error?.message ?? ''
 
   if (code.includes('permission-denied') || /insufficient permissions/i.test(message)) {
-    return (
-      'Firestore ha rifiutato la scrittura. Con ogni probabilità la tua email non è nella ' +
-      'allowlist di firestore.rules: aggiungerla in src/config/admins.js non basta, quel file ' +
-      'decide solo cosa si vede, le regole decidono cosa si può scrivere. Ricordati di ' +
-      'ripubblicare le regole dopo la modifica.'
-    )
+    return t('admin.errori.permessi')
   }
-  if (code.includes('unauthenticated')) {
-    return 'La sessione è scaduta. Esci e accedi di nuovo, poi riprova.'
-  }
-  if (code.includes('unavailable') || code.includes('network')) {
-    return 'Firestore non risponde. Controlla la connessione e riprova.'
-  }
-  if (code.includes('not-found')) {
-    return 'La notizia non esiste più: forse è stata eliminata da un altro admin.'
-  }
-  return message || 'Errore inatteso durante l’operazione.'
+  if (code.includes('unauthenticated')) return t('admin.errori.sessione')
+  if (code.includes('unavailable') || code.includes('network')) return t('admin.errori.rete')
+  if (code.includes('not-found')) return t('admin.errori.sparita')
+  return message || t('admin.errori.generico')
+}
+
+/* Le migliaia si separano secondo la lingua: 20.000 in italiano, 20,000 in
+   inglese. Un numero scritto con la punteggiatura sbagliata si legge male, e
+   qui compare dentro una frase che chiede di contare caratteri. */
+function numero(valore, lang) {
+  return valore.toLocaleString(lang === 'en' ? 'en-GB' : 'it-IT')
 }
 
 /* Validazione condivisa fra il form di creazione e l'editing in linea, così le
    due strade non possono divergere. */
-function validateDraft(draft) {
+function validateDraft(t, lang, draft) {
   const errors = {}
-  if (!draft.title.trim()) errors.title = 'Il titolo è obbligatorio.'
-  if (!draft.body.trim()) errors.body = 'Il corpo della notizia è obbligatorio.'
+  if (!draft.title.trim()) errors.title = t('admin.titoloObbligatorio')
+  if (!draft.body.trim()) errors.body = t('admin.corpoObbligatorio')
   /* maxLength sulla textarea ferma la digitazione ma NON un incolla da
      programma, e non vale per il testo già presente in una notizia vecchia.
      Il controllo esplicito è quello che evita di scoprire il limite come
      "permission-denied" dopo aver premuto Salva. */
   if (draft.body.trim().length > BODY_MAX) {
-    errors.body = `Il corpo supera i ${BODY_MAX.toLocaleString('it-IT')} caratteri: accorcialo di ${(
-      draft.body.trim().length - BODY_MAX
-    ).toLocaleString('it-IT')}.`
+    errors.body = t('admin.corpoTroppoLungo', {
+      max: numero(BODY_MAX, lang),
+      troppi: numero(draft.body.trim().length - BODY_MAX, lang),
+    })
   }
   return errors
 }
@@ -74,6 +72,7 @@ export default function Admin() {
      logout la rotta resta montata per un frame prima che RequireAdmin cambi
      schermata, e in quel frame l'autore della notizia non esiste. */
   const { user, profile } = useAuth()
+  const { lang, t } = useI18n()
 
   const [form, setForm] = useState(EMPTY_DRAFT)
   const [formErrors, setFormErrors] = useState({})
@@ -136,7 +135,7 @@ export default function Admin() {
     }
     const onError = (error) => {
       if (cancelled) return
-      setListError(describeError(error))
+      setListError(describeError(t, error))
       setListState('error')
     }
 
@@ -153,7 +152,10 @@ export default function Admin() {
       cancelled = true
       if (typeof unsubscribe === 'function') unsubscribe()
     }
-  }, [reloadKey])
+    /* `t` fra le dipendenze perché il messaggio d'errore della lista viene
+       tradotto qui dentro: cambiando lingua, la sottoscrizione riparte e il
+       messaggio si riscrive invece di restare nella lingua di prima. */
+  }, [reloadKey, t])
 
   /* Ogni modifica al form spegne la conferma precedente: una scritta
      "Bozza salvata" accanto a un testo nuovo appena digitato è un'informazione
@@ -185,7 +187,7 @@ export default function Admin() {
   async function handleCreate(event) {
     event.preventDefault()
 
-    const errors = validateDraft(form)
+    const errors = validateDraft(t, lang, form)
     setFormErrors(errors)
     if (Object.keys(errors).length > 0) {
       // Il focus va sul primo campo sbagliato, altrimenti chi usa uno screen
@@ -196,7 +198,7 @@ export default function Admin() {
     }
 
     if (!author.uid) {
-      setFormError('Utente non disponibile: ricarica la pagina e accedi di nuovo.')
+      setFormError(t('admin.errori.utenteAssente'))
       return
     }
 
@@ -216,14 +218,10 @@ export default function Admin() {
       )
       setForm(EMPTY_DRAFT)
       setFormErrors({})
-      setFormSuccess(
-        wasPublished
-          ? 'Notizia pubblicata: è già visibile sul sito.'
-          : 'Bozza salvata. Non si vede sul sito finché non la pubblichi da qui sotto.',
-      )
+      setFormSuccess(wasPublished ? t('admin.pubblicataOk') : t('admin.bozzaOk'))
       titleRef.current?.focus()
     } catch (error) {
-      setFormError(describeError(error))
+      setFormError(describeError(t, error))
     } finally {
       // In finally e non nel try: se la scrittura fallisce il bottone deve
       // tornare attivo, altrimenti la pagina resta bloccata e serve un refresh.
@@ -238,7 +236,7 @@ export default function Admin() {
     try {
       await updateNews(item.id, { published: !item.published })
     } catch (error) {
-      setRowError(item.id, describeError(error))
+      setRowError(item.id, describeError(t, error))
     } finally {
       setBusy(item.id, null)
     }
@@ -269,7 +267,7 @@ export default function Admin() {
   async function handleSaveEdit(event, item) {
     event.preventDefault()
 
-    const errors = validateDraft(editDraft)
+    const errors = validateDraft(t, lang, editDraft)
     setEditErrors(errors)
     if (Object.keys(errors).length > 0) {
       editTitleRef.current?.focus()
@@ -290,7 +288,7 @@ export default function Admin() {
       requestAnimationFrame(() => editButtonRefs.current.get(item.id)?.focus())
     } catch (error) {
       // Restiamo in editing: il testo appena scritto non va perso.
-      setRowError(item.id, describeError(error))
+      setRowError(item.id, describeError(t, error))
     } finally {
       setBusy(item.id, null)
     }
@@ -312,7 +310,7 @@ export default function Admin() {
       // dallo snapshot, ma lo facciamo nel finally per non lasciare voci
       // orfane nella mappa se il documento tornasse (undo lato server).
     } catch (error) {
-      setRowError(item.id, describeError(error))
+      setRowError(item.id, describeError(t, error))
       setConfirmId(null)
       requestAnimationFrame(() => deleteButtonRefs.current.get(item.id)?.focus())
     } finally {
@@ -326,28 +324,24 @@ export default function Admin() {
     <div className={s.page}>
       <div className="container">
         <header className={s.head}>
-          <p className={s.eyebrow}>Area riservata</p>
-          <h1>Redazione</h1>
-          <p className={s.lead}>
-            Da qui si scrivono le notizie che compaiono sulla home. Le bozze restano visibili solo
-            in questa pagina.
-          </p>
+          <p className={s.eyebrow}>{t('admin.eyebrow')}</p>
+          <h1>{t('admin.titolo')}</h1>
+          <p className={s.lead}>{t('admin.lead')}</p>
 
           {/* Promemoria per chi arriva qui fra sei mesi: i due posti da toccare
               sono due, e solo uno protegge davvero i dati. */}
           <p className={s.note}>
-            Gli admin si impostano in <code>src/config/admins.js</code> <strong>e</strong> in{' '}
-            <code>firestore.rules</code>, le regole sono la protezione vera. Il primo file decide
-            solo chi vede questa pagina; senza la mail nella allowlist delle regole ogni scrittura
-            viene rifiutata.
+            {t('admin.notaAdmin1')} <code>src/config/admins.js</code>{' '}
+            <strong>{t('admin.notaAdmin2')}</strong> <code>firestore.rules</code>,{' '}
+            {t('admin.notaAdmin3')}
           </p>
         </header>
 
         {listState === 'unconfigured' && (
           <p className={s.warning} role="alert">
-            Firebase non è configurato: mancano le variabili <code>VITE_FIREBASE_*</code>. Copia{' '}
-            <code>.env.example</code> in <code>.env</code> e riavvia il server di sviluppo. Finché
-            manca la configurazione questa pagina non può leggere né scrivere niente.
+            {t('admin.spento1')} <code>VITE_FIREBASE_*</code>
+            {t('admin.spento2')} <code>.env.example</code> {t('admin.spento3')} <code>.env</code>{' '}
+            {t('admin.spento4')}
           </p>
         )}
 
@@ -362,14 +356,14 @@ export default function Admin() {
         {/* 2. Nuova notizia --------------------------------------------- */}
         <section className={s.section} aria-labelledby="nuova-notizia">
           <h2 id="nuova-notizia" className={s.sectionTitle}>
-            Nuova notizia
+            {t('admin.nuovaNotizia')}
           </h2>
 
           <form className={s.form} onSubmit={handleCreate} noValidate>
             <div className={s.field}>
               <div className={s.labelRow}>
                 <label className={s.label} htmlFor="news-title">
-                  Titolo
+                  {t('admin.titoloCampo')}
                 </label>
                 <span className={s.counter} aria-hidden="true">
                   {form.title.length}/{TITLE_MAX}
@@ -400,7 +394,7 @@ export default function Admin() {
 
             <div className={s.field}>
               <label className={s.label} htmlFor="news-body">
-                Corpo
+                {t('admin.corpo')}
               </label>
               <textarea
                 id="news-body"
@@ -418,7 +412,7 @@ export default function Admin() {
                 disabled={saving}
               />
               <p className={s.hint} id="news-body-hint">
-                Gli a-capo vengono rispettati. Niente HTML: il testo viene mostrato così com’è.
+                {t('admin.corpoHint')}
               </p>
               {formErrors.body && (
                 <p className={s.fieldError} id="news-body-error">
@@ -428,7 +422,7 @@ export default function Admin() {
             </div>
 
             <div className={s.field}>
-              <span className={s.label}>Allegati</span>
+              <span className={s.label}>{t('admin.allegati')}</span>
               <AttachmentEditor
                 value={form.attachments}
                 onChange={(next) => updateForm({ attachments: next })}
@@ -447,10 +441,8 @@ export default function Admin() {
                   disabled={saving}
                 />
                 <span>
-                  <span className={s.checkLabel}>Pubblicata</span>
-                  <span className={s.hint}>
-                    Se la lasci spenta la notizia resta una bozza, visibile solo qui.
-                  </span>
+                  <span className={s.checkLabel}>{t('admin.pubblicata')}</span>
+                  <span className={s.hint}>{t('admin.pubblicataHint')}</span>
                 </span>
               </label>
             </div>
@@ -462,7 +454,7 @@ export default function Admin() {
                 /* Disabilitato durante l'invio: due click = due notizie. */
                 disabled={saving || !isFirebaseConfigured}
               >
-                {saving ? 'Salvataggio…' : 'Salva notizia'}
+                {saving ? t('admin.salvataggio') : t('admin.salvaNotizia')}
               </button>
               {(form.title || form.body || form.published || form.attachments.length > 0) && !saving && (
                 <button
@@ -476,7 +468,7 @@ export default function Admin() {
                     titleRef.current?.focus()
                   }}
                 >
-                  Svuota
+                  {t('admin.svuota')}
                 </button>
               )}
             </div>
@@ -507,12 +499,12 @@ export default function Admin() {
         <section className={s.section} aria-labelledby="tutte-le-notizie">
           <div className={s.sectionHead}>
             <h2 id="tutte-le-notizie" className={s.sectionTitle}>
-              Tutte le notizie
+              {t('admin.tutteLeNotizie')}
             </h2>
             {listState === 'ready' && news.length > 0 && (
               <p className={s.count}>
-                {news.length} {news.length === 1 ? 'notizia' : 'notizie'}
-                {drafts > 0 && `, di cui ${drafts} in bozza`}
+                {news.length} {news.length === 1 ? t('admin.unaNotizia') : t('admin.tanteNotizie')}
+                {drafts > 0 && t('admin.diCuiBozze', { n: drafts })}
               </p>
             )}
           </div>
@@ -520,7 +512,7 @@ export default function Admin() {
           {listState === 'loading' && (
             <>
               <p className="sr-only" role="status">
-                Caricamento delle notizie…
+                {t('admin.caricamentoLive')}
               </p>
               <div className={s.skeletons}>
                 <Skeleton height="9rem" count={3} />
@@ -530,16 +522,14 @@ export default function Admin() {
 
           {listState === 'error' && (
             <ErrorState
-              title="Non riesco a leggere le notizie"
+              title={t('admin.erroreLista')}
               message={listError}
               onRetry={() => setReloadKey((n) => n + 1)}
             />
           )}
 
           {listState === 'ready' && news.length === 0 && (
-            <EmptyState title="Nessuna notizia, per ora">
-              Scrivi la prima qui sopra: comparirà in questo elenco e, se pubblicata, sulla home.
-            </EmptyState>
+            <EmptyState title={t('admin.vuotoTitolo')}>{t('admin.vuotoTesto')}</EmptyState>
           )}
 
           {listState === 'ready' && news.length > 0 && (
@@ -549,7 +539,7 @@ export default function Admin() {
                 const isEditing = editingId === item.id
                 const isConfirming = confirmId === item.id
                 const rowError = rowErrors[item.id]
-                const date = formatDate(item.createdAt)
+                const date = formatDate(item.createdAt, lang)
 
                 return (
                   <li key={item.id}>
@@ -558,26 +548,26 @@ export default function Admin() {
                       aria-busy={busy ? 'true' : undefined}
                     >
                       <div className={s.itemTop}>
-                        <h3 className={s.itemTitle}>{item.title || '(senza titolo)'}</h3>
+                        <h3 className={s.itemTitle}>{item.title || t('admin.senzaTitolo')}</h3>
                         {item.published ? (
-                          <span className={s.badgePublished}>Pubblicata</span>
+                          <span className={s.badgePublished}>{t('admin.pubblicata')}</span>
                         ) : (
-                          <span className={s.badgeDraft}>Bozza</span>
+                          <span className={s.badgeDraft}>{t('admin.bozza')}</span>
                         )}
                       </div>
 
                       <p className={s.meta}>
-                        <span>{item.authorName || 'autore sconosciuto'}</span>
+                        <span>{item.authorName || t('admin.autoreSconosciuto')}</span>
                         {/* createdAt è null per un istante dopo la creazione:
                             serverTimestamp non è ancora tornato dal server. */}
-                        <span>{date || 'in pubblicazione…'}</span>
+                        <span>{date || t('admin.inPubblicazione')}</span>
                       </p>
 
                       {isEditing ? (
                         <form className={s.editForm} onSubmit={(e) => handleSaveEdit(e, item)} noValidate>
                           <div className={s.field}>
                             <label className={s.label} htmlFor={`edit-title-${item.id}`}>
-                              Titolo
+                              {t('admin.titoloCampo')}
                             </label>
                             <input
                               id={`edit-title-${item.id}`}
@@ -609,7 +599,7 @@ export default function Admin() {
 
                           <div className={s.field}>
                             <label className={s.label} htmlFor={`edit-body-${item.id}`}>
-                              Corpo
+                              {t('admin.corpo')}
                             </label>
                             <textarea
                               id={`edit-body-${item.id}`}
@@ -636,7 +626,7 @@ export default function Admin() {
                           </div>
 
                           <div className={s.field}>
-                            <span className={s.label}>Allegati</span>
+                            <span className={s.label}>{t('admin.allegati')}</span>
                             <AttachmentEditor
                               value={editDraft.attachments}
                               onChange={(next) =>
@@ -657,7 +647,7 @@ export default function Admin() {
                               }
                               disabled={busy === 'save'}
                             />
-                            <span className={s.checkLabel}>Pubblicata</span>
+                            <span className={s.checkLabel}>{t('admin.pubblicata')}</span>
                           </label>
 
                           <div className={s.rowActions}>
@@ -666,7 +656,7 @@ export default function Admin() {
                               className={`${s.btn} ${s.small} ${s.primary}`}
                               disabled={busy === 'save'}
                             >
-                              {busy === 'save' ? 'Salvataggio…' : 'Salva'}
+                              {busy === 'save' ? t('admin.salvataggio') : t('admin.salva')}
                             </button>
                             <button
                               type="button"
@@ -674,7 +664,7 @@ export default function Admin() {
                               onClick={() => cancelEditing(item.id)}
                               disabled={busy === 'save'}
                             >
-                              Annulla
+                              {t('admin.annulla')}
                             </button>
                           </div>
                         </form>
@@ -689,9 +679,9 @@ export default function Admin() {
                               onClick={() => handleTogglePublished(item)}
                               disabled={Boolean(busy)}
                             >
-                              {busy === 'publish' && 'Pubblico…'}
-                              {busy === 'hide' && 'Nascondo…'}
-                              {!busy && (item.published ? 'Nascondi' : 'Pubblica')}
+                              {busy === 'publish' && t('admin.pubblico')}
+                              {busy === 'hide' && t('admin.nascondo')}
+                              {!busy && (item.published ? t('admin.nascondi') : t('admin.pubblica'))}
                             </button>
 
                             <button
@@ -704,7 +694,7 @@ export default function Admin() {
                               onClick={() => startEditing(item)}
                               disabled={Boolean(busy)}
                             >
-                              Modifica
+                              {t('admin.modifica')}
                             </button>
 
                             {/* Eliminazione in due passi, reversibile fino
@@ -715,7 +705,9 @@ export default function Admin() {
                               <span
                                 className={s.confirm}
                                 role="group"
-                                aria-label={`Confermi l’eliminazione di “${item.title || 'senza titolo'}”?`}
+                                aria-label={t('admin.confermaEliminazione', {
+                                  titolo: item.title || t('admin.senzaTitolo'),
+                                })}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Escape') {
                                     e.stopPropagation()
@@ -724,7 +716,7 @@ export default function Admin() {
                                 }}
                               >
                                 <span className={s.confirmText} aria-hidden="true">
-                                  Sicuro?
+                                  {t('admin.sicuro')}
                                 </span>
                                 <button
                                   type="button"
@@ -732,7 +724,7 @@ export default function Admin() {
                                   onClick={() => handleDelete(item)}
                                   disabled={busy === 'delete'}
                                 >
-                                  {busy === 'delete' ? 'Elimino…' : 'Sì, elimina'}
+                                  {busy === 'delete' ? t('admin.elimino') : t('admin.siElimina')}
                                 </button>
                                 <button
                                   type="button"
@@ -743,7 +735,7 @@ export default function Admin() {
                                   onClick={() => cancelConfirm(item.id)}
                                   disabled={busy === 'delete'}
                                 >
-                                  No
+                                  {t('admin.no')}
                                 </button>
                               </span>
                             ) : (
@@ -757,7 +749,7 @@ export default function Admin() {
                                 onClick={() => setConfirmId(item.id)}
                                 disabled={Boolean(busy)}
                               >
-                                Elimina
+                                {t('admin.elimina')}
                               </button>
                             )}
                           </div>

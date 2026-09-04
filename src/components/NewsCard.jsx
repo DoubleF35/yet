@@ -8,6 +8,7 @@ import {
   safeUrl,
 } from '../lib/attachments.js'
 import { formatDate } from '../lib/db.js'
+import { useI18n } from '../lib/i18n.jsx'
 import Skeleton from './Skeleton.jsx'
 
 import s from './NewsCard.module.css'
@@ -26,6 +27,7 @@ const CLAMP_OVER = 420
    ========================================================================= */
 export function NewsCard({ item, featured, media }) {
   const [expanded, setExpanded] = useState(false)
+  const { lang, t } = useI18n()
   const body = String(item.body ?? '')
   const isLong = body.length > CLAMP_OVER
 
@@ -52,13 +54,13 @@ export function NewsCard({ item, featured, media }) {
 
   return (
     <article className={`${s.card} ${featured ? s.featured : ''}`.trim()}>
-      {featured && <p className={s.badge}>In evidenza</p>}
+      {featured && <p className={s.badge}>{t('stati.inEvidenza')}</p>}
 
       {/* h2: l'h1 della pagina è il logo. */}
       <h2 className={s.cardTitle}>{item.title}</h2>
 
       <p className={s.cardMeta}>
-        <span>{formatDate(item.createdAt)}</span>
+        <span>{formatDate(item.createdAt, lang) ?? t('stati.inPubblicazione')}</span>
         {item.authorName ? (
           <>
             <span className={s.sep} aria-hidden="true">
@@ -78,7 +80,7 @@ export function NewsCard({ item, featured, media }) {
           onClick={() => setExpanded((open) => !open)}
           aria-expanded={expanded}
         >
-          {expanded ? 'Mostra meno' : 'Leggi tutto'}
+          {expanded ? t('stati.mostraMeno') : t('stati.leggiTutto')}
         </button>
       )}
 
@@ -109,7 +111,7 @@ export function NewsCard({ item, featured, media }) {
                 rel="noopener noreferrer"
               >
                 <img src={a.src} alt={a.label} loading="lazy" decoding="async" />
-                <span className="sr-only"> (apri a dimensione piena in una nuova scheda)</span>
+                <span className="sr-only">{t('stati.dimensionePiena')}</span>
               </a>
             ),
           )}
@@ -132,7 +134,7 @@ export function NewsCard({ item, featured, media }) {
               >
                 <span className={s.linkIcon} aria-hidden="true" />
                 <span className={s.linkLabel}>{a.label}</span>
-                {!a.mediaId && <span className="sr-only"> (si apre in una nuova scheda)</span>}
+                {!a.mediaId && <span className="sr-only">{t('stati.nuovaScheda')}</span>}
               </a>
             </li>
           ))}

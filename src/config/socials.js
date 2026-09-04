@@ -4,7 +4,18 @@
  * QUESTO È IL FILE DA MODIFICARE per aggiungere, togliere o rinominare un
  * social: le pagine iterano su `SOCIALS` e non conoscono nessun canale per
  * nome. Aggiungere Telegram vuol dire aggiungere un oggetto all'array qui
- * sotto e basta, nessun componente va toccato.
+ * sotto e le due righe `socials.telegram` nei cataloghi delle lingue.
+ *
+ * QUI STA QUELLO CHE NON SI TRADUCE: l'id, l'indirizzo, il disegno
+ * dell'icona, la città, il nome del club. Il NOME che si legge a schermo
+ * ("Gruppo WhatsApp" / "WhatsApp group") e ogni frase di presentazione sono
+ * testo di interfaccia, e vivono in src/i18n/it.js e en.js. Le due metà le
+ * ricuce lib/socials.jsx: i componenti continuano a vedere oggetti con
+ * `label` e `handle` e non sanno che sotto ci sono due fonti.
+ *
+ * Il motivo per cui NON c'è anche una copia italiana qui: due posti in cui
+ * scrivere la stessa frase sono due posti che divergono, e quello che nessuno
+ * apre più resta a mentire.
  */
 
 /* ---------------------------------------------------------------------------
@@ -50,19 +61,18 @@ export const CONTACT_EMAIL = 'info.yetcommunity@gmail.com'
    I canali.
 
    Campi:
-     id      chiave stabile, usata come key React. Non cambiarla a cuor leggero.
-     label   il nome che si legge a schermo.
-     handle  la riga piccola sotto: @nome, oppure l'indirizzo per la mail.
+     id      chiave stabile: è la key React E il pezzo di chiave con cui si
+             cercano il nome e il sottotitolo nei cataloghi
+             (`socials.<id>.label` e `.handle`). Non cambiarla a cuor leggero.
      href    l'URL COMPLETO. Per la mail serve il prefisso mailto:.
      icon    uno dei path qui sopra, oppure omesso (esce un quadratino coral).
 
-   PER AGGIUNGERNE UNO: copia un blocco, cambia i quattro campi. Fine.
+   PER AGGIUNGERNE UNO: copia un blocco, cambia i tre campi, e aggiungi le due
+   righe `socials.<id>` in it.js e in en.js.
 --------------------------------------------------------------------------- */
 export const SOCIALS = [
   {
     id: 'linkedin',
-    label: 'LinkedIn',
-    handle: 'YET Club',
     // Il `?viewAsMember=true` dell'URL copiato dalla barra degli indirizzi è
     // stato tolto di proposito: serve a chi amministra la pagina per vederla
     // come la vede un esterno, e per tutti gli altri è un parametro inutile
@@ -72,15 +82,11 @@ export const SOCIALS = [
   },
   {
     id: 'instagram',
-    label: 'Instagram',
-    handle: '@yet.community',
     href: 'https://www.instagram.com/yet.community/',
     icon: ICON_INSTAGRAM,
   },
   {
     id: 'whatsapp',
-    label: 'Gruppo WhatsApp',
-    handle: 'Entra nella chat della community',
     // Link d'invito al gruppo. È pubblico per definizione: chiunque apra
     // questa pagina può entrare nel gruppo senza passare da nessuno.
     // Se un domani serve chiudere il rubinetto (spam, o gruppo diventato
@@ -93,8 +99,6 @@ export const SOCIALS = [
   },
   {
     id: 'email',
-    label: 'Scrivici',
-    handle: CONTACT_EMAIL,
     href: `mailto:${CONTACT_EMAIL}`,
     icon: ICON_MAIL,
   },
@@ -114,36 +118,17 @@ export const WHATSAPP = SOCIALS.find((item) => item.id === 'whatsapp')
 /* ---------------------------------------------------------------------------
    Chi siamo, in forma di dato.
 
-   Sta qui e non dentro le pagine perché lo stesso testo serve alla Home e alla
-   Join: tenerlo in un posto solo evita che le due versioni divergano.
+   Resta il nome del club, che non si traduce. Tutto il resto (la tagline, la
+   descrizione breve e quella lunga, la fascia d'età, il raggio, e anche la
+   CITTÀ, che in inglese si chiama "Turin") è testo e sta nei cataloghi delle
+   lingue, sotto `community.*`: la Home e la Join leggono la stessa chiave,
+   quindi restano allineate come prima, ma in due lingue invece di una.
+
+   ATTENZIONE quando si scrive una frase che nomina Torino: la città da sola
+   si legge come un requisito d'ingresso. Ogni frase che la nomina deve
+   nominare anche il raggio (`community.reach`), perché chi legge da Bari deve
+   capire alla prima riga che può entrare anche lui.
 --------------------------------------------------------------------------- */
 export const COMMUNITY = {
   name: 'YET',
-  tagline: 'Build ambition.',
-
-  /* La sede: dove sta il gruppo e dove capitano gli incontri di persona. */
-  city: 'Torino',
-
-  /* Da dove si partecipa. Tenuti separati apposta: la sede è un fatto, il
-     raggio è un invito, e confonderli restringe la community senza motivo.
-     Ogni testo del sito che nomina Torino deve nominare anche questo, chi
-     legge da Bari deve capire alla prima riga che può entrare anche lui. */
-  scope: 'tutta Italia',
-
-  ageRange: '16 ai 23',
-
-  /* Versione corta della descrizione, per l'apertura del sito.
-     Sopra una fotografia il testo lungo non si legge: serve una frase che
-     stia in due righe e dica la cosa che conta. La versione lunga resta in
-     `description` e vive nelle pagine, dove c'e' spazio per leggerla. */
-  shortDescription:
-    'Il club dei giovani che costruiscono qualcosa. Anche se non hai ancora niente fra le mani: conta l’attitudine, non il progetto già avviato.',
-
-  description:
-    'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',
-
-  /* Riga breve, per i punti in cui non c'è spazio per la descrizione intera.
-     "I primi eventi" e non "la sede": dice da dove si parte senza suonare come
-     un requisito d'ingresso per chi sta altrove. */
-  reach: 'I primi eventi a Torino, l’obiettivo è tutta Italia',
 }

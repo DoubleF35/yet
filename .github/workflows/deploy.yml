@@ -80,6 +80,14 @@ jobs:
       - name: Installa
         run: npm ci
 
+      # Prima del build: se una chiave esiste in una lingua e non nell'altra, il
+      # deploy si ferma qui. Il build non se ne accorgerebbe (una traduzione
+      # mancante non e' un errore di compilazione: `t()` ripiega sull'italiano)
+      # e la riga italiana in mezzo alla pagina inglese finirebbe in
+      # produzione, dove la trova un utente invece di noi.
+      - name: Controlla le traduzioni
+        run: node scripts/i18n-check.mjs
+
       - name: Build
         env:
           # Impostato a '/' per servire le risorse correttamente dal dominio radice custom (yetcommunity.it)

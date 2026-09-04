@@ -8,31 +8,19 @@ import { CONTACT_EMAIL, COMMUNITY } from '../config/socials.js'
 import { getMedia, listSponsors } from '../lib/db.js'
 import { safeImageSrc, safeUrl } from '../lib/attachments.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Sponsor.module.css'
 
-/* Cosa offriamo, e cosa chiediamo. Sta qui come dato e non sparso nel JSX
-   perché è la parte che cambierà: dopo il primo evento vero, questi tre
-   riquadri andranno riscritti con numeri al posto delle promesse. */
-const OFFERTA = [
-  {
-    titolo: 'Visibilità dove conta',
-    testo:
-      'Il logo su questa pagina, sui materiali degli eventi e nei post che li raccontano. Non un banner in fondo a una pagina che nessuno apre.',
-  },
-  {
-    titolo: 'Accesso diretto',
-    testo:
-      'Ragazzi fra i 16 e i 23 anni che stanno già costruendo qualcosa. Se cercate stagisti, collaboratori o semplicemente gente sveglia, sono qui.',
-  },
-  {
-    titolo: 'Un evento vostro',
-    testo:
-      'Potete ospitare un incontro, portare una sfida vera da risolvere, o raccontare come avete costruito la vostra azienda. Funziona meglio di qualsiasi logo.',
-  },
-]
+/* Cosa offriamo. Qui restano solo gli id, in ORDINE: è la parte che cambierà
+   (dopo il primo evento vero questi tre riquadri andranno riscritti con
+   numeri al posto delle promesse), e l'ordine è una decisione di contenuto
+   che si legge in un punto solo. I due testi di ognuno stanno nel catalogo,
+   sotto `sponsor.offerta.<id>`. */
+const OFFERTA = ['visibilita', 'accesso', 'evento']
 
 export default function Sponsor() {
+  const { t } = useI18n()
   const [sponsor, setSponsor] = useState([])
   const [media, setMedia] = useState({})
   const [status, setStatus] = useState(isFirebaseConfigured ? 'loading' : 'unconfigured')
@@ -41,11 +29,11 @@ export default function Sponsor() {
 
   useEffect(() => {
     const previous = document.title
-    document.title = 'Sponsor · YET'
+    document.title = t('titoli.sponsor')
     return () => {
       document.title = previous
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -87,25 +75,21 @@ export default function Sponsor() {
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
-        <p className={s.eyebrow}>Sponsor</p>
-        <h1 className={s.title}>Chi ci sostiene</h1>
-        <p className={s.lead}>
-          {COMMUNITY.name} non ha quote di iscrizione: chi entra non paga niente. Quello che serve
-          per organizzare un evento (una sala, il pranzo, il materiale) arriva da chi decide di
-          darci una mano.
-        </p>
+        <p className={s.eyebrow}>{t('sponsor.eyebrow')}</p>
+        <h1 className={s.title}>{t('sponsor.titolo')}</h1>
+        <p className={s.lead}>{t('sponsor.lead', { nome: COMMUNITY.name })}</p>
       </header>
 
       <div className="container">
         {/* --- chi c'è già --------------------------------------------- */}
         <section className={s.section} aria-labelledby="attuali" aria-busy={status === 'loading'}>
           <h2 className={s.h2} id="attuali">
-            Chi c’è
+            {t('sponsor.chiCe')}
           </h2>
 
           <p className="sr-only" role="status">
-            {status === 'loading' ? 'Caricamento degli sponsor in corso.' : ''}
-            {status === 'ready' ? `${sponsor.length} sponsor caricati.` : ''}
+            {status === 'loading' ? t('sponsor.liveCaricamento') : ''}
+            {status === 'ready' ? t('sponsor.liveCaricati', { n: sponsor.length }) : ''}
           </p>
 
           {status === 'loading' && (
@@ -118,20 +102,18 @@ export default function Sponsor() {
 
           {status === 'error' && (
             <ErrorState
-              title="Non riusciamo a caricare gli sponsor"
+              title={t('sponsor.erroreTitolo')}
               message={
                 error?.code === 'permission-denied'
-                  ? 'Il server ha rifiutato la lettura: le regole Firestore pubblicate sono più vecchie del sito.'
-                  : 'Qualcosa è andato storto. Il dettaglio è nella console del browser.'
+                  ? t('sponsor.errorePermessi')
+                  : t('errori.generico')
               }
               onRetry={retry}
             />
           )}
 
           {(status === 'empty' || status === 'unconfigured') && (
-            <EmptyState title="Nessuno sponsor, per ora">
-              Stiamo partendo adesso. Se volete essere i primi, il posto è libero e si vede.
-            </EmptyState>
+            <EmptyState title={t('sponsor.vuotoTitolo')}>{t('sponsor.vuotoTesto')}</EmptyState>
           )}
 
           {status === 'ready' && (
@@ -160,7 +142,7 @@ export default function Sponsor() {
                         href={sito}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        aria-label={`${sp.nome}, apre il sito in una nuova scheda`}
+                        aria-label={t('sponsor.apreSito', { nome: sp.nome })}
                       >
                         {Contenuto}
                       </a>
@@ -177,16 +159,16 @@ export default function Sponsor() {
         {/* --- perché conviene ------------------------------------------- */}
         <section className={s.section} aria-labelledby="offerta">
           <h2 className={s.h2} id="offerta">
-            Cosa offriamo
+            {t('sponsor.cosaOffriamo')}
           </h2>
           <ul className={s.offerta}>
-            {OFFERTA.map((o, i) => (
-              <li className={s.punto} key={o.titolo}>
+            {OFFERTA.map((id, i) => (
+              <li className={s.punto} key={id}>
                 <span className={s.numero} aria-hidden="true">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className={s.puntoTitolo}>{o.titolo}</h3>
-                <p className={s.puntoTesto}>{o.testo}</p>
+                <h3 className={s.puntoTitolo}>{t(`sponsor.offerta.${id}.titolo`)}</h3>
+                <p className={s.puntoTesto}>{t(`sponsor.offerta.${id}.testo`)}</p>
               </li>
             ))}
           </ul>
@@ -195,18 +177,15 @@ export default function Sponsor() {
         {/* --- come si fa ------------------------------------------------- */}
         <section className={s.section} aria-labelledby="scrivici">
           <h2 className={s.h2} id="scrivici">
-            Parliamone
+            {t('sponsor.parliamone')}
           </h2>
-          <p className={s.nota2}>
-            Non abbiamo un listino e non vi manderemo una presentazione da venti slide. Scriveteci
-            cosa fate e cosa vi interessa, e vi diciamo se ha senso.
-          </p>
+          <p className={s.nota2}>{t('sponsor.parliamoneTesto')}</p>
           <div className={s.azioni}>
             <a className={s.primario} href={`mailto:${CONTACT_EMAIL}?subject=Sponsor%20YET`}>
-              Scrivici a {CONTACT_EMAIL}
+              {t('sponsor.scriviciA', { email: CONTACT_EMAIL })}
             </a>
             <Link className={s.secondario} to="/contatti">
-              Gli altri canali
+              {t('sponsor.altriCanali')}
             </Link>
           </div>
         </section>

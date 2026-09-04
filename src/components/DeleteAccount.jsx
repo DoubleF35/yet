@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../lib/auth.jsx'
+import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 
 import s from './DeleteAccount.module.css'
 
@@ -18,6 +19,7 @@ import s from './DeleteAccount.module.css'
 export default function DeleteAccount() {
   const { deleteAccount } = useAuth()
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   const [asking, setAsking] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -33,34 +35,31 @@ export default function DeleteAccount() {
       navigate('/home', { replace: true })
     } catch (err) {
       // Fra questi c'è il caso "profilo cancellato ma account ancora da
-      // rimuovere", che arriva come messaggio già scritto per l'utente.
-      setError(err?.message || 'Non è stato possibile completare la cancellazione.')
+      // rimuovere", che arriva con la chiave della frase da mostrare.
+      setError(messaggioErrore(t, err, 'cancella.errore'))
       setBusy(false)
       setAsking(false)
     }
-  }, [deleteAccount, navigate])
+  }, [deleteAccount, navigate, t])
 
   return (
     <section className={s.zone} aria-labelledby="cancella-profilo">
       <h2 className={s.title} id="cancella-profilo">
-        Cancellare il profilo
+        {t('cancella.titolo')}
       </h2>
 
-      <p className={s.text}>
-        Rimuove il tuo profilo dall’elenco dei membri e il tuo account di accesso. È definitivo:
-        nome, bio, foto e link spariscono e non si recuperano.
-      </p>
+      <p className={s.text}>{t('cancella.testo')}</p>
 
       {!asking ? (
         <button type="button" className={s.danger} onClick={() => setAsking(true)}>
-          Cancella il mio profilo
+          {t('cancella.bottone')}
         </button>
       ) : (
-        <div className={s.confirm} role="group" aria-label="Conferma la cancellazione">
-          <p className={s.question}>Sicuro? Non si torna indietro.</p>
+        <div className={s.confirm} role="group" aria-label={t('cancella.gruppo')}>
+          <p className={s.question}>{t('cancella.domanda')}</p>
           <div className={s.actions}>
             <button type="button" className={s.danger} onClick={handleDelete} disabled={busy}>
-              {busy ? 'Cancellazione…' : 'Sì, cancella tutto'}
+              {busy ? t('cancella.inCorso') : t('cancella.conferma')}
             </button>
             <button
               type="button"
@@ -68,7 +67,7 @@ export default function DeleteAccount() {
               onClick={() => setAsking(false)}
               disabled={busy}
             >
-              No, torna indietro
+              {t('cancella.annulla')}
             </button>
           </div>
         </div>

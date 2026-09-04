@@ -1,0 +1,90 @@
+/* Il selettore di lingua: due bottoni affiancati, separati da una linea.
+   Nessuna cornice intorno: nella barra è appoggiato accanto al bottone
+   "Accedi", e due riquadri attaccati diventano rumore. */
+
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 44x44: è il bersaglio minimo del resto della barra. Nel pannello mobile
+     questa è la misura che si usa davvero col pollice. */
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--ls-wide);
+
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+/* La linea sta FRA i due bottoni e non intorno: dice "sono due facce della
+   stessa scelta" senza aggiungere una scatola. */
+.btn + .btn {
+  border-inline-start: var(--border-soft);
+}
+
+.btn:hover {
+  color: var(--ink);
+}
+
+.btn:focus-visible {
+  /* Verso l'interno: il bordo esterno sfiora il bottone accanto e con
+     l'offset positivo i due anelli si toccherebbero. */
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+}
+
+/* La lingua in uso. Non basta il colore: il peso e il trattino coral sotto
+   servono a chi i colori non li distingue, che è il caso in cui "quale delle
+   due è attiva" diventa indecifrabile. */
+.attiva {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  cursor: default;
+}
+
+.attiva::after {
+  content: '';
+  position: absolute;
+  inset-inline: 25%;
+  inset-block-end: 11px;
+  block-size: 2px;
+  background-color: var(--coral);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}
+
+/* --- versione compatta ----------------------------------------------------
+   Nella barra desktop, dove il puntatore è un mouse e lo spazio è quello che
+   avanza dopo sette voci di menu. Sotto i 768px non si usa: là il selettore
+   sta nel pannello del panino, a misura piena.
+   ------------------------------------------------------------------------ */
+
+.compatta .btn {
+  inline-size: 34px;
+  block-size: 34px;
+}
+
+.compatta .attiva::after {
+  inset-block-end: 6px;
+}

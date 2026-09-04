@@ -19,6 +19,21 @@
  * di una copia ospitata altrove.
  */
 
+/**
+ * Un errore che porta con se' la CHIAVE della frase da mostrare.
+ *
+ * Questo modulo non e' un componente e non ha un t() sotto mano, ma i suoi
+ * errori finiscono a schermo: allegando la chiave, chi renderizza li traduce
+ * nella lingua scelta (vedi messaggioErrore in lib/i18n.jsx). Il messaggio
+ * dell'Error resta in italiano e serve alla console e allo stack.
+ */
+function erroreTradotto(chiave, messaggio, valori) {
+  const e = new Error(`[YET] ${messaggio}`)
+  e.chiaveI18n = chiave
+  if (valori) e.valoriI18n = valori
+  return e
+}
+
 /** Lato lungo massimo, in pixel. 2000 è più della risoluzione a cui una foto
  *  verrà mai mostrata sul sito, anche su uno schermo ad alta densità: serve a
  *  non buttare via qualità che il budget può permettersi. */
@@ -90,7 +105,7 @@ function loadImage(file) {
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('Non riesco a leggere questa immagine. Il file potrebbe essere danneggiato.'))
+      reject(erroreTradotto('errori.immagineIlleggibile', 'immagine illeggibile'))
     }
     img.src = url
   })
@@ -149,10 +164,9 @@ export async function compressImage(file, { maxBytes = MAX_INLINE_BYTES } = {}) 
   }
 
   if (dataUrlBytes(dataUrl) > maxBytes) {
-    throw new Error(
-      `Non riesco a portare questa immagine sotto ${humanBytes(maxBytes)} senza rovinarla. ` +
-        'Provane una meno complessa, oppure caricala altrove e allega qui il suo indirizzo.',
-    )
+    throw erroreTradotto('errori.immagineTroppoPesante', 'immagine troppo pesante', {
+      peso: humanBytes(maxBytes),
+    })
   }
 
   return {
@@ -179,11 +193,10 @@ export function readAsDataUrl(file, { maxBytes = MAX_INLINE_BYTES } = {}) {
     const stimato = Math.ceil(file.size * 1.37)
     if (stimato > maxBytes) {
       reject(
-        new Error(
-          `Questo file pesa ${humanBytes(file.size)} e senza Firebase Storage il massimo è ` +
-            `circa ${humanBytes(Math.floor(maxBytes / 1.37))}. Caricalo su Drive e allega qui ` +
-            'il suo indirizzo.',
-        ),
+        erroreTradotto('errori.fileTroppoPesante', 'file troppo pesante', {
+          peso: humanBytes(file.size),
+          massimo: humanBytes(Math.floor(maxBytes / 1.37)),
+        }),
       )
       return
     }
@@ -192,12 +205,12 @@ export function readAsDataUrl(file, { maxBytes = MAX_INLINE_BYTES } = {}) {
     reader.onload = () => {
       const dataUrl = String(reader.result || '')
       if (dataUrlBytes(dataUrl) > maxBytes) {
-        reject(new Error('Il file è troppo grande per essere salvato dentro la notizia.'))
+        reject(erroreTradotto('errori.fileTroppoGrande', 'file troppo grande'))
         return
       }
       resolve({ dataUrl, bytes: dataUrlBytes(dataUrl), originalBytes: file.size, mime: file.type })
     }
-    reader.onerror = () => reject(new Error('Non riesco a leggere il file.'))
+    reader.onerror = () => reject(erroreTradotto('errori.fileIlleggibile', 'file illeggibile'))
     reader.readAsDataURL(file)
   })
 }
@@ -250,7 +263,7 @@ export async function compressAvatar(file) {
   }
 
   if (dataUrlBytes(dataUrl) > AVATAR_MAX_BYTES) {
-    throw new Error('Non riesco a comprimere abbastanza questa foto. Provane un\u2019altra.')
+    throw erroreTradotto('errori.avatarNonComprimibile', 'avatar non comprimibile')
   }
 
   return { dataUrl, bytes: dataUrlBytes(dataUrl), mime }

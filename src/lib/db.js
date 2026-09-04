@@ -151,23 +151,49 @@ export function toDate(value) {
   return null
 }
 
-const dateFormatter = new Intl.DateTimeFormat('it-IT', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-})
+/**
+ * Da 'it' / 'en' al tag che Intl capisce.
+ *
+ * en-GB e non en-US: "12 September 2026" e le 18:30 in formato 24 ore, che è
+ * come le legge chi sta in Italia. Con en-US uscirebbe "September 12, 2026" e
+ * le 6:30 PM, cioè una data giusta scritta in un modo che qui si sbaglia a
+ * leggere.
+ */
+function tagLingua(lang) {
+  return lang === 'en' ? 'en-GB' : 'it-IT'
+}
+
+/* Un formattatore per lingua, creato una volta sola: costruire un
+   Intl.DateTimeFormat costa, e queste funzioni girano una volta per riga di
+   elenco. La cache è una mappa e non due costanti così aggiungere una terza
+   lingua non richiede di toccare niente qui. */
+const formattatoriData = new Map()
+
+function formattatoreData(lang) {
+  const tag = tagLingua(lang)
+  if (!formattatoriData.has(tag)) {
+    formattatoriData.set(
+      tag,
+      new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }),
+    )
+  }
+  return formattatoriData.get(tag)
+}
 
 /**
- * "8 agosto 2026".
+ * "8 agosto 2026", oppure "8 August 2026".
  *
- * Con `value` nullo torna 'in pubblicazione': è il caso di una notizia appena
- * creata, il cui serverTimestamp non è ancora tornato dal server. Dura meno di
- * un secondo, ma senza questo ramo si vedrebbe "Invalid Date".
+ * Con `value` nullo torna null e NON una frase: è il caso di una notizia
+ * appena creata, il cui serverTimestamp non è ancora tornato dal server, e la
+ * frase da mostrare lì ("in pubblicazione") è testo di interfaccia, quindi il
+ * suo posto è il catalogo delle lingue. Chi chiama scrive
+ * `formatDate(x, lang) ?? t('stati.inPubblicazione')`.
+ * Dura meno di un secondo, ma senza questo ramo si vedrebbe "Invalid Date".
  */
-export function formatDate(value) {
+export function formatDate(value, lang = 'it') {
   const date = toDate(value)
-  if (!date) return 'in pubblicazione'
-  return dateFormatter.format(date)
+  if (!date) return null
+  return formattatoreData(lang).format(date)
 }
 
 /** Millisecondi per l'ordinamento. Un documento senza data va in cima: è
@@ -397,7 +423,12 @@ export async function saveUserProfile(uid, data) {
     : normalizeUrlScheme(data.photoURL).slice(0, 500)
 
   if (photo.length > PHOTO_MAX_CHARS) {
-    throw new Error('La foto profilo è troppo grande. Caricane una più piccola.')
+    /* La chiave viaggia con l'errore: questo modulo non ha un t() sotto mano
+       e il messaggio finisce a schermo nella pagina Join. Vedi
+       messaggioErrore in lib/i18n.jsx. */
+    const e = new Error('[YET] foto profilo troppo grande')
+    e.chiaveI18n = 'errori.fotoTroppoGrande'
+    throw e
   }
 
   const location = String(data.location ?? '').trim()
@@ -902,15 +933,16 @@ export async function deleteMeetup(id) {
   await deleteDoc(doc(db, MEETUPS, id))
 }
 
-/** "giovedi 12 settembre, 18:30" */
-export function formatMeetupDate(value) {
+/** "giovedi 12 settembre, 18:30". null se la data non c'è: vedi formatDate. */
+export function formatMeetupDate(value, lang = 'it') {
   const d = toDate(value)
-  if (!d) return 'data da definire'
-  const giorno = new Intl.DateTimeFormat('it-IT', {
+  if (!d) return null
+  const tag = tagLingua(lang)
+  const giorno = new Intl.DateTimeFormat(tag, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   }).format(d)
-  const ora = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit' }).format(d)
+  const ora = new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' }).format(d)
   return `${giorno}, ${ora}`
 }

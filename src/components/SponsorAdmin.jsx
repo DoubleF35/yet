@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { COMPRESSIBLE, compressImage, humanBytes } from '../lib/imageCompress.js'
 import { createMedia, createSponsor, deleteSponsor, getMedia, listSponsors } from '../lib/db.js'
 import { safeImageSrc } from '../lib/attachments.js'
+import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 
 import s from './SponsorAdmin.module.css'
 
@@ -17,6 +18,7 @@ const VUOTO = { nome: '', url: '', nota: '', ordine: '500' }
  * uno stato di editing.
  */
 export default function SponsorAdmin() {
+  const { t } = useI18n()
   const [lista, setLista] = useState([])
   const [media, setMedia] = useState({})
   const [stato, setStato] = useState('loading')
@@ -25,6 +27,10 @@ export default function SponsorAdmin() {
   /* Il logo viene caricato PRIMA di salvare lo sponsor: così se il caricamento
      fallisce non resta uno sponsor senza logo da correggere a mano. */
   const [logo, setLogo] = useState(null) // { mediaId, dataUrl, nome }
+  /* `fase` porta un CODICE ('logo' | 'salvo') e non la frase da mostrare: la
+     frase la decide t() al momento del render, e il codice serve anche a
+     distinguere le due fasi nel JSX. Con la frase dentro lo stato, il
+     confronto `fase === 'Salvo…'` si romperebbe cambiando lingua. */
   const [fase, setFase] = useState(null)
   const [errore, setErrore] = useState(null)
   const [conferma, setConferma] = useState(null) // id in attesa di conferma
@@ -39,10 +45,10 @@ export default function SponsorAdmin() {
       const ids = l.map((x) => x.logoMediaId).filter(Boolean)
       if (ids.length) setMedia(await getMedia(ids))
     } catch (err) {
-      setErrore(err?.message || 'Non riesco a leggere gli sponsor.')
+      setErrore(messaggioErrore(t, err, 'sponsorAdmin.erroreLettura'))
       setStato('error')
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     carica()
@@ -53,12 +59,12 @@ export default function SponsorAdmin() {
     setErrore(null)
 
     if (!COMPRESSIBLE.includes(file.type)) {
-      setErrore('Il logo dev’essere un’immagine JPEG, PNG, WebP o AVIF.')
+      setErrore(t('sponsorAdmin.formatoLogo'))
       if (input) input.value = ''
       return
     }
 
-    setFase('Preparo il logo…')
+    setFase('logo')
     try {
       const esito = await compressImage(file)
       const mediaId = await createMedia(
@@ -74,7 +80,7 @@ export default function SponsorAdmin() {
       )
       setLogo({ mediaId, dataUrl: esito.dataUrl, nome: file.name, bytes: esito.bytes })
     } catch (err) {
-      setErrore(err?.message || 'Caricamento del logo non riuscito.')
+      setErrore(messaggioErrore(t, err, 'sponsorAdmin.erroreLogo'))
     } finally {
       setFase(null)
       if (input) input.value = ''
@@ -86,11 +92,11 @@ export default function SponsorAdmin() {
     setErrore(null)
 
     if (!form.nome.trim()) {
-      setErrore('Il nome è obbligatorio.')
+      setErrore(t('sponsorAdmin.nomeObbligatorio'))
       return
     }
 
-    setFase('Salvo…')
+    setFase('salvo')
     try {
       await createSponsor({ ...form, logoMediaId: logo?.mediaId || '' })
       setForm(VUOTO)
@@ -99,8 +105,8 @@ export default function SponsorAdmin() {
     } catch (err) {
       setErrore(
         err?.code === 'permission-denied'
-          ? 'Rifiutato dal server: le regole pubblicate non conoscono ancora la collection “sponsors”. Ripubblica firestore.rules.'
-          : err?.message || 'Salvataggio non riuscito.',
+          ? t('sponsorAdmin.errorePermessi')
+          : messaggioErrore(t, err, 'sponsorAdmin.erroreSalvataggio'),
       )
     } finally {
       setFase(null)
@@ -114,27 +120,29 @@ export default function SponsorAdmin() {
       setConferma(null)
       await carica()
     } catch (err) {
-      setErrore(err?.message || 'Eliminazione non riuscita.')
+      setErrore(messaggioErrore(t, err, 'sponsorAdmin.erroreEliminazione'))
     }
   }
 
   const aggiorna = (campo) => (e) => setForm((p) => ({ ...p, [campo]: e.target.value }))
 
+  /* La frase che corrisponde alla fase in corso, o stringa vuota. In un posto
+     solo perché la usano il bottone del file, quello di invio e la live
+     region. */
+  const faseTesto = fase === 'logo' ? t('sponsorAdmin.preparoLogo') : fase === 'salvo' ? t('sponsorAdmin.salvo') : ''
+
   return (
     <section className={s.wrap} aria-labelledby="sponsor-admin">
       <h2 className={s.titolo} id="sponsor-admin">
-        Sponsor
+        {t('sponsorAdmin.titolo')}
       </h2>
-      <p className={s.intro}>
-        Compaiono nella pagina Sponsor. Il numero d’ordine decide chi sta in cima: più basso, più
-        in alto. A parità va in ordine alfabetico.
-      </p>
+      <p className={s.intro}>{t('sponsorAdmin.intro')}</p>
 
       {/* --- nuovo ------------------------------------------------------- */}
       <form className={s.form} onSubmit={salva}>
         <div className={s.riga}>
           <label className={s.campo}>
-            <span className={s.etichetta}>Nome</span>
+            <span className={s.etichetta}>{t('sponsorAdmin.nome')}</span>
             <input
               className={s.input}
               value={form.nome}
@@ -146,7 +154,8 @@ export default function SponsorAdmin() {
 
           <label className={s.campo}>
             <span className={s.etichetta}>
-              Sito <span className={s.opzionale}>(facoltativo)</span>
+              {t('sponsorAdmin.sito')}{' '}
+              <span className={s.opzionale}>{t('sponsorAdmin.facoltativo')}</span>
             </span>
             <input
               className={s.input}
@@ -163,19 +172,20 @@ export default function SponsorAdmin() {
         <div className={s.riga}>
           <label className={s.campo}>
             <span className={s.etichetta}>
-              Nota <span className={s.opzionale}>(una riga sotto il logo)</span>
+              {t('sponsorAdmin.nota')}{' '}
+              <span className={s.opzionale}>{t('sponsorAdmin.notaSpiegazione')}</span>
             </span>
             <input
               className={s.input}
               value={form.nota}
               onChange={aggiorna('nota')}
               maxLength={120}
-              placeholder="Sede del primo incontro"
+              placeholder={t('sponsorAdmin.notaPlaceholder')}
             />
           </label>
 
           <label className={`${s.campo} ${s.campoStretto}`}>
-            <span className={s.etichetta}>Ordine</span>
+            <span className={s.etichetta}>{t('sponsorAdmin.ordine')}</span>
             <input
               className={s.input}
               type="number"
@@ -195,7 +205,7 @@ export default function SponsorAdmin() {
                 {logo.nome} <span className={s.peso}>{humanBytes(logo.bytes)}</span>
               </span>
               <button type="button" className={s.piccolo} onClick={() => setLogo(null)}>
-                Togli
+                {t('sponsorAdmin.togli')}
               </button>
             </>
           ) : (
@@ -208,19 +218,19 @@ export default function SponsorAdmin() {
                 onChange={(e) => scegliLogo(e.target.files?.[0], e.target)}
                 disabled={!!fase}
               />
-              <span className={s.fileBottone}>{fase ?? 'Carica il logo'}</span>
+              <span className={s.fileBottone}>{faseTesto || t('sponsorAdmin.caricaLogo')}</span>
             </label>
           )}
         </div>
 
         <button type="submit" className={s.primario} disabled={!!fase}>
-          {fase === 'Salvo…' ? 'Salvo…' : 'Aggiungi sponsor'}
+          {fase === 'salvo' ? t('sponsorAdmin.salvo') : t('sponsorAdmin.aggiungi')}
         </button>
 
         {/* Sempre nel DOM: una live region aggiunta al momento non viene
             annunciata, perché lo screen reader non la stava osservando. */}
         <p className="sr-only" role="status">
-          {fase ?? ''}
+          {faseTesto}
         </p>
 
         {errore && (
@@ -245,7 +255,7 @@ export default function SponsorAdmin() {
                 <span className={s.voceInfo}>
                   <span className={s.voceNome}>{sp.nome}</span>
                   <span className={s.voceMeta}>
-                    ordine {sp.ordine}
+                    {t('sponsorAdmin.ordineVoce', { n: sp.ordine })}
                     {sp.url ? ` · ${sp.url.replace(/^https?:\/\//, '').slice(0, 40)}` : ''}
                   </span>
                 </span>
@@ -255,10 +265,10 @@ export default function SponsorAdmin() {
                 {conferma === sp.id ? (
                   <span className={s.conferma}>
                     <button type="button" className={s.pericolo} onClick={() => elimina(sp)}>
-                      Sicuro? Sì
+                      {t('sponsorAdmin.sicuroSi')}
                     </button>
                     <button type="button" className={s.piccolo} onClick={() => setConferma(null)}>
-                      No
+                      {t('sponsorAdmin.no')}
                     </button>
                   </span>
                 ) : (
@@ -266,9 +276,9 @@ export default function SponsorAdmin() {
                     type="button"
                     className={s.piccolo}
                     onClick={() => setConferma(sp.id)}
-                    aria-label={`Elimina lo sponsor ${sp.nome}`}
+                    aria-label={t('sponsorAdmin.eliminaAria', { nome: sp.nome })}
                   >
-                    Elimina
+                    {t('sponsorAdmin.elimina')}
                   </button>
                 )}
               </li>
@@ -278,7 +288,7 @@ export default function SponsorAdmin() {
       )}
 
       {stato === 'ready' && lista.length === 0 && (
-        <p className={s.vuoto}>Nessuno sponsor, per ora.</p>
+        <p className={s.vuoto}>{t('sponsorAdmin.vuoto')}</p>
       )}
     </section>
   )

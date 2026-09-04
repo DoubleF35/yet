@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Reveal, { stagger } from './Reveal.jsx'
 import { formatMeetupDate, listenMeetups } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './MeetupList.module.css'
 
@@ -15,6 +16,7 @@ import s from './MeetupList.module.css'
  * sembrare il sito piu' vuoto di quanto sia.
  */
 export default function MeetupList() {
+  const { t } = useI18n()
   const [dati, setDati] = useState({ prossimi: [], passati: [] })
   const [stato, setStato] = useState(isFirebaseConfigured ? 'caricamento' : 'spento')
 
@@ -48,7 +50,7 @@ export default function MeetupList() {
   return (
     <section className={s.wrap} aria-labelledby="incontri">
       <h2 className={s.titolo} id="incontri">
-        {dati.prossimi.length > 0 ? 'Prossimi incontri' : 'Incontri'}
+        {dati.prossimi.length > 0 ? t('incontri.prossimi') : t('incontri.titolo')}
       </h2>
 
       {dati.prossimi.length > 0 && (
@@ -65,7 +67,7 @@ export default function MeetupList() {
           che la community si trova davvero, non a essere letti uno per uno. */}
       {dati.passati.length > 0 && (
         <>
-          <h3 className={s.sottotitolo}>Gia’ fatti</h3>
+          <h3 className={s.sottotitolo}>{t('incontri.giaFatti')}</h3>
           <ul className={`${s.lista} ${s.listaPassati}`}>
             {dati.passati.slice(0, 6).map((m, i) => (
               <Reveal as="li" key={m.id} delay={stagger(i)} className={s.voce}>
@@ -81,10 +83,15 @@ export default function MeetupList() {
 
 function Scheda({ incontro, passato = false }) {
   const { title, place, body, url } = incontro
+  const { lang, t } = useI18n()
 
   return (
     <article className={`${s.scheda} ${passato ? s.schedaPassata : ''}`.trim()}>
-      <p className={s.quando}>{formatMeetupDate(incontro.startsAt)}</p>
+      {/* La data la formatta Intl nella lingua scelta; la frase di ripiego,
+          quando la data non c'è, è testo di interfaccia e sta nel catalogo. */}
+      <p className={s.quando}>
+        {formatMeetupDate(incontro.startsAt, lang) ?? t('incontri.dataDaDefinire')}
+      </p>
       <h3 className={s.nome}>{title}</h3>
       {place && <p className={s.dove}>{place}</p>}
       {body && <p className={s.testo}>{body}</p>}
@@ -94,8 +101,8 @@ function Scheda({ incontro, passato = false }) {
           da nessuna parte. */}
       {url && !passato && (
         <a className={s.cta} href={url} target="_blank" rel="noopener noreferrer">
-          Iscriviti
-          <span className="sr-only"> (si apre in una nuova scheda)</span>
+          {t('incontri.iscriviti')}
+          <span className="sr-only">{t('stati.nuovaScheda')}</span>
         </a>
       )}
     </article>

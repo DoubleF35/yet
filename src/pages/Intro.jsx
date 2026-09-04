@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+import { useI18n } from '../lib/i18n.jsx'
+
 import s from './Intro.module.css'
 
 /** Chiave del flag "l'intro l'ho già vista". */
@@ -41,6 +43,7 @@ function prefersReducedMotion() {
 
 export default function Intro() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const videoRef = useRef(null)
   const fadeTimer = useRef(null)
 
@@ -133,7 +136,7 @@ export default function Intro() {
             preload="auto"
             onEnded={() => goHome()}
             onError={() => setMode('poster')}
-            aria-label="Animazione del logo YET"
+            aria-label={t('intro.animazione')}
           />
         ) : (
           /* Classe sua e non quella del video: il poster è già la regione
@@ -144,7 +147,7 @@ export default function Intro() {
           <img
             className={s.poster}
             src={posterSrc}
-            alt="Il logo YET"
+            alt={t('intro.logo')}
             width="712"
             height="692"
           />
@@ -155,11 +158,11 @@ export default function Intro() {
       <div className={s.controls}>
         {mode === 'video' ? (
           <button type="button" className={s.skip} onClick={() => goHome()}>
-            Skip
+            {t('intro.skip')}
           </button>
         ) : (
           <button type="button" className={s.enter} onClick={() => goHome()}>
-            Entra
+            {t('intro.entra')}
           </button>
         )}
       </div>

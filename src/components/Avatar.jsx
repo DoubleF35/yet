@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { safeImageSrc } from '../lib/attachments.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Avatar.module.css'
 
@@ -42,6 +43,7 @@ export function initialsFrom(name) {
  */
 export default function Avatar({ src, name, size = 48, fill = false, className = '' }) {
   const [failed, setFailed] = useState(false)
+  const { t } = useI18n()
 
   /* Se cambia la foto (succede nell'anteprima della pagina Join, a ogni tasto)
      va azzerato il fallimento precedente: senza, un URL sbagliato inserito una
@@ -57,7 +59,9 @@ export default function Avatar({ src, name, size = 48, fill = false, className =
      questa validazione esistesse. Un `javascript:` o un SVG non passano. */
   const clean = safeImageSrc(src) ?? ''
   const showImage = clean !== '' && !failed
-  const label = name ? String(name) : 'Membro'
+  /* Il ripiego serve alle iniziali, che si VEDONO: senza nome e senza foto
+     resterebbe un quadrato coral vuoto. */
+  const label = name ? String(name) : t('stati.membro')
 
   // Le iniziali scalano col riquadro: a 32px un font fisso da 18px sborda,
   // a 96px sembra un francobollo.

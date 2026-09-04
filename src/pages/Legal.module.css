@@ -179,3 +179,27 @@
   }
 }
 
+
+/* --- nota sulla traduzione -----------------------------------------------
+   Compare solo nella versione inglese delle informative. Sta in cima e non in
+   fondo, ed è la scelta giusta: chi legge un testo legale deve sapere PRIMA
+   di leggerlo quale versione fa fede, non dopo averlo interpretato.
+   ------------------------------------------------------------------------ */
+
+.translationNote {
+  max-inline-size: var(--measure);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4);
+
+  border-inline-start: var(--border-coral);
+  background-color: var(--surface);
+
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+}
+
+.translationNote strong {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}

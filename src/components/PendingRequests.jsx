@@ -5,6 +5,7 @@ import EmptyState from './EmptyState.jsx'
 import ErrorState from './ErrorState.jsx'
 import Skeleton from './Skeleton.jsx'
 import { formatDate, listPendingUsers, setUserStatus } from '../lib/db.js'
+import { useI18n } from '../lib/i18n.jsx'
 
 import s from './PendingRequests.module.css'
 
@@ -23,6 +24,7 @@ import s from './PendingRequests.module.css'
  * un messaggio. Il README spiega cosa servirebbe per averle via mail.
  */
 export default function PendingRequests({ onCountChange }) {
+  const { lang, t } = useI18n()
   const [items, setItems] = useState([])
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
@@ -74,36 +76,32 @@ export default function PendingRequests({ onCountChange }) {
           ...e,
           [uid]:
             err?.code === 'permission-denied'
-              ? 'Rifiutato dal server: la tua email non è nella allowlist dentro firestore.rules, oppure le regole non sono state ripubblicate dopo l’ultima modifica.'
-              : err?.message || 'Operazione non riuscita.',
+              ? t('richieste.scritturaRifiutata')
+              : err?.message || t('richieste.operazioneFallita'),
         }))
       } finally {
         setBusy((b) => ({ ...b, [uid]: null }))
       }
     },
-    [onCountChange],
+    [onCountChange, t],
   )
 
   return (
     <section className={s.wrap} aria-labelledby="richieste">
       <div className={s.head}>
         <h2 className={s.title} id="richieste">
-          Richieste di iscrizione
+          {t('richieste.titolo')}
         </h2>
         {status === 'ready' && (
           <p className={s.count}>
             {items.length === 0
-              ? 'nessuna in attesa'
-              : `${items.length} in attesa`}
+              ? t('richieste.nessunaInAttesa')
+              : t('richieste.inAttesa', { n: items.length })}
           </p>
         )}
       </div>
 
-      <p className={s.intro}>
-        Chi si iscrive non compare fra i membri finché non lo approvate da qui. Il rifiuto non
-        cancella niente ed è reversibile: la persona continua a vedere il proprio profilo, ma non
-        lo vede nessun altro.
-      </p>
+      <p className={s.intro}>{t('richieste.intro')}</p>
 
       {status === 'loading' && (
         <div className={s.list} aria-hidden="true">
@@ -113,27 +111,24 @@ export default function PendingRequests({ onCountChange }) {
 
       {status === 'error' && (
         <ErrorState
-          title="Non riesco a leggere le richieste"
+          title={t('richieste.erroreTitolo')}
           message={
             error?.code === 'permission-denied'
-              ? 'Il server ha rifiutato la lettura. Controlla che la tua email sia nella allowlist dentro firestore.rules e che le regole siano state pubblicate.'
-              : 'Qualcosa è andato storto. Può essere la connessione.'
+              ? t('richieste.errorePermessi')
+              : t('richieste.erroreGenerico')
           }
           onRetry={() => setAttempt((n) => n + 1)}
         />
       )}
 
       {status === 'ready' && items.length === 0 && (
-        <EmptyState title="Nessuna richiesta in attesa">
-          Quando qualcuno si iscriverà comparirà qui, e riceverà accesso solo dopo che uno di voi
-          l’avrà approvato.
-        </EmptyState>
+        <EmptyState title={t('richieste.vuotoTitolo')}>{t('richieste.vuotoTesto')}</EmptyState>
       )}
 
       {status === 'ready' && items.length > 0 && (
         <ul className={s.list}>
           {items.map((item) => {
-            const name = item.displayName || 'Senza nome'
+            const name = item.displayName || t('richieste.senzaNome')
             const working = busy[item.uid]
             return (
               <li className={s.item} key={item.uid}>
@@ -141,14 +136,16 @@ export default function PendingRequests({ onCountChange }) {
                   <Avatar src={item.photoURL} name={name} size={48} />
                   <div className={s.identity}>
                     <p className={s.name}>{name}</p>
-                    <p className={s.when}>Richiesta del {formatDate(item.createdAt)}</p>
+                    <p className={s.when}>
+                      {t('richieste.richiestaDel', { data: formatDate(item.createdAt, lang) })}
+                    </p>
                   </div>
                 </div>
 
                 {item.bio ? (
                   <p className={s.bio}>{item.bio}</p>
                 ) : (
-                  <p className={s.bioEmpty}>Non ha scritto una presentazione.</p>
+                  <p className={s.bioEmpty}>{t('richieste.senzaPresentazione')}</p>
                 )}
 
                 <div className={s.actions}>
@@ -158,7 +155,7 @@ export default function PendingRequests({ onCountChange }) {
                     onClick={() => decide(item.uid, 'approved')}
                     disabled={!!working}
                   >
-                    {working === 'approved' ? 'Approvo…' : 'Approva'}
+                    {working === 'approved' ? t('richieste.approvo') : t('richieste.approva')}
                   </button>
                   <button
                     type="button"
@@ -166,7 +163,7 @@ export default function PendingRequests({ onCountChange }) {
                     onClick={() => decide(item.uid, 'rejected')}
                     disabled={!!working}
                   >
-                    {working === 'rejected' ? 'Rifiuto…' : 'Rifiuta'}
+                    {working === 'rejected' ? t('richieste.rifiuto') : t('richieste.rifiuta')}
                   </button>
                 </div>
 

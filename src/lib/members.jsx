@@ -10,6 +10,11 @@
  * I glifi sono JSX, quindi questo file è .jsx e non .js.
  */
 
+/* Il nome di ripiego per chi non ne ha scritto uno. Resta una costante e non
+   una chiave del catalogo perche' serve anche a ORDINARE l'elenco, dove non
+   c'e' nessun componente e quindi nessun t(): un ordinamento che cambia con
+   la lingua sposterebbe i profili senza nome da un giro all'altro. Nei punti
+   in cui si SCRIVE a schermo, chi chiama passa la versione tradotta. */
 export const FALLBACK_NAME = 'Membro YET'
 
 /* Tratto comune delle icone: nessun riempimento, spessore costante, spigoli
@@ -29,11 +34,15 @@ const STROKE = {
    campi del profilo utente (socials.linkedin / instagram / other). Sono JSX
    e non semplici path 'd' perché l'icona di Instagram con un path unico
    richiederebbe fill-rule evenodd scritto a mano: con rect + circle il
-   disegno è verificabile a occhio. */
+   disegno è verificabile a occhio.
+
+   `chiaveEtichetta` e non `label`: "Sito" in inglese è "Website", e una
+   stringa scritta qui resterebbe italiana in tutto il sito. Chi mostra questi
+   campi la passa a t(). */
 export const SOCIAL_FIELDS = [
   {
     key: 'linkedin',
-    label: 'LinkedIn',
+    chiaveEtichetta: 'social.linkedin',
     glyph: (
       <>
         <rect x="2.9" y="2.9" width="18.2" height="18.2" {...STROKE} />
@@ -48,7 +57,7 @@ export const SOCIAL_FIELDS = [
   },
   {
     key: 'instagram',
-    label: 'Instagram',
+    chiaveEtichetta: 'social.instagram',
     glyph: (
       <>
         <rect x="2.9" y="2.9" width="18.2" height="18.2" {...STROKE} />
@@ -59,7 +68,7 @@ export const SOCIAL_FIELDS = [
   },
   {
     key: 'other',
-    label: 'Sito',
+    chiaveEtichetta: 'social.sito',
     glyph: (
       <>
         <path d="M14 3.5h6.5V10" {...STROKE} />
@@ -70,9 +79,9 @@ export const SOCIAL_FIELDS = [
   },
 ]
 
-export function memberName(member) {
+export function memberName(member, ripiego = FALLBACK_NAME) {
   const name = typeof member?.displayName === 'string' ? member.displayName.trim() : ''
-  return name || FALLBACK_NAME
+  return name || ripiego
 }
 
 /* Un URL scritto a mano in un campo di testo può essere qualunque cosa,
