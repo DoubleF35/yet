@@ -581,6 +581,14 @@ export default {
       vediComeTiVedono: 'Vedi come ti vedono',
       statoSalvando: 'Sto salvando il profilo…',
       statoSalvato: 'Profilo salvato. Ora compari fra i membri.',
+      /* La conferma cambia con lo stato della richiesta: "ora compari fra i
+         membri" detto a chi e' ancora in attesa e' una frase FALSA, e produce
+         esattamente il "ho salvato e non cambia niente" di chi poi va a
+         cercarsi nella vetrina e non si trova. */
+      statoSalvatoInAttesa:
+        'Profilo salvato. Comparirà nella vetrina appena gli organizzatori approvano la richiesta: fino a lì lo vedi solo tu.',
+      statoSalvatoRifiutato:
+        'Profilo salvato. Al momento il tuo profilo non è pubblicato nella vetrina: le modifiche restano salvate.',
       statoErrore: 'Salvataggio non riuscito. {dettaglio}',
       attesaTitolo: 'Richiesta inviata, in attesa di approvazione',
       attesaTesto:

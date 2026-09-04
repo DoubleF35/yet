@@ -532,11 +532,24 @@ function ProfileForm({ firebaseMissing }) {
     }
   }
 
+  /* La conferma dipende dallo stato della richiesta, e non e' una finezza:
+     "ora compari fra i membri" detto a chi e' in attesa di approvazione e'
+     falso, e chi poi va nella vetrina e non si trova conclude che il
+     salvataggio non ha funzionato. `profile` qui e' gia' quello ricaricato,
+     perche' handleSubmit aspetta refreshProfile prima di dichiarare il
+     successo. */
+  const statoSalvatoKey =
+    profile?.status === 'pending'
+      ? 'join.form.statoSalvatoInAttesa'
+      : profile?.status === 'rejected'
+        ? 'join.form.statoSalvatoRifiutato'
+        : 'join.form.statoSalvato'
+
   const statusText =
     saveState === 'saving'
       ? t('join.form.statoSalvando')
       : saveState === 'saved'
-        ? t('join.form.statoSalvato')
+        ? t(statoSalvatoKey)
         : saveState === 'error'
           ? t('join.form.statoErrore', { dettaglio: saveErrorText(t, saveError) })
           : ''
