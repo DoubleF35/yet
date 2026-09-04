@@ -559,6 +559,10 @@ export default {
       vediComeTiVedono: 'See what they see',
       statoSalvando: 'Saving the profile…',
       statoSalvato: 'Profile saved. You now appear among the members.',
+      statoSalvatoInAttesa:
+        'Profile saved. It will show up on the members page as soon as the organisers approve the request: until then only you can see it.',
+      statoSalvatoRifiutato:
+        'Profile saved. Right now your profile is not published on the members page: your changes are kept.',
       statoErrore: 'Saving failed. {dettaglio}',
       attesaTitolo: 'Request sent, waiting for approval',
       attesaTesto:
