@@ -149,6 +149,7 @@ export default {
 
   /* --- server errors ----------------------------------------------------- */
   errori: {
+    autoreMancante: 'You need to be signed in to upload a file.',
     regoleVecchie:
       'The server refused the read: the Firestore rules have not been published yet, or the published ones are older than the site.',
     indiceMancante:

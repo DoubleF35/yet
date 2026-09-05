@@ -156,6 +156,7 @@ export default {
      eventi e gli sponsor, e tre versioni della stessa frase divergono al
      primo ritocco. */
   errori: {
+    autoreMancante: 'Devi essere connesso per caricare un file.',
     regoleVecchie:
       'Il server ha rifiutato la lettura: le regole Firestore non sono ancora state pubblicate, oppure quelle pubblicate sono più vecchie del sito.',
     indiceMancante:
