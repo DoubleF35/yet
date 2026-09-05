@@ -1,0 +1,15 @@
+# YET, Young Entrepreneurs Together
+# https://yetcommunity.it
+
+User-agent: *
+Allow: /
+
+# Il pannello di amministrazione non ha niente da indicizzare: e' una
+# schermata di servizio dietro autenticazione, e finire nei risultati di
+# ricerca servirebbe solo a farla trovare a chi la cerca per curiosita'.
+# Nota: questo NON e' una misura di sicurezza. Chi ignora robots.txt ci arriva
+# lo stesso, ed e' giusto cosi': a proteggere i dati sono le regole Firestore,
+# non una riga in un file di testo pubblico.
+Disallow: /admin
+
+Sitemap: https://yetcommunity.it/sitemap.xml
