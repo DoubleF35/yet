@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { COMPRESSIBLE, compressImage, humanBytes } from '../lib/imageCompress.js'
 import { createMedia, createSponsor, deleteSponsor, getMedia, listSponsors } from '../lib/db.js'
 import { safeImageSrc } from '../lib/attachments.js'
+import { useAuth } from '../lib/auth.jsx'
 import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 
 import s from './SponsorAdmin.module.css'
@@ -19,6 +20,7 @@ const VUOTO = { nome: '', url: '', nota: '', ordine: '500' }
  */
 export default function SponsorAdmin() {
   const { t } = useI18n()
+  const { user } = useAuth()
   const [lista, setLista] = useState([])
   const [media, setMedia] = useState({})
   const [stato, setStato] = useState('loading')
@@ -76,7 +78,11 @@ export default function SponsorAdmin() {
           height: esito.height,
           bytes: esito.bytes,
         },
-        null,
+        /* L'utente, non null: le regole pretendono che authorUid coincida con
+           chi sta scrivendo, quindi un null qui faceva rifiutare il
+           caricamento con permission-denied. E' il motivo per cui non e' mai
+           stato caricato nessun logo. */
+        user,
       )
       setLogo({ mediaId, dataUrl: esito.dataUrl, nome: file.name, bytes: esito.bytes })
     } catch (err) {

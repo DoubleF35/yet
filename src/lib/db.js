@@ -296,7 +296,7 @@ export async function createNews({ title, body, published, attachments }, author
     // pulito, e la pagina che lo legge non deve rifare il lavoro.
     attachments: normalizeAttachments(attachments),
     published: Boolean(published),
-    authorUid: author?.uid ?? null,
+    authorUid: author.uid,
     authorName: author?.displayName || author?.name || 'Redazione YET',
     // serverTimestamp e non new Date(): l'orologio del browser dell'admin può
     // essere sbagliato di ore, e l'ordine del feed ne risentirebbe.
@@ -692,6 +692,20 @@ export async function createMedia({ dataUrl, contentType, name, width, height, b
     throw new Error('Contenuto del file non valido.')
   }
 
+  /* L'autore NON e' opzionale, anche se il parametro lo sembra.
+     Le regole pretendono `authorUid == request.auth.uid`: un documento con
+     authorUid null viene rifiutato, e chi chiama si vede tornare un
+     permission-denied generico che sembra un problema di permessi
+     dell'amministratore invece che una chiamata scritta male. E' successo
+     davvero: SponsorAdmin passava null, e per questo il caricamento dei loghi
+     non ha mai funzionato pur essendo scritto. Meglio fallire qui, con la
+     frase giusta, che a metri di distanza con quella sbagliata. */
+  if (!author?.uid) {
+    const e = new Error('Manca l’utente che sta caricando il file.')
+    e.chiaveI18n = 'errori.autoreMancante'
+    throw e
+  }
+
   const ref = await addDoc(collection(db, MEDIA), {
     dataUrl,
     contentType: String(contentType || 'application/octet-stream'),
@@ -699,7 +713,7 @@ export async function createMedia({ dataUrl, contentType, name, width, height, b
     width: Number(width) || 0,
     height: Number(height) || 0,
     bytes: Number(bytes) || dataUrl.length,
-    authorUid: author?.uid ?? null,
+    authorUid: author.uid,
     createdAt: serverTimestamp(),
   })
   return ref.id
@@ -903,7 +917,7 @@ export async function createMeetup(dati, author) {
 
   const ref = await addDoc(collection(db, MEETUPS), {
     ...p,
-    authorUid: author?.uid ?? null,
+    authorUid: author.uid,
     authorName: author?.displayName || author?.name || 'Redazione YET',
     createdAt: serverTimestamp(),
   })
