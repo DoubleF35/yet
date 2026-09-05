@@ -259,31 +259,53 @@
   /* -----------------------------------------------------------------------
      8. RITAGLIO DEL VIDEO DELL'HERO
 
-     hero.mp4 è 1280x720 (16:9) ma il fotogramma è impaginato male: l'animazione
-     vive in un riquadro quasi QUADRATO al centro, e tutt'intorno c'è una
-     cornice bianca (#FCFCF9) che NON è il beige del sito.
+     IL RITAGLIO ORA È DENTRO IL FILE, non più qui. hero.mp4 è 1440x1396 e
+     contiene SOLO la parte utile: queste variabili descrivono un ritaglio che
+     coincide con l'intero fotogramma, e la matematica qui sotto si riduce a
+     un'identità. Restano perché il meccanismo serve al prossimo video, che
+     probabilmente arriverà di nuovo impaginato male.
 
-     I numeri qui sotto sono MISURATI sul file vero, non stimati a occhio: il
-     video è stato disegnato su una canvas a sette istanti diversi (0,04s →
-     5,05s) e per ognuno si è cercato, a maggioranza di righe e di colonne,
-     dove il bianco della cornice lascia il posto al beige.
+     PERCHÉ È CAMBIATO. Il sorgente è 3840x2160, e l'animazione vive in un
+     riquadro quasi quadrato al centro con intorno una cornice bianca che NON è
+     il beige del sito. Ritagliare via CSS voleva dire spedire 8,3 milioni di
+     pixel per mostrarne 4,4: il 47% del peso scaricato veniva buttato dal
+     browser, su un video che parte da solo alla prima visita, spesso in mobilità.
+     Tagliando in fase di codifica il file pesa 781 kB invece di 3,0 MB, ed è
+     comunque più nitido di prima perché la parte utile è a 1440 invece che a 712.
 
-         bordo sinistro  x = 280      bordo destro   x = 999   -> 720 px
-         bordo superiore y =  10      bordo inferiore y = 711  -> 702 px
+     I NUMERI DEL TAGLIO, misurati sul file vero a nove istanti fra 0s e 5s:
 
-     I bordi LATERALI sono identici su tutta la durata. Quelli orizzontali no,
-     ed è il dettaglio che conta: fino a circa 1 s il pannello beige è alto
-     702 px, dopo si allarga fino a riempire tutti i 720. Il ritaglio giusto è
-     quindi l'INTERSEZIONE, cioè i 702 px del primo secondo. Tagliare di meno
-     farebbe comparire la cornice bianca nei primi fotogrammi; tagliare di più
-     non servirebbe, perché dopo il primo secondo lì c'è comunque beige.
+         bordo sinistro  x = 839      bordo destro   x = 2998  -> 2160 px
+         bordo superiore y =  28      bordo inferiore y = 2123 -> 2096 px
 
-     Le variabili tengono 4 px di margine interno su ogni lato (284/14 e
-     712x692): quando il browser scala il video interpola i pixel, e senza
-     quel margine sul bordo comparirebbe una frangia bianca di un pixel.
+     I bordi laterali sono identici su tutta la durata. Quelli orizzontali no,
+     ed è il dettaglio che conta: nei primi 0,7 s il pannello parte da y=28,
+     dopo arriva a filo; in basso finisce fra 2123 e 2134 a seconda del momento.
+     Il taglio giusto è l'INTERSEZIONE, cioè il rettangolo presente SEMPRE.
+     Tagliare di meno farebbe comparire la cornice bianca in alcuni fotogrammi.
 
-     Se un giorno arriva un video rigirato, si cambiano SOLO questi cinque
-     numeri: nessun componente va toccato.
+     Il comando, con 12 px di margine interno per non lasciare una frangia
+     chiara quando il browser interpola i pixel di bordo:
+
+         ffmpeg -i sorgente.mp4 \
+           -vf "crop=2136:2072:851:40,scale=1440:1396:flags=lanczos,setsar=1" \
+           -an -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 23 \
+           -preset slow -movflags +faststart hero.mp4
+
+     `-an` perché l'elemento è muted (l'autoplay senza audio è l'unico che i
+     browser concedono), `setsar=1` perché senza pixel quadrati videoWidth non
+     corrisponde alla larghezza vera e ogni misura fatta nel browser sballa,
+     `+faststart` perché altrimenti la riproduzione aspetta l'intero download.
+
+     Il poster (hero-poster.jpg) va rigenerato dallo STESSO ritaglio e dallo
+     stesso video, o mostrerebbe un fotogramma che non appartiene al filmato:
+
+         ffmpeg -ss 0 -i sorgente.mp4 \
+           -vf "crop=2136:2072:851:40,scale=1440:1396:flags=lanczos" \
+           -frames:v 1 -q:v 4 hero-poster.jpg
+
+     Se un giorno arriva un video rigirato, si rimisura il pannello e si
+     cambiano SOLO questi cinque numeri: nessun componente va toccato.
 
      I valori sono NUMERI SENZA UNITÀ apposta, così si moltiplicano dentro
      calc(). Uso previsto, il contenitore È la finestra di ritaglio, il video
@@ -303,12 +325,12 @@
        }
      --------------------------------------------------------------------- */
 
-  --hero-src-w: 1280;
-  --hero-src-h: 720;
-  --hero-crop-w: 712;
-  --hero-crop-h: 692;
-  --hero-crop-x: 284; /* offset in px del bordo sinistro nel sorgente */
-  --hero-crop-y: 14; /* offset in px del bordo superiore nel sorgente */
+  --hero-src-w: 1440;
+  --hero-src-h: 1396;
+  --hero-crop-w: 1440;
+  --hero-crop-h: 1396;
+  --hero-crop-x: 0; /* offset in px del bordo sinistro nel sorgente */
+  --hero-crop-y: 0; /* offset in px del bordo superiore nel sorgente */
 
   /* Rapporto della finestra di ritaglio, pronto per aspect-ratio. */
   --hero-ratio: var(--hero-crop-w) / var(--hero-crop-h);
