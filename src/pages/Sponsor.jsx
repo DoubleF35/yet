@@ -124,12 +124,20 @@ export default function Sponsor() {
                 const Contenuto = (
                   <>
                     {logo ? (
-                      <img className={s.logo} src={logo} alt={sp.nome} loading="lazy" />
-                    ) : (
-                      /* Senza logo il nome scritto grande funziona meglio di un
-                         riquadro vuoto: la griglia resta piena e leggibile. */
-                      <span className={s.nomeGrande}>{sp.nome}</span>
-                    )}
+                      /* `alt` VUOTO e non il nome: il nome e' scritto qui
+                         sotto come testo vero, e ripeterlo nell'alt lo
+                         farebbe leggere due volte di fila a chi ascolta la
+                         pagina. Un logo affiancato dal proprio nome e'
+                         decorativo per definizione. */
+                      <img className={s.logo} src={logo} alt="" loading="lazy" />
+                    ) : null}
+
+                    {/* Il nome c'e' SEMPRE, anche con il logo: un marchio si
+                       riconosce a colpo d'occhio solo se lo si conosce gia',
+                       e questi sono sponsor locali. Senza logo diventa lui
+                       l'elemento grafico, scritto piu' grande. */}
+                    <span className={logo ? s.nome : s.nomeGrande}>{sp.nome}</span>
+
                     {sp.nota && <span className={s.nota}>{sp.nota}</span>}
                   </>
                 )

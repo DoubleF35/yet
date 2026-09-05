@@ -260,7 +260,7 @@ export default {
     tuoProfilo: 'Your profile',
     organizza: 'Organiser',
     bioVuota: 'Bio coming soon - {nome} has not introduced themselves yet.',
-    leggiProfilo: 'Read the profile',
+    leggiProfilo: 'View profile',
     liveCaricamento: 'Loading the profiles.',
     liveErrore: 'The profiles could not be loaded.',
     liveCaricatoUno: '{n} profile loaded.',

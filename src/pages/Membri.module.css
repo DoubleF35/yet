@@ -594,7 +594,58 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-4);
   }
+
+  /* ======================================================================
+     TIPOGRAFIA DELLA TESSERA STRETTA
+
+     Due colonne su un telefono vogliono dire tessere da circa 167px, meno
+     della metà di quelle su computer. I corpi del testo però erano rimasti
+     quelli larghi, e il risultato si vedeva: il nome occupava due righe, la
+     bio si fermava dopo tre parole con i puntini in mezzo a una frase, e
+     "Leggi il profilo" andava a capo spezzato in due.
+
+     Non è una questione di gusto ma di conto: a 167px con 16px di padding
+     per lato restano 135px di testo, e sedici lettere maiuscole a 15px con
+     la spaziatura larga ne chiedono circa 137. Mancavano due pixel, ed è
+     per questo che andava a capo.
+
+     I valori qui sotto sono stati verificati misurando le righe vere nel
+     browser, non a occhio: il criterio è che il nome stia su una riga per i
+     nomi normali e "Leggi il profilo" non vada mai a capo.
+     ====================================================================== */
+
+  .name {
+    font-size: var(--step-0);
+  }
+
+  .place,
+  .badge,
+  .more {
+    font-size: 0.75rem;
+  }
+
+  /* Spaziatura ridotta e non `--ls-wide`: su sedici lettere maiuscole quella
+     larga da sola vale otto pixel, ed erano esattamente quelli che mancavano.
+     Non azzerata del tutto perché un maiuscoletto senza aria si legge peggio:
+     0.03em costa tre pixel invece di otto e l'aspetto resta quello. */
+  .more {
+    letter-spacing: 0.03em;
+  }
+
+  .bio,
+  .bioEmpty {
+    font-size: 0.8125rem;
+  }
+
+  /* Tre righe invece di due: il testo ora è più piccolo, quindi tre righe
+     occupano meno spazio di quanto ne occupassero due prima, e una bio
+     tagliata a tre parole non dice niente di nessuno. */
+  .bio {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
 }
+
 
 @media (max-width: 30rem) {
   .identity,
@@ -652,5 +703,22 @@
     inline-size: 2.75rem;
     justify-content: center;
     padding-inline: 0;
+  }
+}
+
+
+/* NOTA SULL'ORDINE: questo blocco sta in fondo apposta. Le media query qui
+   sopra hanno la stessa specificita', quindi a parita' vince l'ultima scritta
+   e non la piu' stretta. Messo prima di quella a 30rem veniva annullato da
+   lei, in silenzio: il CSS era giusto e non faceva niente. */
+/* Schermi molto stretti (iPhone SE di prima generazione e simili, 320px).
+   Li' la tessera scende a 132px e restano 96px di testo, mentre "Leggi il
+   profilo" ne chiede 108: misurati, non stimati. Si recuperano riducendo il
+   padding di 4px per lato e il corpo di un pixel, che insieme valgono 17px e
+   lasciano un margine vero invece di un pareggio al limite. */
+@media (max-width: 20.5rem) {
+  .more {
+    padding-inline: var(--space-3);
+    font-size: 0.6875rem;
   }
 }
