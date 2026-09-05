@@ -7,7 +7,7 @@
     <title>YET · Build ambition.</title>
     <meta
       name="description"
-      content="YET, Young Entrepreneurs Together: la community dei giovani builder dai 16 ai 23 anni. Sede a Torino, si partecipa da tutta Italia."
+      content="YET, Young Entrepreneurs Together: la community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Primi eventi a Torino, obiettivo tutta Italia. Nessuna selezione, nessuna quota: conta l'attitudine."
     />
     <!--
       Deve combaciare con --bg di src/styles/theme.css: è il colore che il
@@ -15,6 +15,11 @@
       chiaro, su Android e su iOS restava una fascia chiara sopra un sito nero.
     -->
     <meta name="theme-color" content="#14120F" />
+
+    <!-- Canonico. Con il router a cancelletto tutti gli indirizzi del sito
+         sono LA STESSA pagina per un motore di ricerca, quindi indicarne una
+         sola e' semplicemente dire la verita'. -->
+    <link rel="canonical" href="https://yetcommunity.it/" />
 
     <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -24,9 +29,18 @@
     <meta property="og:title" content="YET · Build ambition." />
     <meta
       property="og:description"
-      content="La community dei giovani builder dai 16 ai 23 anni. Sede a Torino, si partecipa da tutta Italia."
+      content="YET, Young Entrepreneurs Together: la community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Primi eventi a Torino, obiettivo tutta Italia. Nessuna selezione, nessuna quota: conta l'attitudine."
     />
-    <meta property="og:image" content="./hero-poster.jpg" />
+    <!-- URL ASSOLUTO, obbligatorio. Un percorso relativo qui non e' "meno
+         preciso": e' rotto. I raschiatori di WhatsApp, LinkedIn e Telegram non
+         hanno una pagina di riferimento da cui risolverlo, quindi scartano
+         l'immagine e mostrano l'anteprima senza. -->
+    <meta property="og:image" content="https://yetcommunity.it/hero-poster.jpg" />
+    <meta property="og:image:width" content="960" />
+    <meta property="og:image:height" content="720" />
+    <meta property="og:image:alt" content="Il logo di YET, Young Entrepreneurs Together" />
+    <meta property="og:url" content="https://yetcommunity.it/" />
+    <meta property="og:site_name" content="YET" />
     <meta property="og:locale" content="it_IT" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -52,9 +66,82 @@
       l'unica visita in cui l'intro viene mostrata.
     -->
     <link rel="preload" as="image" href="./hero-poster.jpg" />
+    <!-- Dati strutturati.
+         Non sono "parole chiave": sono il modo in cui si dice a un motore di
+         ricerca CHE COSA e' questa pagina, invece di sperare che lo deduca da
+         un testo che per giunta non vede, perche' arriva da JavaScript.
+         Il campo che conta di piu' e' sameAs: collega il sito ai profili
+         social e permette a Google di capire che sono la stessa organizzazione,
+         il che e' esattamente cio' che serve per una ricerca sul nome.
+         Qui dentro ci sono SOLO fatti verificabili. Un dato inventato e' peggio
+         di un dato assente: Google lo confronta con le altre fonti e, quando non
+         torna, smette di fidarsi dell'intero blocco. -->
+    <script type="application/ld+json">
+{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "YET",
+            "alternateName": "Young Entrepreneurs Together",
+            "url": "https://yetcommunity.it/",
+            "logo": "https://yetcommunity.it/logo.png",
+            "image": "https://yetcommunity.it/hero-poster.jpg",
+            "email": "info.yetcommunity@gmail.com",
+            "description": "YET, Young Entrepreneurs Together: la community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. I primi eventi a Torino, l'obiettivo e' tutta Italia.",
+            "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Torino",
+                  "addressCountry": "IT"
+            },
+            "areaServed": {
+                  "@type": "Country",
+                  "name": "Italia"
+            },
+            "sameAs": [
+                  "https://www.linkedin.com/company/yetclub/",
+                  "https://www.instagram.com/yet.community/"
+            ]
+      }
+    </script>
+
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Contenuto di partenza, sostituito da React appena si monta.
+
+        Serve a due categorie che il sito altrimenti perde del tutto: i
+        raschiatori che NON eseguono JavaScript (le anteprime dei link su
+        WhatsApp, Telegram, LinkedIn, e diversi motori minori) e le persone che
+        arrivano con gli script bloccati o su una rete che li perde per strada.
+        Googlebot il JavaScript lo esegue, quindi per lui e' quasi indifferente:
+        questo blocco esiste per tutti gli altri.
+
+        E' impaginato in linea, con i colori del tema scritti a mano, perche'
+        deve reggersi anche senza il foglio di stile: se dipendesse da
+        theme.css comparirebbe come testo nero su fondo bianco.
+      -->
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#14120f;color:#f2efe9;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+        <div style="max-width:38rem;">
+          <h1 style="margin:0;font-size:clamp(2rem,6vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;">
+            YET, Young Entrepreneurs Together
+          </h1>
+          <p style="margin:20px 0 0;font-size:1.0625rem;line-height:1.75;color:#b5aca3;">
+            La community dei giovani che costruiscono qualcosa: un prodotto,
+            un&rsquo;associazione, un progetto, un&rsquo;idea ancora confusa. Dai 16 ai 23
+            anni. E se non hai ancora niente fra le mani va bene lo stesso: quello che
+            cerchiamo &egrave; l&rsquo;attitudine, non il progetto gi&agrave; avviato.
+          </p>
+          <p style="margin:16px 0 0;font-size:1.0625rem;line-height:1.75;color:#b5aca3;">
+            I primi eventi saranno a Torino, ma l&rsquo;obiettivo &egrave; espandersi in tutta
+            Italia. Nessuna selezione, nessuna quota di iscrizione.
+          </p>
+          <p style="margin:28px 0 0;font-size:0.9375rem;color:#b5aca3;">
+            Scrivici a
+            <a href="mailto:info.yetcommunity@gmail.com" style="color:#e2603c;">info.yetcommunity@gmail.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
