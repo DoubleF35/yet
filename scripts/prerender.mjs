@@ -382,9 +382,20 @@ try {
     }
   }
 } catch (err) {
-  /* Vedi sopra: si avvisa e si va avanti. */
+  /* Vedi sopra: si avvisa e si va avanti.
+
+     L'annotazione ::warning:: non e' decorativa. E' gia' successo che la
+     lettura fallisse per un intoppo di rete: il build e' andato a buon fine e
+     ha pubblicato un sito senza le pagine dei profili, e in mezzo a cento
+     righe di log non se ne accorgeva nessuno. Cosi' invece compare in cima al
+     riepilogo dell'esecuzione. Il sito resta comunque funzionante, perche' i
+     profili passano dal recupero in 404.html: quello che si perde e'
+     l'indicizzazione, quindi vale un avviso e non un errore. */
   console.warn(`\n  Pagine dei membri non generate: ${err.message}`)
   console.warn('  Il sito funziona lo stesso, i profili passano dal recupero in 404.html.')
+  if (process.env.GITHUB_ACTIONS) {
+    console.log(`::warning::Pagine dei profili non generate (${err.message}). I profili funzionano ma non sono indicizzabili: rilancia il workflow.`)
+  }
   paginaMembri = []
 }
 

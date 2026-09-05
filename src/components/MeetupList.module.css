@@ -93,6 +93,13 @@
      paragrafo. */
   white-space: pre-wrap;
   text-wrap: pretty;
+  /* anywhere e non break-word: sono equivalenti su dove SPEZZANO, ma solo
+     `anywhere` entra nel calcolo della larghezza minima del contenuto. Con
+     break-word un indirizzo lungo incollato in una notizia continua a imporre
+     al contenitore una larghezza minima pari alla parola, e su telefono la
+     pagina scorre di lato. Sintomo trovato cosi': a 390px la finestra stessa
+     diventava 399. */
+  overflow-wrap: anywhere;
 }
 
 .cta {

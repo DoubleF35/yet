@@ -137,12 +137,66 @@
   color: var(--muted);
 }
 
+/* I bottoni sotto al nome. In fila, a capo quando non ci stanno: `wrap` e non
+   una media query, perché il punto in cui smettono di starci dipende da quanto
+   è lungo il nome, non dalla larghezza dello schermo. */
+.azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+
+/* Condividi è secondario rispetto a Modifica, quindi bordo sottile invece che
+   pieno. Chi guarda il profilo di un altro vede solo questo, e lì diventa
+   l'unica azione della pagina. */
+.condividi {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--ink);
+
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+}
+
+.condividi:hover {
+  color: var(--bg);
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+.condividi:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* L'esito della condivisione. Compare solo quando c'è qualcosa da dire: un
+   contenitore sempre presente sposterebbe il testo sotto a ogni clic. */
+.esito {
+  margin: var(--space-3) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
 .edit {
   display: inline-flex;
   align-items: center;
   min-block-size: 2.75rem;
   padding-inline: var(--space-5);
-  margin-block-start: var(--space-4);
 
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);

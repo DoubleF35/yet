@@ -130,6 +130,50 @@
   inset-block-end: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   inset-inline-end: calc(var(--space-6) + env(safe-area-inset-right, 0px));
   z-index: var(--z-overlay);
+
+  /* Due bottoni affiancati da quando c'è anche l'audio. `wrap` con
+     `justify-content: flex-end` perché su schermi molto stretti devono andare
+     a capo restando ancorati a destra, dove sta il pollice. */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* L'audio è secondario rispetto a Skip: fondo pieno anche lui, perché sotto
+   c'è un video che cambia colore e un bottone trasparente diventerebbe
+   illeggibile a metà, ma bordo sottile invece che marcato. */
+.audio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
+  padding-inline: var(--space-4);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+
+  color: var(--ink);
+  background-color: var(--bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    color var(--transition);
+}
+
+.audio:hover {
+  color: var(--bg);
+  background-color: var(--ink);
+}
+
+.audio:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 /* Skip ed Entra condividono tutto tranne il colore: il primo deve farsi

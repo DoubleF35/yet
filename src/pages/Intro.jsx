@@ -58,6 +58,9 @@ export default function Intro() {
      'poster' = autoplay negato, video in errore, o reduced-motion: si entra a mano */
   const [mode, setMode] = useState(reduced ? 'poster' : 'video')
   const [fading, setFading] = useState(false)
+  /* Parte da false: finche' il browser non concede l'audio, il bottone deve
+     dire "attiva", non "disattiva". */
+  const [audioAcceso, setAudioAcceso] = useState(false)
 
   const base = import.meta.env.BASE_URL
   const posterSrc = `${base}hero-poster.jpg`
@@ -84,29 +87,68 @@ export default function Intro() {
     [navigate, reduced],
   )
 
-  /* Avvio del video.
-     `play()` restituisce una Promise che viene RIFIUTATA quando il browser
-     blocca l'autoplay, la norma su iOS in risparmio energetico e con certe
-     impostazioni desktop, non un caso limite. Se non la intercettiamo, chi la
-     subisce resta davanti a un fotogramma fermo senza capire come proseguire. */
+  /* Avvio del video, in due tentativi.
+     
+     PRIMA CON L'AUDIO. Il video ha una traccia sonora e va sentita, quindi si
+     prova a partire non muti. Quasi sempre il browser rifiuta: dal 2018 in poi
+     Chrome, Safari e Firefox concedono l'avvio automatico SOLO se il video e'
+     muto, a meno che la persona non abbia gia' interagito parecchio col sito.
+     Non e' un difetto da aggirare, e' una difesa contro le pagine che si
+     mettono a suonare da sole, e infatti non esiste modo di forzarla.
+
+     POI MUTI. Se il primo tentativo viene rifiutato si riparte muti, che e'
+     l'unico avvio automatico concesso, e si mostra il bottone per accendere
+     l'audio: un tocco basta, perche' li' il gesto dell'utente c'e'.
+
+     SE FALLISCE ANCHE IL MUTO si passa al poster: succede su iOS in risparmio
+     energetico e con certe impostazioni desktop. Senza questo ramo chi lo
+     subisce resta davanti a un fotogramma fermo senza capire come proseguire.
+
+     `play()` va chiamata SEMPRE come Promise: in caso di rifiuto non lancia,
+     rifiuta, e un catch mancante diventa un errore non gestito in console. */
   useEffect(() => {
     if (mode !== 'video') return undefined
     const video = videoRef.current
     if (!video) return undefined
 
     let cancelled = false
-    const attempt = video.play()
 
-    if (attempt && typeof attempt.catch === 'function') {
-      attempt.catch(() => {
+    async function avvia() {
+      video.muted = false
+      try {
+        await video.play()
+        if (!cancelled) setAudioAcceso(true)
+        return
+      } catch {
+        /* Atteso nella stragrande maggioranza dei casi: si passa al muto. */
+      }
+
+      if (cancelled) return
+      video.muted = true
+      try {
+        await video.play()
+        if (!cancelled) setAudioAcceso(false)
+      } catch {
         if (!cancelled) setMode('poster')
-      })
+      }
     }
+
+    avvia()
 
     return () => {
       cancelled = true
     }
   }, [mode])
+
+  /* L'interruttore dell'audio. Qui il gesto dell'utente c'e', quindi togliere
+     il muto e' sempre concesso: non serve nessun ripiego. */
+  function alternaAudio() {
+    const video = videoRef.current
+    if (!video) return
+    const acceso = video.muted
+    video.muted = !acceso
+    setAudioAcceso(acceso)
+  }
 
   // I timer vanno spenti allo smontaggio, altrimenti un navigate parte dopo
   // che l'utente ha già cliccato Skip ed è altrove.
@@ -129,7 +171,9 @@ export default function Intro() {
             src={videoSrc}
             poster={posterSrc}
             autoPlay
-            muted
+            /* `muted` NON e' scritto qui: lo decide l'effetto di avvio, che
+               prima prova con l'audio e poi ripiega. Lasciare l'attributo
+               fisso vorrebbe dire partire sempre muti. */
             playsInline
             /* loop assente di proposito: il video deve finire per far scattare
                onEnded, che è quello che porta alla home. */
@@ -141,15 +185,17 @@ export default function Intro() {
         ) : (
           /* Classe sua e non quella del video: il poster è già la regione
              utile ritagliata, quindi non va né sovradimensionato né spostato.
-             Le misure sono quelle vere del file (712x692): con quelle
+             Le misure sono quelle vere del file (1440x1396): con quelle
              sbagliate il browser riserva un riquadro di rapporto diverso e
-             l'immagine salta di posizione appena arriva. */
+             l'immagine salta di posizione appena arriva. Vanno RIMISURATE
+             ogni volta che il video cambia: restano giuste solo se qualcuno
+             se ne ricorda, ed e' gia' successo di dimenticarsene. */
           <img
             className={s.poster}
             src={posterSrc}
             alt={t('intro.logo')}
-            width="712"
-            height="692"
+            width="1440"
+            height="1396"
           />
         )}
       </div>
@@ -157,9 +203,49 @@ export default function Intro() {
       {/* --- comandi ------------------------------------------------------ */}
       <div className={s.controls}>
         {mode === 'video' ? (
-          <button type="button" className={s.skip} onClick={() => goHome()}>
-            {t('intro.skip')}
-          </button>
+          <>
+            <button
+              type="button"
+              className={s.audio}
+              onClick={alternaAudio}
+              aria-pressed={audioAcceso}
+            >
+              {/* Altoparlante con o senza onde. Decorativo: il testo accanto
+                  dice gia' cosa fa il bottone, e `aria-pressed` dice in che
+                  stato si trova, quindi annunciare anche l'icona sarebbe una
+                  ripetizione per chi ascolta la pagina. */}
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                <path
+                  d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                {audioAcceso ? (
+                  <path
+                    d="M15.6 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                ) : (
+                  <path
+                    d="m16 9.5 5 5m0-5-5 5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                )}
+              </svg>
+              {audioAcceso ? t('intro.audioSpegni') : t('intro.audioAccendi')}
+            </button>
+            <button type="button" className={s.skip} onClick={() => goHome()}>
+              {t('intro.skip')}
+            </button>
+          </>
         ) : (
           <button type="button" className={s.enter} onClick={() => goHome()}>
             {t('intro.entra')}
