@@ -936,12 +936,18 @@ function ProfileForm({ firebaseMissing }) {
                   : t('join.form.crea')}
             </button>
 
-            {/* Porta alla PAGINA del proprio profilo e non piu' all'elenco:
+            {/* Indirizzo leggibile solo se il profilo e' approvato: lo slug
+                si risolve cercando nell'elenco pubblico, che contiene i soli
+                approvati. Per chi e' ancora in attesa il proprio uid e' l'unica
+                strada che funziona, perche' le regole gli concedono di leggere
+                il proprio documento ma non di comparire nell'elenco.
+
+                Porta alla PAGINA del proprio profilo e non piu' all'elenco:
                 "vedi il tuo profilo" che apriva la vetrina obbligava a
                 cercarsi in mezzo agli altri. Da qui si vede esattamente
                 quello che vedono gli altri aprendo la tessera. */}
             {canSeeMembers && (
-              <Link className={s.secondary} to={memberPath(user.uid)}>
+              <Link className={s.secondary} to={memberPath(profile?.status === 'approved' ? profile : user.uid)}>
                 {t('join.form.vediComeTiVedono')}
               </Link>
             )}

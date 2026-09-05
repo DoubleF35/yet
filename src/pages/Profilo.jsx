@@ -6,14 +6,25 @@ import ErrorState from '../components/ErrorState.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
-import { formatDate, getMemberProfile } from '../lib/db.js'
+import { formatDate, getMemberProfile, listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
-import { memberLinks, memberName } from '../lib/members.jsx'
+import { findMemberByKey, memberLinks, memberName } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Profilo.module.css'
 
 /**
- * La pagina di un singolo membro: /vetrina/:uid
+ * La pagina di un singolo membro: /vetrina/federicofassio
+ *
+ * Il pezzo nell'indirizzo puo' essere lo SLUG (il nome ridotto a lettere e
+ * numeri) oppure il vecchio UID. Si prova prima la strada diretta, poi quella
+ * lenta, e l'ordine conta:
+ *
+ *  - se sembra un uid, una singola lettura del documento basta;
+ *  - altrimenti si scarica l'elenco dei profili approvati e si cerca il nome.
+ *    Costa una query in piu', ma solo per chi arriva da un indirizzo leggibile,
+ *    ed e' l'unico modo senza tenere un campo `slug` nel database: Firestore
+ *    non sa imporre l'unicita' di un campo fra documenti, quindi garantirla
+ *    richiederebbe una seconda collection di prenotazione e una migrazione.
  *
  * Esiste perché la tessera della vetrina non è il posto dove si legge una
  * presentazione: è larga un terzo di schermo e la bio ci sta su due righe.
@@ -79,8 +90,32 @@ function NonTrovato() {
    La pagina
 -------------------------------------------------------------------------- */
 
+/**
+ * Da quel che c'e' nell'indirizzo al profilo.
+ *
+ * Un uid di Firebase e' lungo 20 caratteri o piu' e mescola maiuscole e
+ * minuscole; uno slug e' tutto minuscolo. Non e' una distinzione perfetta, ed
+ * e' per questo che quando la lettura diretta non trova niente si ricade
+ * comunque sulla ricerca per nome, invece di dire "non esiste".
+ */
+async function risolviMembro(chiave) {
+  const sembraUid = /[A-Z]/.test(chiave) && chiave.length >= 16
+
+  if (sembraUid) {
+    const diretto = await getMemberProfile(chiave)
+    if (diretto) return diretto
+  }
+
+  const tutti = await listUsers()
+  const trovato = findMemberByKey(tutti, chiave)
+  if (trovato) return trovato
+
+  // Ultimo tentativo: poteva essere un uid tutto minuscolo.
+  return sembraUid ? null : getMemberProfile(chiave)
+}
+
 export default function Profilo() {
-  const { uid } = useParams()
+  const { uid: chiave } = useParams()
   const { user } = useAuth()
   const { lang, t } = useI18n()
 
@@ -89,7 +124,7 @@ export default function Profilo() {
   const [membro, setMembro] = useState(null)
   const [errore, setErrore] = useState(null)
 
-  /* `uid` nelle dipendenze: senza, passando da un profilo all'altro senza
+  /* `chiave` nelle dipendenze: senza, passando da un profilo all'altro senza
      ricaricare la pagina (succede se un domani due profili si linkano fra
      loro) resterebbe a schermo il membro precedente. */
   useEffect(() => {
@@ -106,7 +141,7 @@ export default function Profilo() {
     setErrore(null)
     setMembro(null)
 
-    getMemberProfile(uid)
+    risolviMembro(chiave)
       .then((dati) => {
         if (!vivo) return
         setMembro(dati)
@@ -121,7 +156,23 @@ export default function Profilo() {
     return () => {
       vivo = false
     }
-  }, [uid, configured])
+  }, [chiave, configured])
+
+  /* Il titolo della scheda.
+     Il guscio generato dal build lo porta gia' giusto per chi apre il link da
+     fuori, ma non basta in due casi: chi arriva dalla vetrina cliccando (la
+     pagina non viene ricaricata, e il titolo resterebbe "Membri · YET") e chi
+     e' stato approvato dopo l'ultima pubblicazione, che passa dal recupero e
+     quindi parte dal guscio della vetrina. E' anche il nome che finisce nel
+     segnalibro e nella cronologia. */
+  useEffect(() => {
+    if (stato !== 'ok' || !membro) return undefined
+    const precedente = document.title
+    document.title = `${memberName(membro)} · YET`
+    return () => {
+      document.title = precedente
+    }
+  }, [stato, membro])
 
   if (stato === 'unconfigured') {
     return (

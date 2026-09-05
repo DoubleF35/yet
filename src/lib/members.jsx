@@ -15,6 +15,13 @@
    c'e' nessun componente e quindi nessun t(): un ordinamento che cambia con
    la lingua sposterebbe i profili senza nome da un giro all'altro. Nei punti
    in cui si SCRIVE a schermo, chi chiama passa la versione tradotta. */
+import { memberSlug, primoFraOmonimi } from './slug.js'
+
+/* Ri-esportata da qui perche' e' una funzione "sui membri" e chi la cerca
+   guarda in questo file. Vive in slug.js solo perche' la usa anche lo script
+   di build, che gira in Node e non sa leggere il JSX. */
+export { memberSlug }
+
 export const FALLBACK_NAME = 'Membro YET'
 
 /* Tratto comune delle icone: nessun riempimento, spessore costante, spigoli
@@ -132,8 +139,52 @@ export function memberLinks(member) {
   }).filter(Boolean)
 }
 
-/** L'indirizzo della pagina di un profilo. In un posto solo perché lo usano
- *  la tessera della vetrina, la pagina Join ("vedi come ti vedono") e i test. */
-export function memberPath(uid) {
-  return `/vetrina/${encodeURIComponent(uid)}`
+/**
+ * L'indirizzo della pagina di un profilo.
+ *
+ * Preferisce il nome all'identificativo: /vetrina/federicofassio invece di
+ * /vetrina/k46VxF5qWedKa7mK1AJV8axHIzQ2. Un indirizzo si legge ad alta voce,
+ * si scrive in una biografia di Instagram e si riconosce in un risultato di
+ * ricerca; una stringa casuale no.
+ *
+ * L'uid resta come ripiego quando il nome non produce niente di utilizzabile
+ * (un nome fatto di soli simboli, o un profilo senza nome).
+ */
+export function memberPath(membro) {
+  /* Accetta sia l'oggetto sia il solo uid: la firma vecchia era
+     memberPath(uid) ed e' chiamata da piu' punti. Cambiarli tutti insieme
+     avrebbe voluto dire rompere qualcosa senza accorgersene. */
+  if (typeof membro === 'string') return `/vetrina/${encodeURIComponent(membro)}`
+
+  const slug = memberSlug(membro?.displayName)
+  return `/vetrina/${encodeURIComponent(slug || membro?.uid || '')}`
+}
+
+/**
+ * Trova un membro dato quel che c'e' nell'indirizzo, che puo' essere lo slug
+ * oppure il vecchio uid.
+ *
+ * Perche' si risolve QUI e non con un campo `slug` salvato nel database:
+ * Firestore non sa imporre l'unicita' di un campo fra documenti diversi, quindi
+ * garantirla richiederebbe una seconda collection di prenotazione, scritture
+ * transazionali e una migrazione dei profili esistenti. Con i numeri di un
+ * club, cercare nella lista gia' scaricata costa niente e non puo' andare fuori
+ * sincrono, perche' il nome e lo slug sono la stessa cosa per costruzione.
+ *
+ * L'uid continua a funzionare: i link condivisi prima di questo cambiamento
+ * non si rompono.
+ */
+export function findMemberByKey(membri, chiave) {
+  if (!Array.isArray(membri) || !chiave) return null
+
+  const k = String(chiave)
+  const perUid = membri.find((m) => m.uid === k)
+  if (perUid) return perUid
+
+  const cercato = memberSlug(k)
+  const corrispondenti = membri.filter((m) => memberSlug(m.displayName) === cercato)
+
+  /* Due persone con lo stesso nome: la regola sta in slug.js perche' la deve
+     applicare anche lo script di build, e le due devono coincidere. */
+  return primoFraOmonimi(corrispondenti)
 }
