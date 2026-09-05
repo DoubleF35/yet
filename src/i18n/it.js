@@ -142,6 +142,8 @@ export default {
 
   /* --- intro ------------------------------------------------------------ */
   intro: {
+    audioAccendi: 'Audio',
+    audioSpegni: 'Muto',
     skip: 'Skip',
     entra: 'Entra',
     animazione: 'Animazione del logo YET',
@@ -299,6 +301,12 @@ export default {
 
   /* --- pagina di un profilo ---------------------------------------------- */
   profilo: {
+    condividi: 'Condividi',
+    condivisioneTesto: 'Guarda il profilo di {nome} su YET.',
+    condivisione: {
+      copiato: 'Indirizzo copiato negli appunti.',
+      fallito: 'Non sono riuscito a copiare. Puoi copiare l’indirizzo dalla barra del browser.',
+    },
     caricamento: 'Sto caricando il profilo.',
     nonTrovatoTitolo: 'Questo profilo non c’è',
     nonTrovatoTesto:

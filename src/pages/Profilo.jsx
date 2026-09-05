@@ -8,7 +8,8 @@ import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { formatDate, getMemberProfile, listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
-import { findMemberByKey, memberLinks, memberName } from '../lib/members.jsx'
+import { findMemberByKey, memberLinks, memberName, memberPath } from '../lib/members.jsx'
+import { condividi } from '../lib/share.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import s from './Profilo.module.css'
 
@@ -123,6 +124,7 @@ export default function Profilo() {
   const [stato, setStato] = useState(configured ? 'loading' : 'unconfigured')
   const [membro, setMembro] = useState(null)
   const [errore, setErrore] = useState(null)
+  const [esitoCondivisione, setEsitoCondivisione] = useState(null)
 
   /* `chiave` nelle dipendenze: senza, passando da un profilo all'altro senza
      ricaricare la pagina (succede se un domani due profili si linkano fra
@@ -230,6 +232,30 @@ export default function Profilo() {
   const organizza = membro.role === 'admin'
   const inAttesa = membro.status !== 'approved'
 
+  /* Si condivide sempre l'indirizzo CON IL NOME, anche se questa pagina e'
+     stata aperta con l'identificativo interno: chi riceve il link deve
+     ricevere quello leggibile, non quello che per caso aveva in barra chi
+     l'ha mandato. `origin` e non un dominio scritto a mano, cosi' in prova
+     locale si condivide l'indirizzo locale invece di uno che non esiste. */
+  const indirizzo = `${window.location.origin}${memberPath(membro)}`
+
+  async function condividiProfilo() {
+    /* condividi() va chiamata subito, senza await prima: il foglio di sistema
+       si apre solo dentro il gesto dell'utente, e un'attesa in mezzo lo
+       consuma. Vedi la nota in lib/share.js. */
+    const esito = await condividi({
+      url: indirizzo,
+      titolo: `${nome} · YET`,
+      testo: t('profilo.condivisioneTesto', { nome }),
+    })
+
+    /* Chi annulla ha scelto: non gli si dice niente. */
+    if (esito === 'annullato' || esito === 'condiviso') return setEsitoCondivisione(null)
+
+    setEsitoCondivisione(esito)
+    window.setTimeout(() => setEsitoCondivisione((e) => (e === esito ? null : e)), 4000)
+  }
+
   return (
     <section className={s.page} aria-labelledby="profilo-nome">
       <div className="container-narrow">
@@ -277,11 +303,34 @@ export default function Profilo() {
               )}
             </div>
 
-            {sonoIo && (
-              <Link className={s.edit} to="/join">
-                {t('profilo.modifica')}
-              </Link>
-            )}
+            <div className={s.azioni}>
+              <button type="button" className={s.condividi} onClick={condividiProfilo}>
+                {/* L'icona e' decorativa: il testo accanto dice gia' tutto, e
+                    un'icona annunciata a voce sarebbe una ripetizione. */}
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                  <circle cx="18" cy="5" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <path d="M8.6 10.6 15.4 6.4M8.6 13.4l6.8 4.2" stroke="currentColor" strokeWidth="2" fill="none" />
+                </svg>
+                {t('profilo.condividi')}
+              </button>
+
+              {sonoIo && (
+                <Link className={s.edit} to="/join">
+                  {t('profilo.modifica')}
+                </Link>
+              )}
+            </div>
+
+            {/* L'esito sotto al bottone e non in un avviso che sparisce da solo:
+                chi usa uno screen reader deve poterlo rileggere, e `role`
+                "status" lo annuncia senza rubare il fuoco. */}
+            {esitoCondivisione ? (
+              <p className={s.esito} role="status">
+                {t(`profilo.condivisione.${esitoCondivisione}`)}
+              </p>
+            ) : null}
           </div>
         </header>
 
