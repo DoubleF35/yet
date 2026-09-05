@@ -62,7 +62,7 @@ export default function Eventi() {
       },
       (err) => {
         if (!aliveRef.current) return
-        console.error('[YET] Non riesco a leggere gli eventi.', err)
+        console.error('[YET] Non riesco a leggere le notizie.', err)
         setError(err)
         setStatus('error')
       },
@@ -110,20 +110,30 @@ export default function Eventi() {
         <MeetupList />
       </div>
 
-      <section className={`${s.body} container`} aria-busy={status === 'loading'}>
+      <section
+        className={`${s.body} container`}
+        aria-busy={status === 'loading'}
+        aria-labelledby="titolo-notizie"
+      >
+        {/* Il feed aveva gli incontri sopra e nessuna intestazione propria:
+            sembrava la loro continuazione, ed e' da li' che nasceva la
+            confusione fra le due cose. */}
+        <h2 className={s.sezioneTitolo} id="titolo-notizie">
+          {t('notizie.titolo')}
+        </h2>
         {/* Regione di stato sempre presente: se comparisse solo a caricamento
             finito, il cambiamento non verrebbe annunciato, perché la live
             region non era in pagina al momento in cui è avvenuto. */}
         <p className="sr-only" role="status">
-          {status === 'loading' ? t('eventi.liveCaricamento') : ''}
-          {status === 'ready' ? t('eventi.liveCaricati', { n: news.length }) : ''}
-          {status === 'empty' ? t('eventi.liveVuoto') : ''}
+          {status === 'loading' ? t('notizie.liveCaricamento') : ''}
+          {status === 'ready' ? t('notizie.liveCaricati', { n: news.length }) : ''}
+          {status === 'empty' ? t('notizie.liveVuoto') : ''}
         </p>
 
         {status === 'unconfigured' && (
           <div className={s.notice}>
-            <p className={s.noticeTitle}>{t('eventi.spentoTitolo')}</p>
-            <p className={s.noticeText}>{t('eventi.spentoTesto')}</p>
+            <p className={s.noticeTitle}>{t('notizie.spentoTitolo')}</p>
+            <p className={s.noticeText}>{t('notizie.spentoTesto')}</p>
           </div>
         )}
 
@@ -137,7 +147,7 @@ export default function Eventi() {
 
         {status === 'error' && (
           <ErrorState
-            title={t('eventi.erroreTitolo')}
+            title={t('notizie.erroreTitolo')}
             message={
               error?.code === 'permission-denied' ? t('errori.regoleVecchie') : t('errori.generico')
             }
@@ -147,21 +157,21 @@ export default function Eventi() {
 
         {status === 'empty' && (
           <EmptyState
-            title={t('eventi.vuotoTitolo')}
+            title={t('notizie.vuotoTitolo')}
             action={
               <Link className={s.cta} to="/join">
                 {t('hero.entra')}
               </Link>
             }
           >
-            {t('eventi.vuotoTesto')}
+            {t('notizie.vuotoTesto')}
           </EmptyState>
         )}
 
         {status === 'ready' && (
           <>
             <p className={s.count}>
-              {news.length} {news.length === 1 ? t('eventi.unoEvento') : t('eventi.tantiEventi')}
+              {news.length} {news.length === 1 ? t('notizie.unaNotizia') : t('notizie.tanteNotizie')}
             </p>
             <div className={s.grid}>
               {news.map((item, index) => (

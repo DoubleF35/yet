@@ -101,3 +101,14 @@
 .body {
   padding-block-end: 0;
 }
+
+/* Titolo della sezione notizie. Ha lo stesso peso del titolo degli incontri
+   sopra: sono due cose diverse dello stesso rango, non una principale e una
+   secondaria. */
+.sezioneTitolo {
+  margin: 0 0 var(--space-6);
+  font-size: var(--step-3);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+}
