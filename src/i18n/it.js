@@ -178,6 +178,40 @@ export default {
   },
 
   /* --- incontri ---------------------------------------------------------- */
+  /* Il feed della pagina Eventi.
+     Si chiamava `eventi.*` e diceva "eventi caricati", "nessun evento": ma
+     sono NOTIZIE, e gli eventi veri sono gli `incontri` qui sotto, quelli con
+     una data e un posto. La confusione era nel nome delle chiavi prima ancora
+     che nei testi, ed e' il motivo per cui vale la pena rinominarle invece di
+     cambiare solo le stringhe. */
+  notizie: {
+    titolo: 'Notizie',
+    liveCaricamento: 'Caricamento delle notizie in corso.',
+    liveCaricati: '{n} notizie caricate.',
+    liveVuoto: 'Non c’è ancora nessuna notizia.',
+    spentoTitolo: 'Le notizie non sono collegate',
+    spentoTesto:
+      'Manca la configurazione di Firebase. Non è un errore del sito: è il passo che manca alla prima installazione, ed è spiegato nel README.',
+    erroreTitolo: 'Non riusciamo a caricare le notizie',
+    vuotoTitolo: 'Ancora nessuna notizia',
+    vuotoTesto:
+      'Qui finiranno gli annunci e le cose che succedono nella community. Nel frattempo puoi già presentarti.',
+    unaNotizia: 'notizia',
+    tanteNotizie: 'notizie',
+  },
+
+  sponsorRiservato: {
+    titolo: 'Dati riservati',
+    spiegazione:
+      'Visibile solo a voi organizzatori. Il livello NON compare sul sito e non è leggibile da nessun altro: sta in una collection separata che le regole aprono solo agli admin.',
+    livello: 'Livello',
+    nessuno: 'non impostato',
+    nota: 'Nota interna',
+    notaAiuto: 'Accordi, contatti, scadenze. Resta fra voi.',
+    salva: 'Salva',
+    salvato: 'Salvato.',
+  },
+
   incontri: {
     prossimi: 'Prossimi incontri',
     titolo: 'Incontri',
@@ -308,17 +342,6 @@ export default {
     titolo: 'Cosa succede',
     lead:
       'Incontri, annunci e cose che stiamo costruendo. I primi eventi saranno a Torino, ma l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.',
-    liveCaricamento: 'Caricamento degli eventi in corso.',
-    liveCaricati: '{n} eventi caricati.',
-    liveVuoto: 'Non c’è ancora nessun evento.',
-    spentoTitolo: 'Gli eventi non sono collegati',
-    spentoTesto:
-      'Manca la configurazione di Firebase. Non è un errore del sito: è il passo che manca alla prima installazione, ed è spiegato nel README.',
-    erroreTitolo: 'Non riusciamo a caricare gli eventi',
-    vuotoTitolo: 'Ancora nessun evento',
-    vuotoTesto: 'Il primo lo stiamo organizzando. Iscriviti e lo saprai prima degli altri.',
-    unoEvento: 'evento',
-    tantiEventi: 'eventi',
   },
 
   /* --- contatti ---------------------------------------------------------- */

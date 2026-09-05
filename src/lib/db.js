@@ -946,3 +946,68 @@ export function formatMeetupDate(value, lang = 'it') {
   const ora = new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' }).format(d)
   return `${giorno}, ${ora}`
 }
+
+/* --------------------------------------------------------------------------
+   sponsorRiservato/ : il valore commerciale di uno sponsor
+
+   Sta in una collection a parte e non come campo di sponsors/{id} perche'
+   Firestore concede o nega la lettura di un DOCUMENTO INTERO: non esistono
+   permessi per campo. Un livello dentro il documento pubblico sarebbe
+   leggibile da chiunque chieda la collection, anche se il sito non lo disegna.
+
+   L'id e' lo STESSO dello sponsor: sponsorRiservato/{idSponsor}. Cosi' non
+   serve nessun campo di collegamento da tenere allineato, e cancellando lo
+   sponsor si sa esattamente cosa cancellare.
+-------------------------------------------------------------------------- */
+
+const SPONSOR_RISERVATO = 'sponsorRiservato'
+
+/** I livelli, dal piu' grande al piu' piccolo. Sono etichette e non importi:
+ *  un numero in euro scritto in un database che un domani potrebbe cambiare
+ *  regole e' un rischio che non vale la comodita'. */
+export const LIVELLI_SPONSOR = ['fondatore', 'sostenitore', 'amico', 'in natura']
+
+/** Legge i dati riservati di TUTTI gli sponsor. Solo gli admin ci riescono:
+ *  a chiunque altro le regole rispondono permission-denied, e la funzione
+ *  restituisce una mappa vuota invece di far cadere la pagina. */
+export async function getSponsorRiservati() {
+  if (!isFirebaseConfigured) return {}
+  try {
+    const snap = await getDocs(collection(db, SPONSOR_RISERVATO))
+    const out = {}
+    snap.docs.forEach((d) => {
+      out[d.id] = d.data()
+    })
+    return out
+  } catch (error) {
+    /* permission-denied qui e' il comportamento ATTESO per chi non e' admin,
+       non un guasto: il pannello semplicemente non mostrera' i livelli. */
+    if (error?.code !== 'permission-denied') {
+      console.warn('[YET] Non riesco a leggere i dati riservati degli sponsor.', error)
+    }
+    return {}
+  }
+}
+
+export async function setSponsorRiservato(sponsorId, { livello, nota }) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!sponsorId) throw new Error('Manca l’identificativo dello sponsor.')
+
+  await setDoc(doc(db, SPONSOR_RISERVATO, sponsorId), {
+    livello: String(livello ?? '').trim().slice(0, 40),
+    nota: String(nota ?? '').trim().slice(0, 500),
+    aggiornatoIl: serverTimestamp(),
+  })
+}
+
+/** Da chiamare quando si cancella uno sponsor: senza, il documento riservato
+ *  resterebbe orfano e continuerebbe a dire quanto valeva qualcuno che non
+ *  c'e' piu'. */
+export async function deleteSponsorRiservato(sponsorId) {
+  if (!isFirebaseConfigured || !sponsorId) return
+  try {
+    await deleteDoc(doc(db, SPONSOR_RISERVATO, sponsorId))
+  } catch (error) {
+    console.warn('[YET] Non riesco a cancellare i dati riservati dello sponsor.', error)
+  }
+}

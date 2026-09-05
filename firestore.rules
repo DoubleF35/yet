@@ -546,6 +546,39 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // sponsorRiservato/{id} : quanto vale uno sponsor, visibile ai soli admin
+    //
+    // PERCHE' UNA COLLECTION A PARTE E NON UN CAMPO IN PIU'.
+    // Firestore concede o nega la lettura di un DOCUMENTO INTERO: non esistono
+    // permessi per campo. Mettere il livello dentro sponsors/{id}, che e'
+    // pubblico perche' la pagina deve mostrarlo a chiunque, vorrebbe dire
+    // renderlo leggibile a chiunque: basta chiedere la collection e si legge
+    // tutto, anche cio' che il sito non disegna.
+    // "Nascosto nell'interfaccia" non e' nascosto. Per essere davvero privato
+    // deve stare in un documento che le regole non lasciano leggere.
+    //
+    // Nota su cosa NON e' un segreto: l'ORDINE in cui gli sponsor compaiono
+    // resta pubblico, e non c'e' modo di evitarlo, perche' e' letteralmente
+    // cio' che si vede guardando la pagina. Quello che qui resta riservato e'
+    // di QUANTO uno viene prima dell'altro, cioe' il valore commerciale.
+    // =========================================================================
+    match /sponsorRiservato/{sponsorId} {
+
+      allow read: if isAdmin();
+
+      allow write: if isAdmin()
+                   && request.resource.data.keys().hasOnly(['livello', 'nota', 'aggiornatoIl'])
+                   && (!('livello' in request.resource.data)
+                       || (request.resource.data.livello is string
+                           && request.resource.data.livello.size() <= 40))
+                   && (!('nota' in request.resource.data)
+                       || (request.resource.data.nota is string
+                           && request.resource.data.nota.size() <= 500));
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
     // TUTTO IL RESTO: NEGATO
     //
     // Non è ridondante rispetto al comportamento predefinito di Firestore.

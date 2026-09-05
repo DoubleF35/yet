@@ -168,6 +168,37 @@ export default {
   },
 
   /* --- meetups ----------------------------------------------------------- */
+  /* The news feed on the Events page. Renamed from `eventi.*`: these are
+     NEWS, while the real events are `incontri`, the ones with a date and a
+     place. */
+  notizie: {
+    titolo: 'News',
+    liveCaricamento: 'Loading the news.',
+    liveCaricati: '{n} stories loaded.',
+    liveVuoto: 'There is no news yet.',
+    spentoTitolo: 'The news feed is not connected',
+    spentoTesto:
+      'The Firebase configuration is missing. This is not a fault of the site: it is the step left over from the first install, and it is explained in the README.',
+    erroreTitolo: 'We cannot load the news',
+    vuotoTitolo: 'No news yet',
+    vuotoTesto:
+      'Announcements and things that happen in the community will end up here. In the meantime you can already introduce yourself.',
+    unaNotizia: 'story',
+    tanteNotizie: 'stories',
+  },
+
+  sponsorRiservato: {
+    titolo: 'Private details',
+    spiegazione:
+      'Visible only to you organisers. The tier does NOT appear on the site and nobody else can read it: it lives in a separate collection the rules open to admins only.',
+    livello: 'Tier',
+    nessuno: 'not set',
+    nota: 'Internal note',
+    notaAiuto: 'Agreements, contacts, deadlines. Stays between you.',
+    salva: 'Save',
+    salvato: 'Saved.',
+  },
+
   incontri: {
     prossimi: 'Next meetups',
     titolo: 'Meetups',
@@ -292,17 +323,6 @@ export default {
     titolo: 'What is happening',
     lead:
       'Meetups, announcements and things we are building. The first events will be in Turin, but the goal is to run them all over Italy: if you want to organise one where you are, write to us.',
-    liveCaricamento: 'Loading the events.',
-    liveCaricati: '{n} events loaded.',
-    liveVuoto: 'There are no events yet.',
-    spentoTitolo: 'The events are not connected',
-    spentoTesto:
-      'The Firebase configuration is missing. This is not a fault of the site: it is the step left over from the first install, and the README explains it.',
-    erroreTitolo: 'We cannot load the events',
-    vuotoTitolo: 'No events yet',
-    vuotoTesto: 'We are organising the first one. Join and you will know before anyone else.',
-    unoEvento: 'event',
-    tantiEventi: 'events',
   },
 
   /* --- contact ----------------------------------------------------------- */
