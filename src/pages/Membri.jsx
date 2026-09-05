@@ -71,7 +71,7 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
                 queste cose, e chi usa uno screen reader ne sente uno per
                 tessera invece di due. */}
             <h2 className={s.name} id={nameId}>
-              <Link className={s.nameLink} to={memberPath(member.uid)}>
+              <Link className={s.nameLink} to={memberPath(member)}>
                 {name}
               </Link>
             </h2>

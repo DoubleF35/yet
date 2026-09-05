@@ -3,6 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!--
+      RECUPERO DELLE PAGINE DEI MEMBRI, e solo di quelle.
+
+      scripts/prerender.mjs genera un file vero per ogni profilo approvato al
+      momento del build, quindi /vetrina/federicofassio risponde 200 e non
+      passa mai di qui. Chi viene approvato DOPO l'ultima pubblicazione pero'
+      non ha ancora il suo file: il suo indirizzo esiste per l'applicazione ma
+      non per GitHub Pages, che manda qui. Senza questo pezzo, un membro nuovo
+      avrebbe il link rotto fino al deploy successivo.
+
+      IL FILTRO E' STRETTO APPOSTA. Si recupera solo /vetrina/<un-segmento>,
+      cioe' l'unica forma di indirizzo che l'applicazione costruisce a runtime.
+      Tutto il resto continua a vedere la pagina qui sotto, con il suo 404
+      vero. E' la differenza con la ricetta diffusa "404.html rimanda sempre
+      all'app": quella fa rispondere una pagina buona a QUALUNQUE indirizzo
+      inventato, e per un motore di ricerca significa che il sito ha infinite
+      pagine di scarsa qualita' (un "soft 404").
+
+      Sta in cima al <head>, prima di stile e contenuto: il browser non ha
+      ancora disegnato niente, quindi non si vede lampeggiare "pagina non
+      trovata" prima del profilo.
+    -->
+    <script>
+      (function () {
+        var m = window.location.pathname.match(/^\/vetrina\/([^/]+)\/?$/)
+        if (m && m[1]) {
+          window.location.replace('/vetrina/?p=' + encodeURIComponent(m[1]))
+        }
+      })()
+    </script>
+
     <title>Pagina non trovata · YET</title>
     <meta name="robots" content="noindex" />
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />

@@ -26,6 +26,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { memberSlug, primoFraOmonimi } from '../src/lib/slug.js'
+
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = join(RADICE, 'dist')
 const SITO = 'https://yetcommunity.it'
@@ -155,11 +157,16 @@ function scappa(s) {
 }
 
 const base = readFileSync(join(DIST, 'index.html'), 'utf8')
-console.log('Genero una pagina per rotta:\n')
 
-for (const rotta of ROTTE) {
+/** Scrive dist/<path>/index.html per una pagina descritta come le ROTTE. */
+function scriviPagina(rotta) {
   let html = base
-  const url = rotta.path === '/' ? `${SITO}/` : `${SITO}${rotta.path}`
+  /* Con la barra finale, perche' e' cosi' che GitHub Pages serve davvero la
+     pagina: il file sta in eventi/index.html, quindi /eventi viene rediretto
+     con un 301 su /eventi/. Un canonico senza barra manderebbe Google su un
+     indirizzo che rimbalza indietro, e in Search Console diventa un avviso di
+     pagina duplicata. Il canonico deve dire l'indirizzo VERO. */
+  const url = rotta.path === '/' ? `${SITO}/` : `${SITO}${rotta.path}/`
 
   html = sostituisci(html, /<title>[\s\S]*?<\/title>/, `<title>${scappa(rotta.title)}</title>`)
   html = sostituisci(
@@ -222,8 +229,163 @@ for (const rotta of ROTTE) {
   mkdirSync(cartella, { recursive: true })
   writeFileSync(join(cartella, 'index.html'), html)
 
-  const dove = rotta.path === '/' ? 'index.html' : `${rotta.path.slice(1)}/index.html`
-  console.log(`  ${dove.padEnd(22)} ${rotta.title}`)
+  return rotta.path === '/' ? 'index.html' : `${rotta.path.slice(1)}/index.html`
+}
+
+console.log('Genero una pagina per rotta:\n')
+for (const rotta of ROTTE) {
+  console.log(`  ${scriviPagina(rotta).padEnd(30)} ${rotta.title}`)
+}
+
+
+/* --------------------------------------------------------------------------
+   Una pagina per ogni membro
+-------------------------------------------------------------------------- */
+
+/**
+ * Scarica i profili approvati con l'API REST di Firestore.
+ *
+ * Usa la CHIAVE PUBBLICA, la stessa che sta nel bundle: quindi questa lettura
+ * ha esattamente i permessi di un visitatore qualunque, e vede solo cio' che
+ * le regole gia' rendono pubblico. Non c'e' nessuna credenziale di servizio da
+ * custodire, e non c'e' modo che qui finisca un profilo in attesa: il filtro
+ * `status == approved` non e' una comodita', e' la condizione che le regole
+ * pretendono perche' la query venga accettata.
+ *
+ * SE FALLISCE, IL BUILD PROSEGUE. Una rete assente o dei secret mancanti non
+ * devono impedire la pubblicazione del sito: le pagine dei membri sono un
+ * miglioramento, non una condizione di funzionamento. Chi resta senza pagina
+ * generata viene comunque raggiunto dal recupero in 404.html.
+ */
+async function scaricaMembri() {
+  /* In CI le variabili arrivano dai secret, gia' dentro process.env. In locale
+     stanno solo nel .env, che Vite legge per il bundle ma che un processo Node
+     separato non vede: senza questa riga il build locale salterebbe sempre le
+     pagine dei membri, e il difetto si scoprirebbe solo in produzione. Il file
+     e' opzionale, quindi l'assenza non e' un errore.
+     `process.loadEnvFile` esiste da Node 21; la CI usa Node 22. */
+  try {
+    process.loadEnvFile(join(RADICE, '.env'))
+  } catch {
+    /* Nessun .env: si va avanti con quello che c'e' in process.env. */
+  }
+
+  const progetto = process.env.VITE_FIREBASE_PROJECT_ID
+  const chiave = process.env.VITE_FIREBASE_API_KEY
+  if (!progetto || !chiave) {
+    console.warn('\n  Nessuna chiave Firebase: salto le pagine dei membri.')
+    return []
+  }
+
+  const risposta = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${progetto}/databases/(default)/documents:runQuery?key=${chiave}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: 'users' }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: 'status' },
+              op: 'EQUAL',
+              value: { stringValue: 'approved' },
+            },
+          },
+        },
+      }),
+    },
+  )
+
+  if (!risposta.ok) throw new Error(`Firestore ha risposto ${risposta.status}`)
+  const dati = await risposta.json()
+
+  return dati
+    .filter((riga) => riga.document)
+    .map((riga) => {
+      const campi = riga.document.fields ?? {}
+      const testo = (nome) => campi[nome]?.stringValue ?? ''
+      return {
+        uid: riga.document.name.split('/').pop(),
+        displayName: testo('displayName'),
+        bio: testo('bio'),
+        location: testo('location'),
+        project: testo('project'),
+      }
+    })
+}
+
+/** Taglia a lunghezza da risultato di ricerca, senza spezzare una parola. */
+function riassumi(testo, max = 155) {
+  const pulito = String(testo).replace(/\s+/g, ' ').trim()
+  if (pulito.length <= max) return pulito
+  const tagliato = pulito.slice(0, max)
+  const spazio = tagliato.lastIndexOf(' ')
+  return `${(spazio > max * 0.6 ? tagliato.slice(0, spazio) : tagliato).replace(/[.,;:]$/, '')}…`
+}
+
+let paginaMembri = []
+
+try {
+  const membri = await scaricaMembri()
+
+  /* Due persone con lo stesso nome darebbero lo stesso indirizzo, e la seconda
+     sovrascriverebbe il file della prima senza un avviso. Vince chi c'era
+     prima, che e' anche la scelta che fa il browser quando risolve uno slug:
+     le due strade devono portare alla stessa persona, altrimenti la pagina
+     generata mostrerebbe un profilo e l'applicazione, una volta partita, un
+     altro. */
+  const perSlug = new Map()
+  for (const membro of membri) {
+    const slug = memberSlug(membro.displayName)
+    if (!slug) continue
+    if (!perSlug.has(slug)) perSlug.set(slug, [])
+    perSlug.get(slug).push(membro)
+  }
+
+  const visti = new Map()
+  for (const [slug, candidati] of perSlug) {
+    const scelto = primoFraOmonimi(candidati)
+    if (candidati.length > 1) {
+      const altri = candidati.filter((c) => c.uid !== scelto.uid).map((c) => c.uid).join(', ')
+      console.warn(`  attenzione: piu' profili si chiamano "${scelto.displayName}". La pagina /vetrina/${slug} e' di ${scelto.uid}; gli altri (${altri}) restano raggiungibili col proprio identificativo.`)
+    }
+    visti.set(slug, scelto)
+  }
+
+  paginaMembri = [...visti.entries()].map(([slug, membro]) => {
+    const nome = membro.displayName.trim()
+    const dove = membro.location.trim()
+
+    /* Il testo del guscio: e' quello che Google legge e che vede chi apre il
+       link con JavaScript disattivato. La biografia e' scritta dalla persona,
+       quindi va bene com'e'; quando manca si dice cosa E' questa pagina invece
+       di lasciarla vuota, perche' una pagina vuota per un motore di ricerca e'
+       una pagina di bassa qualita' e trascina giu' anche le altre. */
+    const presentazione = membro.bio.trim()
+      ? membro.bio.trim()
+      : `${nome} fa parte di YET, la community dei giovani che costruiscono qualcosa.`
+
+    return {
+      path: `/vetrina/${slug}`,
+      title: `${nome} · YET`,
+      desc: riassumi(membro.bio.trim() ? `${nome}, YET. ${membro.bio}` : presentazione),
+      h1: nome,
+      testo: [presentazione, dove ? `${dove} · Membro di YET, Young Entrepreneurs Together.` : 'Membro di YET, Young Entrepreneurs Together.'],
+    }
+  })
+
+  if (paginaMembri.length) {
+    console.log(`\nGenero una pagina per membro (${paginaMembri.length}):\n`)
+    for (const pagina of paginaMembri) {
+      console.log(`  ${scriviPagina(pagina).padEnd(30)} ${pagina.title}`)
+    }
+  }
+} catch (err) {
+  /* Vedi sopra: si avvisa e si va avanti. */
+  console.warn(`\n  Pagine dei membri non generate: ${err.message}`)
+  console.warn('  Il sito funziona lo stesso, i profili passano dal recupero in 404.html.')
+  paginaMembri = []
 }
 
 /* La sitemap elenca gli indirizzi VERI. Prima ne conteneva uno solo, ed era
@@ -231,12 +393,12 @@ for (const rotta of ROTTE) {
 const sitemap =
   '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  ROTTE
+  [...ROTTE, ...paginaMembri]
     /* /home e' la stessa pagina di / per un lettore: elencarle entrambe
        significherebbe dichiarare a Google due pagine identiche. */
     .filter((r) => r.path !== '/home')
     .map((r) => {
-      const url = r.path === '/' ? `${SITO}/` : `${SITO}${r.path}`
+      const url = r.path === '/' ? `${SITO}/` : `${SITO}${r.path}/`
       const priorita = r.path === '/' ? '1.0' : r.path === '/join' || r.path === '/eventi' ? '0.8' : '0.6'
       return `  <url>\n    <loc>${url}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${priorita}</priority>\n  </url>`
     })
@@ -244,5 +406,5 @@ const sitemap =
   '\n</urlset>\n'
 
 writeFileSync(join(DIST, 'sitemap.xml'), sitemap)
-console.log(`\n  sitemap.xml            ${ROTTE.length - 1} indirizzi`)
+console.log(`\n  sitemap.xml                    ${ROTTE.length - 1 + paginaMembri.length} indirizzi`)
 console.log('\nFatto.')

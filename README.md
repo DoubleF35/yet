@@ -46,12 +46,42 @@ sta nel piano gratuito Spark di Firebase.
 | `/privacy`  | Privacy  | Informativa GDPR. Descrive quello che il codice fa davvero.             | no              |
 | `/cookie`   | Cookie   | Cosa viene salvato sul dispositivo, e perche' non c'e' il banner.       | no              |
 | `/admin`    | Admin    | Notizie, richieste di iscrizione, sponsor.                              | **solo admin**  |
+| `/vetrina/<nome>` | Profilo | La pagina di una persona, con il suo nome nell'indirizzo.        | no              |
 
-`/vetrina` reindirizza a `/vetrina`: i link condivisi in giro prima della
+`/membri` reindirizza a `/vetrina`: i link condivisi in giro prima della
 rinomina continuano a funzionare.
 
-Gli URL hanno il cancelletto: `https://…/yet/#/vetrina`. Il perché è
-[più sotto](#scelte-fatte-al-posto-tuo).
+Gli URL sono veri, senza cancelletto: `https://yetcommunity.it/vetrina`. Come
+sia possibile su GitHub Pages è spiegato in [Deploy](#deploy-su-github-pages).
+
+### L'indirizzo di un profilo
+
+`yetcommunity.it/vetrina/federicofassio`, non l'identificativo interno. Un
+indirizzo così si legge ad alta voce, si mette nella biografia di Instagram e
+si riconosce in un risultato di ricerca; `k46VxF5qWedKa7mK1AJV8axHIzQ2` no.
+
+Il nome nell'indirizzo si ricava dal nome del profilo togliendo accenti, spazi
+e punteggiatura (`src/lib/slug.js`). **Non è un campo salvato nel database**, ed
+è una scelta: Firestore non sa imporre l'unicità di un campo fra documenti
+diversi, quindi tenerlo salvato richiederebbe una seconda collection di
+prenotazione, scritture transazionali e una migrazione dei profili esistenti.
+Ricavarlo dal nome non può andare fuori sincrono, perché nome e indirizzo sono
+la stessa cosa per costruzione.
+
+Tre conseguenze, tutte volute:
+
+- **I vecchi link continuano a funzionare.** `/vetrina/<identificativo>` viene
+  ancora risolto, quindi niente di quello che è già stato condiviso si rompe.
+- **Se cambi il nome del profilo, cambia il tuo indirizzo.** Il vecchio smette
+  di funzionare al primo deploy successivo. È il compromesso di non salvare lo
+  slug; se un giorno diventa un problema, la soluzione è la collection di
+  prenotazione di cui sopra.
+- **Due persone con lo stesso nome** finirebbero sullo stesso indirizzo. Vince
+  chi si è iscritto prima; l'altro resta raggiungibile con il proprio
+  identificativo, e il build lo scrive nel log. La regola sta in
+  `primoFraOmonimi()` ed è **una sola funzione usata sia dal browser sia dallo
+  script di build**: se fossero due, lo stesso indirizzo potrebbe mostrare una
+  persona nella pagina generata e un'altra un attimo dopo.
 
 ---
 
@@ -360,6 +390,53 @@ L'action parte da sola (scheda **Actions**). Al termine il sito è su
 Da lì in poi ogni push su `main` ripubblica. Puoi anche lanciarlo a mano da
 **Actions** → **Deploy su GitHub Pages** → **Run workflow**: utile dopo aver
 cambiato un secret, che da solo non fa ripartire niente.
+
+### 5. Perché gli indirizzi veri funzionano (e cosa succede a un membro nuovo)
+
+GitHub Pages serve file, non ha riscritture: un percorso che non corrisponde a
+un file darebbe 404. La ricetta che si trova ovunque è far rimbalzare 404.html
+verso index.html conservando il percorso. Funziona per le **persone** e non
+risolve niente per i **motori di ricerca**: la prima risposta resta un 404, e a
+quel punto Googlebot non indicizza.
+
+Qui il problema è risolto a monte. Dopo il build, `scripts/prerender.mjs`:
+
+1. scrive un file HTML vero per ogni sezione (`dist/eventi/index.html`, …), con
+   il suo titolo, la sua descrizione e il suo canonico;
+2. **scarica i profili approvati** con l'API REST di Firestore e scrive una
+   pagina anche per ognuno di loro (`dist/vetrina/federicofassio/index.html`);
+3. rigenera `sitemap.xml` con tutti questi indirizzi.
+
+Il punto 2 usa la **chiave pubblica**, la stessa che sta nel bundle: quella
+lettura ha esattamente i permessi di un visitatore qualunque e vede solo ciò che
+le regole già rendono pubblico. Non c'è nessuna credenziale di servizio da
+custodire. Se fallisce (rete assente, secret mancanti) il build **prosegue**:
+le pagine dei membri sono un miglioramento, non una condizione di
+funzionamento, e il log lo scrive.
+
+Resta un caso: **chi viene approvato dopo l'ultima pubblicazione** non ha ancora
+il suo file. Per lui `public/404.html` contiene un recupero, ma ristretto alla
+sola forma `/vetrina/<un-segmento>`: rimbalza su `/vetrina/?p=<nome>`, e
+`src/main.jsx` rimette l'indirizzo a posto prima che l'applicazione parta.
+Tutto il resto continua a ricevere un 404 onesto, perché una pagina buona a
+qualunque indirizzo inventato è un "soft 404" e a lungo andare danneggia
+l'indicizzazione di quelle vere.
+
+In pratica: **un membro approvato è raggiungibile subito; dopo il primo deploy
+successivo la sua pagina diventa anche indicizzabile.** Se vuoi accelerare,
+lancia il workflow a mano.
+
+### Provare in locale quello che farà Pages
+
+```bash
+npm run build
+node scripts/serve-pages.mjs      # http://localhost:4173
+```
+
+`vite preview` **non** va bene per questa verifica: serve `index.html` per
+qualunque percorso, quindi mostrerebbe tutto funzionante anche se il file non
+esistesse. `serve-pages.mjs` applica le due regole vere di Pages (cartella →
+`index.html`, altrimenti `404.html` **con stato 404**).
 
 ---
 
