@@ -66,7 +66,7 @@
   gap: var(--space-3);
 
   width: 100%;
-  min-height: 7.5rem;
+  min-height: 11rem;
   padding: var(--space-5);
   border: var(--border);
   background-color: var(--surface);
@@ -79,15 +79,33 @@ a.link:hover { border-color: var(--ink); background-color: var(--surface-sunken)
 a.link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
 /* I loghi arrivano in mille formati e proporzioni: contain dentro un box di
-   altezza fissa è l'unico modo di allinearli senza deformarne nessuno. */
+   altezza fissa è l'unico modo di allinearli senza deformarne nessuno.
+
+   L'altezza è più che raddoppiata rispetto ai 3,5rem di prima. Un marchio
+   piccolo in mezzo a una tessera grande sembra un segnaposto, non uno
+   sponsor: chi ci mette dei soldi deve vedersi. `min-height` oltre a
+   `max-height` perché un logo molto largo e basso (una scritta orizzontale)
+   con il solo max-height verrebbe fuori alto due centimetri mentre uno
+   quadrato riempirebbe tutto, e la fila sembrerebbe sbilanciata. */
 .logo {
   max-width: 100%;
-  max-height: 3.5rem;
+  max-height: clamp(5rem, 12vw, 7rem);
+  min-height: clamp(3.5rem, 8vw, 4.5rem);
   width: auto;
   height: auto;
   object-fit: contain;
 }
 
+/* Il nome accanto al logo: presente ma non in gara con lui. */
+.nome {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-heading);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Senza logo il nome diventa l'elemento grafico della tessera. */
 .nomeGrande {
   font-size: var(--step-2);
   font-weight: var(--weight-bold);
@@ -96,10 +114,20 @@ a.link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-o
   text-wrap: balance;
 }
 
+/* La nota sta sotto il nome ed è chiaramente secondaria: più piccola, in
+   grigio, e con un filo di spazio in meno sopra così si legge come didascalia
+   del nome invece che come terza riga indipendente. */
 .nota {
-  font-size: var(--step--1);
+  margin-block-start: calc(var(--space-2) * -1);
+  /* Valori scritti a mano e non variabili del tema: la scala tipografica
+     arriva a --step--1 (14px) e qui serve un gradino sotto, che nel tema non
+     esiste. Inventarlo per un punto solo vorrebbe dire aggiungere un token
+     usato una volta. */
+  font-size: 0.8125rem;
+  line-height: 1.45;
   color: var(--muted);
   text-align: center;
+  text-wrap: pretty;
 }
 
 /* --- cosa offriamo -------------------------------------------------------- */
