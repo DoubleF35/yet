@@ -24,12 +24,31 @@
  * ricade sull'identificativo interno.
  */
 export function memberSlug(nome) {
-  return String(nome ?? '')
+  return normalizza(nome).slice(0, 40)
+}
+
+/**
+ * La forma confrontabile di un testo scritto a mano: senza accenti, senza
+ * maiuscole, senza spazi ne' punteggiatura.
+ *
+ * PERCHE' E' UNA FUNZIONE A SE'. La usa memberSlug qui sopra, e la usa il
+ * raggruppamento per citta' in lib/citta.js, dove il problema e' identico:
+ * "londra" e "Londra" sono la stessa citta', e nel database ci sono davvero
+ * entrambe le forme, perche' il campo e' testo libero. Due normalizzazioni
+ * scritte separatamente prima o poi divergono, e il giorno che divergono due
+ * righe della stessa citta' compaiono come due citta'.
+ *
+ * Non ha il taglio a 40 caratteri: quello e' una decisione sugli indirizzi
+ * (un pezzo di URL lungo trecento caratteri non lo vuole nessuno), non sulla
+ * normalizzazione, e una chiave di confronto troncata farebbe coincidere due
+ * testi diversi che condividono l'inizio.
+ */
+export function normalizza(valore) {
+  return String(valore ?? '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
-    .slice(0, 40)
 }
 
 /**

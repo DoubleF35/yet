@@ -259,12 +259,22 @@ export default {
     nomeRipiego: 'YET member',
     tuoProfilo: 'Your profile',
     organizza: 'Organiser',
+    /* Un nome e non un verbo, per stare accanto a "Organiser" sulla tessera
+       vicina. La citta' resta come l'hanno scritta i profili, cioe' in
+       italiano: e' lo stesso testo che si legge sotto al nome. */
+    organizzaCitta: '{citta} organiser',
     bioVuota: 'Bio coming soon - {nome} has not introduced themselves yet.',
     leggiProfilo: 'View profile',
     liveCaricamento: 'Loading the profiles.',
     liveErrore: 'The profiles could not be loaded.',
     liveCaricatoUno: '{n} profile loaded.',
     liveCaricatiTanti: '{n} profiles loaded.',
+    liveCittaUno: '{n} profile in {citta}.',
+    liveCittaTanti: '{n} profiles in {citta}.',
+    filtroTitolo: 'Filter by city',
+    filtroTutti: 'All',
+    filtroAriaUno: '{citta} {n} profile',
+    filtroAriaTanti: '{citta} {n} profiles',
     spentoTitolo: 'List not available',
     spentoTesto:
       'This copy of the site has no Firebase keys configured, so the profiles cannot be loaded. The rest of the site works normally.',
@@ -276,7 +286,8 @@ export default {
     vuotoTesto:
       'Nobody has introduced themselves yet. You can be the first: join, sign in and write a couple of lines about what you are building.',
     chiOrganizza: 'Who runs it',
-    chiOrganizzaNota: 'They keep the community running and publish the news on the site.',
+    chiOrganizzaNota:
+      'They keep the community running, publish the news and organise the meetups in each city.',
     iMembri: 'The members',
     laCommunity: 'The community',
     profiloUno: 'profile',
@@ -621,7 +632,7 @@ export default {
 
     errori: {
       permessi:
-        'Firestore refused the write. Most likely your email is not in the firestore.rules allowlist: adding it to src/config/admins.js is not enough — that file only decides what is shown, the rules decide what can be written. Remember to publish the rules again after the change.',
+        'Firestore refused the write. Most likely your email is not in the firestore.rules allowlist: adding it to src/config/admins.js is not enough, that file only decides what is shown, the rules decide what can be written. Remember to publish the rules again after the change.',
       sessione: 'The session has expired. Sign out and back in, then try again.',
       rete: 'Firestore is not answering. Check the connection and try again.',
       sparita: 'The news item no longer exists: it may have been deleted by another admin.',

@@ -33,13 +33,7 @@
 }
 
 /* =========================================================================
-   2. GRIGLIA
-
-   minmax(min(100%, 15rem), 1fr): il min() interno è la parte che conta.
-   Senza, a 375px una traccia da 240px più i gap sfonderebbe il contenitore e
-   comparirebbe lo scroll orizzontale. Con auto-fill invece di auto-fit le
-   colonne restano larghe uguali anche quando i membri sono due: auto-fit le
-   allargherebbe a mezza pagina ciascuna.
+   2. CORPO DELLA PAGINA
    ====================================================================== */
 
 .body {
@@ -53,6 +47,106 @@
   color: var(--muted);
   margin-bottom: var(--space-5);
 }
+
+/* =========================================================================
+   FILTRI PER CITTA'
+
+   Una riga di interruttori sopra i due gruppi. Sostituisce l'idea di una
+   sezione per citta', che con tredici scritture distinte di `location` nel
+   database (otto delle quali con una persona sola) sarebbe costata piu' di
+   duemila pixel di sole intestazioni su telefono.
+
+   VANNO A CAPO, non scorrono in orizzontale. Uno scorrimento nasconde le
+   citta' che non entrano nella prima schermata, ed e' proprio la novita' che
+   si vuole far vedere; e un contenitore che scorre di lato dentro una pagina
+   che non deve scorrere di lato e' il difetto che questa vetrina ha gia'
+   avuto una volta, per lo scheletro di caricamento.
+   ====================================================================== */
+
+.filtri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: clamp(var(--space-6), 5vw, var(--space-7));
+}
+
+.filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  /* 44px pieni di altezza: sono uno accanto all'altro, cioe' il caso in cui
+     sbagliare tocco col pollice e' piu' facile. */
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--ink);
+
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+}
+
+.filtro:hover {
+  border-color: var(--ink);
+}
+
+.filtro:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* La citta' scelta: riempimento pieno e invertito, come l'hover dei bottoni
+   social e di "Condividi". NON e' una differenza di solo colore, ed e'
+   voluto: chi i colori non li distingue vede comunque un rettangolo scuro
+   fra rettangoli chiari, e "quale filtro e' attivo" resta leggibile.
+   Il selettore usa [aria-pressed] invece di una classe in piu' perche' lo
+   stato accessibile e lo stato visibile devono essere la stessa cosa: cosi'
+   non possono andare fuori sincrono. */
+.filtro[aria-pressed='true'] {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  cursor: default;
+}
+
+/* Il numero. Attenuato, ma sul filtro scelto va schiarito e non scurito: sul
+   fondo pieno un grigio scuro sparirebbe. */
+.filtroN {
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.filtro[aria-pressed='true'] .filtroN {
+  color: var(--bg);
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filtro {
+    transition: none;
+  }
+}
+
+/* =========================================================================
+   2. GRIGLIA
+
+   minmax(min(100%, 15rem), 1fr): il min() interno è la parte che conta.
+   Senza, a 375px una traccia da 240px più i gap sfonderebbe il contenitore e
+   comparirebbe lo scroll orizzontale. Con auto-fill invece di auto-fit le
+   colonne restano larghe uguali anche quando i membri sono due: auto-fit le
+   allargherebbe a mezza pagina ciascuna.
+   ====================================================================== */
 
 .grid {
   list-style: none;
@@ -235,6 +329,13 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--ls-wide);
   text-transform: uppercase;
+  /* Stretta, perche' due parole in maiuscolo spaziato NON stanno su una riga
+     in una tessera da 132px: "ORGANIZZA ROMA" ne chiede 138 e a 320px lo
+     spazio utile e' 96. Con l'interlinea del testo normale le due righe
+     sembrano un errore di impaginazione; strette sembrano quello che sono,
+     un'etichetta di due parole. Vale anche per "IL TUO PROFILO", che era
+     gia' su due righe prima che esistessero i referenti. */
+  line-height: 1.35;
 }
 
 .bio {

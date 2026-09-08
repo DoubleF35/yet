@@ -275,12 +275,23 @@ export default {
     nomeRipiego: 'Membro YET',
     tuoProfilo: 'Il tuo profilo',
     organizza: 'Organizza',
+    /* Il distintivo di chi e' referente di una citta'. La citta' arriva da
+       config/citta.js, dove e' scritta come si vuole leggerla. */
+    organizzaCitta: 'Organizza {citta}',
     bioVuota: 'Bio in arrivo - {nome} non si è ancora presentato.',
     leggiProfilo: 'Leggi il profilo',
     liveCaricamento: 'Caricamento dei profili in corso.',
     liveErrore: 'Caricamento dei profili non riuscito.',
     liveCaricatoUno: '{n} profilo caricato.',
     liveCaricatiTanti: '{n} profili caricati.',
+    /* Annunciati quando c'e' un filtro attivo: chi non vede lo schermo deve
+       sapere che le tessere sono diminuite perche' l'ha chiesto lui. */
+    liveCittaUno: '{n} profilo a {citta}.',
+    liveCittaTanti: '{n} profili a {citta}.',
+    filtroTitolo: 'Filtra per città',
+    filtroTutti: 'Tutti',
+    filtroAriaUno: '{citta} {n} profilo',
+    filtroAriaTanti: '{citta} {n} profili',
     spentoTitolo: 'Elenco non disponibile',
     spentoTesto:
       'Questa copia del sito non ha le chiavi di Firebase configurate, quindi i profili non possono essere caricati. Il resto del sito funziona normalmente.',
@@ -293,7 +304,8 @@ export default {
     vuotoTesto:
       'Nessuno si è ancora presentato. Puoi essere il primo: iscriviti, accedi e scrivi due righe su cosa stai costruendo.',
     chiOrganizza: 'Chi organizza',
-    chiOrganizzaNota: 'Tengono in piedi la community e pubblicano le notizie del sito.',
+    chiOrganizzaNota:
+      'Tengono in piedi la community, pubblicano le notizie e organizzano gli incontri nelle città.',
     iMembri: 'I membri',
     laCommunity: 'La community',
     profiloUno: 'profilo',
