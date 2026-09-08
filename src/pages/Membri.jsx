@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import Avatar from '../components/Avatar.jsx'
 import Reveal, { stagger } from '../components/Reveal.jsx'
@@ -9,6 +9,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
+import { cittaDelReferente, cittaValida, filtriCitta, membroInCitta } from '../lib/citta.js'
 import { listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
@@ -38,7 +39,41 @@ function sortMembers(list) {
   })
 }
 
-function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
+/**
+ * Cosa dice il distintivo di chi organizza.
+ *
+ * La citta' vince su "Organizza": se un domani un admin diventasse anche
+ * referente di una citta', l'informazione precisa e' la citta'. Torna null
+ * per chi non organizza niente, cosi' la tessera non mostra un distintivo
+ * vuoto.
+ */
+function etichettaRuolo(membro, t) {
+  const citta = cittaDelReferente(membro)
+  if (citta) return t('vetrina.organizzaCitta', { citta })
+  if (membro?.role === 'admin') return t('vetrina.organizza')
+  return null
+}
+
+/**
+ * Il nome accessibile di un filtro: "Roma 3 profili".
+ *
+ * SERVE perche' senza il bottone contiene un testo e uno <span> attaccati, e
+ * uno screen reader li unisce senza spazio: annuncia "Roma3". Lo spazio si
+ * vede a schermo solo perche' e' un `gap` del flex, e un gap non e' testo.
+ *
+ * Il numero prende un'unita' anche a voce: "Roma 3" da solo non dice tre di
+ * cosa. Il nome comincia con l'etichetta visibile e la contiene per intero,
+ * come chiede la WCAG 2.5.3, cosi' chi comanda il sito a voce puo' dire
+ * quello che legge.
+ */
+function etichettaFiltro(etichetta, quanti, t) {
+  return t(quanti === 1 ? 'vetrina.filtroAriaUno' : 'vetrina.filtroAriaTanti', {
+    citta: etichetta,
+    n: quanti,
+  })
+}
+
+function MemberCard({ member, isMe, organizza = false, badge = null, revealDelay = 0 }) {
   const reactId = useId()
   const nameId = `${reactId}-name`
   const { t } = useI18n()
@@ -51,7 +86,7 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
     <li className={s.item}>
       <Reveal delay={revealDelay} className={s.reveal}>
       <article
-        className={[s.card, isMe && s.cardMe, isAdmin && s.cardAdmin].filter(Boolean).join(' ')}
+        className={[s.card, isMe && s.cardMe, organizza && s.cardAdmin].filter(Boolean).join(' ')}
         aria-labelledby={nameId}
       >
         <header className={s.head}>
@@ -77,11 +112,14 @@ function MemberCard({ member, isMe, isAdmin = false, revealDelay = 0 }) {
             </h2>
             {member.location ? <p className={s.place}>{member.location}</p> : null}
             {/* Un distintivo solo per tessera: "Il tuo profilo" ha la
-                precedenza perché è l'informazione che serve a te che guardi. */}
+                precedenza perché è l'informazione che serve a te che guardi.
+                Il testo dell'altro lo passa chi mette la tessera in pagina,
+                perché cambia: "Organizza" per chi tiene in piedi tutta la
+                community, "Organizza Roma" per chi è referente di una città. */}
             {isMe ? (
               <p className={s.badge}>{t('vetrina.tuoProfilo')}</p>
-            ) : isAdmin ? (
-              <p className={`${s.badge} ${s.badgeAdmin}`}>{t('vetrina.organizza')}</p>
+            ) : badge ? (
+              <p className={`${s.badge} ${s.badgeAdmin}`}>{badge}</p>
             ) : null}
           </div>
         </header>
@@ -220,23 +258,85 @@ export default function Membri() {
 
   const retry = useCallback(() => setAttempt((value) => value + 1), [])
 
-  /* Due elenchi invece di uno. Il campo `role` è scritto nel profilo ma
-     verificato dalle regole (vedi roleOk() in firestore.rules), quindi
-     fidarsene qui è legittimo: nessuno può auto-promuoversi.
-     Il fallback su 'member' copre i profili creati prima che il campo
-     esistesse, senza, finirebbero in un limbo e sparirebbero dalla pagina. */
-  const admins = members.filter((m) => m.role === 'admin')
-  const regulars = members.filter((m) => m.role !== 'admin')
+  /* Chi organizza, e tutti gli altri.
+
+     Il campo `role` è scritto nel profilo ma verificato dalle regole (vedi
+     roleOk() in firestore.rules), quindi fidarsene qui è legittimo: nessuno
+     può auto-promuoversi. Il fallback su 'member' copre i profili creati
+     prima che il campo esistesse, senza, finirebbero in un limbo e
+     sparirebbero dalla pagina.
+
+     I REFERENTI DI CITTA' stanno nello stesso gruppo ma NON sono admin: il
+     loro elenco vive in config/citta.js, cioè nel repo, e non concede
+     nessun permesso sul database. Il perché sta scritto là.
+
+     Gli admin prima, i referenti dopo, e due filter() invece di uno perché
+     filter() conserva l'ordine e `members` è già alfabetico: così dentro
+     ciascun gruppetto l'alfabeto resta, e in cima si legge chi tiene in
+     piedi tutta la community invece di chi capita di avere il nome più
+     avanti nell'alfabeto. */
+  const organizzatori = [
+    ...members.filter((m) => m.role === 'admin'),
+    ...members.filter((m) => m.role !== 'admin' && cittaDelReferente(m)),
+  ]
+  const altri = members.filter((m) => m.role !== 'admin' && !cittaDelReferente(m))
+
+  /* I filtri per città. L'elenco torna vuoto quando non ce n'è abbastanza da
+     distinguere: la soglia sta in lib/citta.js, qui basta guardare se c'è
+     qualcosa da disegnare. */
+  const filtri = useMemo(() => filtriCitta(members), [members])
+
+  /* La città scelta vive nell'INDIRIZZO e non in uno useState, così
+     /vetrina?citta=roma è un link che si può mandare a qualcuno. `replace`
+     nella scrittura: senza, ogni tocco su un filtro aggiungerebbe una voce
+     alla cronologia e il tasto Indietro, invece di uscire dalla vetrina,
+     ripercorrerebbe i filtri uno per uno.
+
+     La query si ricostruisce da quella attuale e non da zero: un domani un
+     altro parametro sulla stessa pagina non deve sparire perché qualcuno ha
+     toccato un filtro. */
+  const [searchParams, setSearchParams] = useSearchParams()
+  const cittaScelta = cittaValida(searchParams.get('citta'), filtri)
+  const etichettaScelta = filtri.find((f) => f.chiave === cittaScelta)?.etichetta ?? ''
+
+  const scegliCitta = useCallback(
+    (chiave) => {
+      const params = new URLSearchParams(searchParams)
+      if (chiave) params.set('citta', chiave)
+      else params.delete('citta')
+      setSearchParams(params, { replace: true })
+    },
+    [searchParams, setSearchParams],
+  )
+
+  /* Il filtro vale per ENTRAMBI i gruppi, non solo per i membri.
+     Se scegliendo Roma restasse a schermo tutto il gruppo "Chi organizza",
+     il numero scritto sul filtro (3) non corrisponderebbe alle tessere
+     visibili; e comunque la domanda a cui si vuole rispondere è "com'è YET a
+     Roma", organizzatore compreso. */
+  const organizzatoriVisibili = organizzatori.filter((m) => membroInCitta(m, cittaScelta))
+  const membriVisibili = altri.filter((m) => membroInCitta(m, cittaScelta))
 
   const count = members.length
+  const visibili = organizzatoriVisibili.length + membriVisibili.length
   const liveMessage =
     status === 'loading'
       ? t('vetrina.liveCaricamento')
       : status === 'error'
         ? t('vetrina.liveErrore')
-        : status === 'ready'
-          ? t(count === 1 ? 'vetrina.liveCaricatoUno' : 'vetrina.liveCaricatiTanti', { n: count })
-          : ''
+        : status !== 'ready'
+          ? ''
+          : /* Con un filtro attivo si annuncia il filtro: chi non vede lo
+               schermo deve sapere che le tessere sono diminuite perché l'ha
+               chiesto lui, non perché la pagina si è rotta. */
+            etichettaScelta
+            ? t(visibili === 1 ? 'vetrina.liveCittaUno' : 'vetrina.liveCittaTanti', {
+                n: visibili,
+                citta: etichettaScelta,
+              })
+            : t(count === 1 ? 'vetrina.liveCaricatoUno' : 'vetrina.liveCaricatiTanti', {
+                n: count,
+              })
 
   return (
     <>
@@ -324,13 +424,60 @@ export default function Membri() {
 
           {status === 'ready' && count > 0 && (
             <>
+              {/* --- I filtri per città ---------------------------------------
+
+                  Una riga di bottoni e non una sezione per città: nel
+                  database ci sono tredici scritture distinte di `location` e
+                  otto contengono una persona sola, quindi tredici sezioni
+                  vorrebbero dire più di duemila pixel di sole intestazioni su
+                  telefono, otto delle quali sopra un'unica tessera. Qui il
+                  costo è una riga, uguale con quattro città o con quindici.
+
+                  Compare solo se c'è più di una città da distinguere: la
+                  soglia sta in lib/citta.js, e con una sola questa riga
+                  offrirebbe di filtrare via il resto della community, che non
+                  serve a nessuno.
+
+                  Bottoni e non link: è un interruttore, e `aria-pressed` è
+                  esattamente ciò che uno screen reader deve sentire. Che
+                  l'indirizzo cambi lo stesso è un effetto voluto (il link a
+                  una città si può mandare a qualcuno), non il modo in cui si
+                  naviga. */}
+              {filtri.length > 0 && (
+                <div className={s.filtri} role="group" aria-label={t('vetrina.filtroTitolo')}>
+                  <button
+                    type="button"
+                    className={s.filtro}
+                    aria-pressed={cittaScelta === ''}
+                    aria-label={etichettaFiltro(t('vetrina.filtroTutti'), count, t)}
+                    onClick={() => scegliCitta('')}
+                  >
+                    {t('vetrina.filtroTutti')}
+                    <span className={s.filtroN}>{count}</span>
+                  </button>
+                  {filtri.map((filtro) => (
+                    <button
+                      key={filtro.chiave}
+                      type="button"
+                      className={s.filtro}
+                      aria-pressed={cittaScelta === filtro.chiave}
+                      aria-label={etichettaFiltro(filtro.etichetta, filtro.conteggio, t)}
+                      onClick={() => scegliCitta(filtro.chiave)}
+                    >
+                      {filtro.etichetta}
+                      <span className={s.filtroN}>{filtro.conteggio}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* --- Chi organizza -------------------------------------------
                   Compare solo se c'è davvero qualcuno: un'intestazione sopra
                   una griglia vuota fa sembrare che manchi del contenuto.
                   Va per prima perché è la domanda che si fa chi arriva da
                   fuori, "chi c'è dietro?", prima ancora di sfogliare i
                   membri. */}
-              {admins.length > 0 && (
+              {organizzatoriVisibili.length > 0 && (
                 <section className={s.group} aria-labelledby="chi-organizza">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="chi-organizza">
@@ -339,13 +486,14 @@ export default function Membri() {
                     <p className={s.groupNote}>{t('vetrina.chiOrganizzaNota')}</p>
                   </div>
                   <ul className={s.grid}>
-                    {admins.map((member, i) => (
+                    {organizzatoriVisibili.map((member, i) => (
                       <MemberCard
                         key={member.uid}
                         revealDelay={stagger(i)}
                         member={member}
                         isMe={!!user && user.uid === member.uid}
-                        isAdmin
+                        organizza
+                        badge={etichettaRuolo(member, t)}
                       />
                     ))}
                   </ul>
@@ -353,19 +501,23 @@ export default function Membri() {
               )}
 
               {/* --- Tutti gli altri ---------------------------------------- */}
-              {regulars.length > 0 && (
+              {membriVisibili.length > 0 && (
                 <section className={s.group} aria-labelledby="i-membri">
                   <div className={s.groupHead}>
                     <h2 className={s.groupTitle} id="i-membri">
-                      {admins.length > 0 ? t('vetrina.iMembri') : t('vetrina.laCommunity')}
+                      {organizzatoriVisibili.length > 0
+                        ? t('vetrina.iMembri')
+                        : t('vetrina.laCommunity')}
                     </h2>
                     <p className={s.groupNote}>
-                      {regulars.length}{' '}
-                      {regulars.length === 1 ? t('vetrina.profiloUno') : t('vetrina.profiliTanti')}
+                      {membriVisibili.length}{' '}
+                      {membriVisibili.length === 1
+                        ? t('vetrina.profiloUno')
+                        : t('vetrina.profiliTanti')}
                     </p>
                   </div>
                   <ul className={s.grid}>
-                    {regulars.map((member, i) => (
+                    {membriVisibili.map((member, i) => (
                       <MemberCard
                         key={member.uid}
                         revealDelay={stagger(i)}

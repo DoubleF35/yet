@@ -15,19 +15,20 @@ sta nel piano gratuito Spark di Firebase.
 2. [Installazione](#installazione)
 3. [Configurare Firebase e il file `.env`](#configurare-firebase-e-il-file-env)
 4. [Impostare i 4 admin](#impostare-i-4-admin)
-5. [Pubblicare le regole di sicurezza](#pubblicare-le-regole-di-sicurezza)
-6. [Deploy su GitHub Pages](#deploy-su-github-pages)
-7. [Il tema scuro, e la regola di contrasto che sorprende](#il-tema-scuro-e-la-regola-di-contrasto-che-sorprende)
-8. [Gli incontri, e perche' non sono notizie](#gli-incontri-e-perche-non-sono-notizie)
-9. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
-10. [Allegati alle notizie](#allegati-alle-notizie)
-11. [Iscrizione con approvazione](#iscrizione-con-approvazione)
-12. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-13. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-14. [Le due lingue](#le-due-lingue)
-15. [Struttura delle cartelle](#struttura-delle-cartelle)
-16. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-17. [Problemi comuni](#problemi-comuni)
+5. [I referenti di città](#i-referenti-di-città)
+6. [Pubblicare le regole di sicurezza](#pubblicare-le-regole-di-sicurezza)
+7. [Deploy su GitHub Pages](#deploy-su-github-pages)
+8. [Il tema scuro, e la regola di contrasto che sorprende](#il-tema-scuro-e-la-regola-di-contrasto-che-sorprende)
+9. [Gli incontri, e perche' non sono notizie](#gli-incontri-e-perche-non-sono-notizie)
+10. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
+11. [Allegati alle notizie](#allegati-alle-notizie)
+12. [Iscrizione con approvazione](#iscrizione-con-approvazione)
+13. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+14. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+15. [Le due lingue](#le-due-lingue)
+16. [Struttura delle cartelle](#struttura-delle-cartelle)
+17. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+18. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -247,6 +248,98 @@ function adminEmails() {
 Usa le email **degli account Google con cui quelle persone fanno login**, non un
 alias e non l'indirizzo aziendale se poi accedono con un altro. Vanno scritte in
 minuscolo (il confronto normalizza comunque, ma tenerle pulite aiuta).
+
+---
+
+## I referenti di città
+
+YET è partita da Torino, e i primi profili da un'altra città sono arrivati da
+Roma. Un **referente di città** è chi organizza YET dove sta lui: compare nel
+gruppo «Chi organizza» della vetrina con il distintivo **«Organizza Roma»**
+invece del semplice «Organizza» dei quattro admin.
+
+L'elenco è uno, in [`src/config/citta.js`](src/config/citta.js):
+
+```js
+export const REFERENTI = [
+  // Daniele Colasanti, referente di Roma.
+  { uid: 'NpHMVMQBDVMp99nL0rhQfdWqbCw2', citta: 'Roma' },
+]
+```
+
+L'uid si legge dalla console Firebase (**Firestore Database → users**) oppure
+dalla barra degli indirizzi aprendo il profilo con l'identificativo interno. La
+città scritta qui è anche l'etichetta che si vede a schermo, quindi va scritta
+come si vuole leggerla: `Roma`, non `roma`.
+
+### Un referente NON è un admin, ed è il punto
+
+> [!IMPORTANT]
+> Questo file **non concede alcun permesso**. Chi è elencato qui resta
+> `role: 'member'` nel database e non può scrivere niente più di prima: non
+> approva iscrizioni, non pubblica notizie, non gestisce eventi né sponsor, e
+> non vede `sponsorRiservato`, cioè quanto paga ogni sponsor.
+>
+> A differenza di `src/config/admins.js`, **non ha una copia dentro
+> `firestore.rules` e non deve averla.** È un'etichetta.
+
+Le altre due strade erano peggiori, e vale la pena sapere perché:
+
+- **Un campo `referente` sul profilo.** Le regole lasciano scrivere a ciascuno
+  il proprio documento, e `usersKeysOk()` usa `hasOnly()` proprio per impedire
+  campi inventati. Aggiungere `referente` a quella lista vorrebbe dire che
+  chiunque può nominarsi referente da solo, perché il documento lo scrive lui.
+  Guardarlo con una regola si scontrerebbe poi con i salvataggi interi che manda
+  la pagina Join: è lo stesso inciampo già pagato con `status`.
+- **La allowlist degli admin.** Dà tutto insieme, comprese le cifre degli
+  sponsor. Un referente di città non ha bisogno di niente di tutto questo.
+
+Il prezzo di questa scelta è che aggiungere un referente richiede una modifica
+al repo e una pubblicazione, non un clic nel pannello. Con due città è il
+compromesso giusto; se un giorno diventano dieci, il posto dove spostarlo è una
+collection `citta/{slug}` scrivibile ai soli admin, con la sua regola.
+
+### I filtri per città nella vetrina
+
+Sopra i due gruppi della vetrina c'è una riga di filtri: `TUTTI 32 · TORINO 7 ·
+ROMA 3 · GENOVA 2 · MILANO 2`. Il filtro vale per **entrambi** i gruppi, così il
+numero scritto sul filtro corrisponde alle tessere che si vedono, e scegliendo
+Roma si vede il referente insieme ai membri romani.
+
+La città sta nell'indirizzo: **`/vetrina?citta=roma`** è un link che si può
+mandare in giro.
+
+**Una città diventa un filtro solo se ha un referente oppure almeno 2 profili**
+(`MINIMO_PER_FILTRO` in [`src/lib/citta.js`](src/lib/citta.js)). Non è
+pignoleria: nel database ci sono 13 scritture distinte di `location` e otto
+contengono una persona sola. Senza la soglia ci sarebbero tredici filtri, otto
+dei quali per una tessera; e una sezione per città sarebbe costata oltre
+duemila pixel di sole intestazioni su telefono. Chi resta fuori dalla soglia non
+sparisce: si vede sotto `TUTTI`, che è la vista predefinita. La riga stessa
+compare solo se ci sono almeno due città da distinguere.
+
+`location` è **testo libero e facoltativo**, e infatti oggi un profilo su tre non
+lo ha e uno contiene `londra` in minuscolo. Il raggruppamento normalizza (via
+`normalizza()` in [`src/lib/slug.js`](src/lib/slug.js), la stessa funzione che
+produce gli indirizzi dei profili), quindi `Roma`, `roma` e ` ROMA ` sono la
+stessa città. L'etichetta è la forma più frequente fra quelle scritte dai
+membri, con la maiuscola e l'accento preferiti a pari frequenza; quella nel
+config vince su tutte.
+
+Un `?citta=` che non corrisponde a nessun filtro ricade su `TUTTI` invece di
+mostrare una griglia vuota, che sembrerebbe un guasto.
+
+### Il nome che si legge sulla tessera
+
+Il distintivo dice il nome **del profilo**, non quello scritto in
+`config/citta.js`, dove sta soltanto nei commenti: due nomi per la stessa
+persona possono divergere, uno no.
+
+Conseguenza pratica: se nel profilo c'è scritto `Daniele`, la tessera dice
+`Daniele` e l'indirizzo è `/vetrina/daniele`. Per avere `Daniele Colasanti` e
+`/vetrina/danielecolasanti` **deve cambiarlo lui** dalla pagina Join: le regole
+limitano gli admin a `status` e `updatedAt` sui profili altrui, quindi nemmeno un
+admin può scrivere il nome di un altro.
 
 ---
 
@@ -945,11 +1038,12 @@ yet/
 │   └── icon-32/180/512.png    favicon
 │
 ├── src/
-│   ├── main.jsx               entry: HashRouter + AuthProvider
+│   ├── main.jsx               entry: BrowserRouter + AuthProvider
 │   ├── App.jsx                tutte le rotte, in un posto solo
 │   │
 │   ├── config/
 │   │   ├── admins.js          allowlist admin (SOLO per la UI)
+│   │   ├── citta.js           uid -> citta dei referenti (NON da' permessi)
 │   │   ├── socials.js         canali, mail e testi della community
 │   │   └── legal.js           titolare del trattamento e data delle informative
 │   │
@@ -963,6 +1057,10 @@ yet/
 │   │   ├── i18n.jsx           I18nProvider + useI18n(): t(), lang, setLang
 │   │   ├── socials.jsx        i canali, con le etichette tradotte
 │   │   ├── members.jsx        quel che sanno in comune vetrina e profilo
+│   │   ├── slug.js            nome -> indirizzo, e la normalizzazione
+│   │   │                      condivisa (la usa anche prerender.mjs)
+│   │   ├── citta.js           raggruppamento per citta e filtri della vetrina
+│   │   ├── share.js           copia negli appunti e foglio di condivisione
 │   │   └── db.js              tutte le query Firestore, in un posto solo
 │   │
 │   ├── components/            Navbar, Layout, Footer, Avatar, Skeleton,
@@ -1007,15 +1105,21 @@ Due regole che tengono in piedi il resto:
 Dove la richiesta lasciava spazio, ho scelto la strada più semplice. Eccole
 tutte, con il perché e come cambiarle.
 
-### 1. `HashRouter`, quindi gli URL hanno il `#`
+### 1. `BrowserRouter` più una pagina HTML per ogni rotta
 
-GitHub Pages serve file statici e non sa riscrivere `/vetrina` su `index.html`:
-con un router normale, ricaricare la pagina su una rotta profonda darebbe 404.
-Con l'hash il server vede sempre e solo `/`.
+Gli indirizzi sono veri: `yetcommunity.it/vetrina`, non `…/#/vetrina`.
 
-Il prezzo sono URL come `…/yet/#/vetrina`. Se un domani metti un dominio tuo con
-un hosting che sa fare i rewrite, si passa a `BrowserRouter` cambiando una riga
-in `src/main.jsx`.
+Non è gratis, perché GitHub Pages serve file statici e non sa riscrivere
+`/vetrina` su `index.html`: con il solo `BrowserRouter`, ricaricare la pagina su
+una rotta profonda darebbe 404. La soluzione è che
+[`scripts/prerender.mjs`](scripts/prerender.mjs) **genera un file HTML per ogni
+rotta e per ogni membro** durante il build, più un `404.html` che recupera i
+casi rimasti fuori. I dettagli stanno in
+[Perché gli indirizzi veri funzionano](#5-perché-gli-indirizzi-veri-funzionano-e-cosa-succede-a-un-membro-nuovo).
+
+Il prezzo è che un profilo approvato **dopo** l'ultima pubblicazione non ha
+ancora la sua pagina: arriva dal recupero di `404.html`, che funziona ma non
+porta il titolo giusto nella scheda del browser finché non si ri-pubblica.
 
 ### 2. Il video è ritagliato in CSS, non ri-codificato
 
