@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import Avatar from '../components/Avatar.jsx'
@@ -7,7 +7,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { formatDate, getMemberProfile, listUsers } from '../lib/db.js'
-import { useI18n } from '../lib/i18n.jsx'
+import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 import { findMemberByKey, memberLinks, memberName, memberPath } from '../lib/members.jsx'
 import { condividi } from '../lib/share.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
@@ -125,6 +125,12 @@ export default function Profilo() {
   const [membro, setMembro] = useState(null)
   const [errore, setErrore] = useState(null)
   const [esitoCondivisione, setEsitoCondivisione] = useState(null)
+  /* Il contatore dei tentativi: cambiarlo rifa' l'effetto di caricamento.
+     Serve perche' l'errore piu' probabile su questa pagina e' un blocco del
+     browser verso i domini di Google, e in quel caso "Torna alla vetrina"
+     porta su una pagina che fallira' allo stesso modo: l'unica cosa utile da
+     offrire e' riprovare dopo aver toccato l'impostazione. */
+  const [tentativo, setTentativo] = useState(0)
 
   /* `chiave` nelle dipendenze: senza, passando da un profilo all'altro senza
      ricaricare la pagina (succede se un domani due profili si linkano fra
@@ -158,7 +164,9 @@ export default function Profilo() {
     return () => {
       vivo = false
     }
-  }, [chiave, configured])
+  }, [chiave, configured, tentativo])
+
+  const riprova = useCallback(() => setTentativo((n) => n + 1), [])
 
   /* Il titolo della scheda.
      Il guscio generato dal build lo porta gia' giusto per chi apre il link da
@@ -202,9 +210,15 @@ export default function Profilo() {
     return (
       <section className={s.page}>
         <div className="container-narrow">
+          {/* messaggioErrore e non errore.message: gli errori che nascono
+              dentro lib/ portano con se' la CHIAVE della frase da mostrare
+              (vedi esigiRisposta in lib/db.js), e stampare `message` grezzo
+              metteva a schermo testo scritto per chi programma, tipo
+              "[YET] Firestore non raggiungibile". */}
           <ErrorState
             title={t('profilo.erroreTitolo')}
-            message={errore?.message || t('profilo.erroreTesto')}
+            message={messaggioErrore(t, errore, 'profilo.erroreTesto')}
+            onRetry={riprova}
           />
           <Link className={s.back} to="/vetrina">
             {t('profilo.tornaVetrina')}

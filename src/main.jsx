@@ -6,15 +6,20 @@ import App from './App.jsx'
 import { AuthProvider } from './lib/auth.jsx'
 import { I18nProvider } from './lib/i18n.jsx'
 
-/* Inter, servito dal nostro dominio invece che dal CDN di Google.
-   Solo il sottoinsieme latino e solo i cinque pesi che il tema usa davvero:
-   importare tutto vorrebbe dire spedire cirillico, greco e vietnamita in nove
-   pesi a gente che legge italiano. Il perché non-tecnico sta in index.html. */
-import '@fontsource/inter/latin-400.css'
-import '@fontsource/inter/latin-500.css'
-import '@fontsource/inter/latin-600.css'
-import '@fontsource/inter/latin-700.css'
-import '@fontsource/inter/latin-800.css'
+/* Schibsted Grotesk, servita dal nostro dominio invece che dal CDN di Google.
+
+   PERCHE' NON PIU' INTER. Inter non ha niente che non va, ed e' il motivo del
+   problema: e' il carattere piu' usato del web, quindi non dice niente di noi.
+   Schibsted Grotesk ha piu' carattere alle dimensioni grandi, dove vive il
+   titolo dell'apertura, e resta neutra nel corpo del testo.
+
+   E' un font VARIABILE, e la differenza e' misurabile: un file da 48 kB con
+   tutti i pesi da 400 a 900 al posto di cinque file Inter da 120 kB in tutto.
+   Meno byte e piu' pesi disponibili, non un compromesso fra i due.
+
+   Solo `wght`, senza il corsivo: il sito non ne usa nemmeno uno, e sarebbero
+   altri 52 kB. Il sottoinsieme lo sceglie il browser dalla unicode-range. */
+import '@fontsource-variable/schibsted-grotesk/wght.css'
 
 import './styles/theme.css'
 import './styles/global.css'

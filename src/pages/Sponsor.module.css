@@ -190,7 +190,7 @@ a.link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-o
   font-size: var(--step-0);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: var(--radius);
   /* Una mail lunga non deve sfondare il bottone su schermo stretto. */
   overflow-wrap: anywhere;
   text-align: center;

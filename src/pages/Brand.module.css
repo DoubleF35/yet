@@ -123,7 +123,7 @@
   text-decoration: none;
   color: var(--ink);
   border: var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius);
   transition: background-color var(--transition), color var(--transition);
 }
 

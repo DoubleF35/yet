@@ -9,6 +9,7 @@ import Home from './pages/Home.jsx'
 import Vetrina from './pages/Membri.jsx'
 import Profilo from './pages/Profilo.jsx'
 import Eventi from './pages/Eventi.jsx'
+import Evento from './pages/Evento.jsx'
 import Brand from './pages/Brand.jsx'
 import Sponsor from './pages/Sponsor.jsx'
 import Join from './pages/Join.jsx'
@@ -35,6 +36,12 @@ export default function App() {
               decidono le regole del database, non questa rotta. */}
           <Route path="/vetrina/:uid" element={<Profilo />} />
           <Route path="/eventi" element={<Eventi />} />
+          {/* Il resoconto di una serata gia' fatta, con le sue foto.
+              Annidata sotto /eventi per la stessa ragione per cui il profilo
+              sta sotto /vetrina: l'indirizzo dice da dove si arriva.
+              Lo slug e' il nome della cartella delle foto, e le due cose
+              devono restare uguali: vedi src/config/eventi.js. */}
+          <Route path="/eventi/:slug" element={<Evento />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/sponsor" element={<Sponsor />} />
 

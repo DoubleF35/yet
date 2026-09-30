@@ -9,9 +9,24 @@
    Se un valore non esiste come token, si aggiunge qui e si documenta:
    non si scrive #qualcosa dentro un modulo.
 
-   NIENTE ombre e NIENTE gradienti: non esistono nemmeno come variabili,
-   proprio per togliere la tentazione. La profondità la fanno i bordi netti
-   e lo spazio bianco.
+   OMBRE, GRADIENTI E RAGGI: la regola è CAMBIATA, ed è scritto qui perché
+   prima questo file li vietava.
+
+   Il divieto aveva senso finché il sito era fatto di solo testo: senza
+   immagini, i bordi netti e lo spazio bianco bastano, e anzi tengono tutto
+   più nitido. Ora le fotografie degli eventi sono il contenuto principale, e
+   su una fotografia quelle regole si rivoltano: un filetto da 1px attorno a
+   uno scatto lo fa sembrare un segnaposto invece che una stampa, e senza
+   nessun distacco dal fondo la pagina torna piatta.
+
+   C'era poi una contraddizione già in corso, che il divieto non impediva:
+   --radius valeva 0, ma sei moduli scrivevano border-radius: 999px a mano per
+   i bottoni. Spigolo vivo sulle schede e pillola sui bottoni sono due epoche
+   diverse nella stessa schermata. Ora esiste una scala, e la pillola è un
+   gradino di quella scala invece che un'eccezione scritta a mano.
+
+   Resta in piedi il principio: niente valori inventati dentro i moduli. Se
+   serve un raggio o un'ombra, si prende da qui.
    ========================================================================= */
 
 :root {
@@ -33,9 +48,11 @@
 
   /* Superfici.
      Su fondo scuro le card si staccano andando verso l'ALTO, non verso il
-     basso: schiarire e' l'unico modo di suggerire rilievo senza usare ombre,
-     che qui non esistono. --surface-sunken e' piu' scuro del fondo e serve
-     agli incavi (skeleton, campi disabilitati, barre di progresso). */
+     basso: schiarire resta il gesto principale, e l'ombra (vedi --shadow-*)
+     lavora insieme a questo, non al posto di questo. Un'ombra nera sotto una
+     scheda su fondo gia' nero non si vedrebbe.
+     --surface-sunken e' piu' scuro del fondo e serve agli incavi (skeleton,
+     campi disabilitati, barre di progresso). */
   --surface: #1e1b18;
   --surface-sunken: #0d0c0a;
 
@@ -89,15 +106,16 @@
   /* -----------------------------------------------------------------------
      2. TIPOGRAFIA
 
-     Inter davanti, poi lo stack di sistema completo. Il fallback conta:
-     se Google Fonts non risponde (rete lenta, blocco privacy, offline) il
-     sito deve restare leggibile e con metriche simili, non cadere su Times.
+     Schibsted Grotesk davanti, poi lo stack di sistema completo. Il fallback
+     conta: il font lo serviamo noi, ma su rete lenta arriva comunque dopo il
+     testo, e in quel mezzo secondo il sito deve restare leggibile e con
+     metriche simili, non cadere su Times.
      --------------------------------------------------------------------- */
 
   --font-sans:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Noto Sans',
-    'Liberation Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+    'Schibsted Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Helvetica Neue', 'Noto Sans', 'Liberation Sans', Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
   /* Scala fluida.
      Ogni step è interpolato linearmente fra 375px (mobile piccolo) e 1440px
@@ -127,8 +145,13 @@
   --step-5: clamp(2.125rem, 1.729rem + 1.69vw, 3.25rem);
   --step-6: clamp(2.5rem, 1.62rem + 3.756vw, 5rem);
 
-  /* Pesi. Inter è caricata con 400/500/600/700/800: non usare altri valori,
-     verrebbero sintetizzati dal browser e il risultato è brutto. */
+  /* Pesi. Il font è VARIABILE, quindi qualsiasi valore fra 400 e 900 è vero
+     e non sintetizzato: al contrario di prima, non c'è una lista chiusa da
+     rispettare. Questi cinque restano come vocabolario condiviso, così i
+     moduli non inventano un 630 che nessun altro usa.
+
+     Sotto il 400 non si scende: il file parte da lì e un 300 verrebbe
+     assottigliato dal browser, che è proprio il difetto che si voleva evitare. */
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
@@ -142,8 +165,9 @@
   --lh-base: 1.6;
   --lh-relaxed: 1.75;
 
-  /* Spaziatura fra le lettere. Inter a dimensioni grandi ha bisogno di essere
-     stretta per sembrare compatta; le label maiuscole invece vanno aperte. */
+  /* Spaziatura fra le lettere. Come Inter, anche Schibsted Grotesk a
+     dimensioni grandi ha bisogno di essere stretta per sembrare compatta; le
+     label maiuscole invece vanno aperte. */
   --ls-display: -0.03em;
   --ls-heading: -0.015em;
   --ls-base: 0;
@@ -193,9 +217,51 @@
      contenuto sotto, e lo scroll-padding-top su <html> (vedi global.css). */
   --nav-h: clamp(3.5rem, 3.148rem + 1.502vw, 4.5rem); /* 56 -> 72px */
 
-  /* Zero, esplicito. È un token e non un'omissione: chi cerca un raggio lo
-     trova qui e vede che vale 0. Lo stile è a spigolo vivo. */
-  --radius: 0;
+  /* La scala dei raggi.
+
+     --radius è il gradino ordinario ed è quello che i 25 punti che già lo
+     usavano si ritrovano addosso: valeva 0, ora vale 10px. È stato scelto
+     misurando sull'elemento più piccolo che lo consuma, l'avatar da 48px:
+     sopra i 12px inizia a sembrare un ovale schiacciato invece che un
+     quadrato ammorbidito.
+
+     --radius-pill esiste per non far più scrivere 999px a mano. Va SOLO sulle
+     etichette e sui contatori, mai sui bottoni: la pillola su un bottone è
+     esattamente il dettaglio che faceva sembrare il sito vecchio. */
+  --radius-xs: 6px; /* controlli minuti, segni di stato */
+  --radius: 10px; /* il gradino ordinario: schede, campi, avatar */
+  --radius-lg: 16px; /* fotografie e schede grandi */
+  --radius-xl: 22px; /* pannelli a tutta larghezza */
+  --radius-pill: 999px; /* etichette e contatori, non bottoni */
+
+  /* Le ombre.
+
+     Su fondo scuro un'ombra nera sotto una scheda non si vede: il fondo è già
+     scuro. Quella che si vede è la combinazione di DUE cose, ed è per questo
+     che non basta l'ombra da sola: la superficie che si schiarisce (--surface)
+     e un alone stretto che stacca il bordo inferiore.
+
+     Lo spread NEGATIVO è il dettaglio che distingue un'ombra del 2026 da una
+     del 2012: l'ombra si stringe rispetto all'elemento invece di allargarsi,
+     quindi si vede sotto e non intorno, come farebbe una luce dall'alto. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2:
+    0 8px 18px -10px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.35);
+  --shadow-3:
+    0 18px 36px -14px rgba(0, 0, 0, 0.65), 0 3px 10px -3px rgba(0, 0, 0, 0.4);
+
+  /* Il velo sopra una fotografia, quando ci va del testo.
+
+     Non è decorazione: senza, il testo bianco su una foto chiara diventa
+     illeggibile, e su una foto scura quello scuro sparisce. Le tre tappe
+     servono a tenere il fondo leggibile SENZA spegnere la parte alta della
+     foto, che è quella che si guarda. */
+  --scrim-foto: linear-gradient(
+    to top,
+    rgba(20, 18, 15, 0.97) 6%,
+    rgba(20, 18, 15, 0.74) 44%,
+    rgba(20, 18, 15, 0.26) 100%
+  );
 
   /* Rientri di sicurezza dello schermo: la tacca e la barra gesti.
      index.html dichiara `viewport-fit=cover`, quindi la pagina arriva fino al

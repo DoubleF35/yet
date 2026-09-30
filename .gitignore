@@ -44,3 +44,14 @@ backups/
 *serviceaccount*.json
 *service-account*.json
 firebase-adminsdk-*.json
+
+# --- foto degli eventi -------------------------------------------------
+# Gli scatti originali NON entrano nel repo: un JPEG da fotocamera pesa
+# 4-8 MB e git non dimentica, resterebbero nella storia per sempre anche
+# cancellandoli dopo. `npm run foto` ne ricava le WebP in public/eventi/,
+# che pesano un ventesimo e QUELLE si committano.
+# Il pattern e' foto-originali/* e non foto-originali/: git non rientra in una
+# cartella gia' scartata, quindi con la seconda forma la riga di eccezione qui
+# sotto non avrebbe alcun effetto e LEGGIMI.txt resterebbe invisibile.
+foto-originali/*
+!foto-originali/LEGGIMI.txt

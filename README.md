@@ -20,15 +20,16 @@ sta nel piano gratuito Spark di Firebase.
 7. [Deploy su GitHub Pages](#deploy-su-github-pages)
 8. [Il tema scuro, e la regola di contrasto che sorprende](#il-tema-scuro-e-la-regola-di-contrasto-che-sorprende)
 9. [Gli incontri, e perche' non sono notizie](#gli-incontri-e-perche-non-sono-notizie)
-10. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
-11. [Allegati alle notizie](#allegati-alle-notizie)
-12. [Iscrizione con approvazione](#iscrizione-con-approvazione)
-13. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-14. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-15. [Le due lingue](#le-due-lingue)
-16. [Struttura delle cartelle](#struttura-delle-cartelle)
-17. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-18. [Problemi comuni](#problemi-comuni)
+10. [Le foto degli eventi](#le-foto-degli-eventi)
+11. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
+12. [Allegati alle notizie](#allegati-alle-notizie)
+13. [Iscrizione con approvazione](#iscrizione-con-approvazione)
+14. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+15. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+16. [Le due lingue](#le-due-lingue)
+17. [Struttura delle cartelle](#struttura-delle-cartelle)
+18. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+19. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -40,6 +41,7 @@ sta nel piano gratuito Spark di Firebase.
 | `/home`     | Home     | Apertura fotografica, contatore dei membri, ultime notizie.             | no              |
 | `/vetrina`  | Vetrina  | Le persone di YET, a tessere con foto grande. (Si chiamava «Membri».)   | no              |
 | `/eventi`   | Eventi   | Gli incontri con data e luogo, poi le notizie.                          | no              |
+| `/eventi/<slug>` | Evento | Il resoconto di una serata gia' fatta, con le sue foto.            | no              |
 | `/join`     | Join     | Cos'e' YET; dopo il login, il form del proprio profilo.                 | per il form     |
 | `/contatti` | Contatti | Canali ufficiali e mail, presi da `src/config/socials.js`.              | no              |
 | `/brand`    | Brand    | Il kit di marca: logo, colori, tipografia, cosa non fare.               | no              |
@@ -602,6 +604,112 @@ comunque altro da mostrare.
 
 ---
 
+## Le foto degli eventi
+
+Una serata gia' fatta ha la sua pagina: `/eventi/<slug>`, con la copertina
+grande, i fatti in fila, il racconto e la galleria. E' la pagina che si
+condivide, ed e' la ragione per cui esiste tutto il resto di questa sezione: un
+club che ha fatto due serate e non ne mostra una foto sembra un club che le ha
+soltanto in programma.
+
+### Aggiungere le foto di una serata
+
+```bash
+mkdir -p foto-originali/torino-connect-vol1
+# copiaci dentro gli scatti
+npm run foto
+```
+
+Poi una voce in `src/config/eventi.js` con lo **stesso slug**, e i testi
+alternativi in `src/data/gallerie.json`. Fine.
+
+Tre convenzioni, tutte nel nome dei file:
+
+- il file che si chiama **`copertina`** diventa la foto grande in cima; se non
+  c'e', viene preso il primo in ordine alfabetico;
+- per decidere l'ordine della galleria si **numerano** i file: `01-`, `02-`;
+- il **nome della cartella e' l'indirizzo**. `torino-connect-vol1` diventa
+  `/eventi/torino-connect-vol1`, e una volta pubblicato non si cambia piu' o si
+  rompono i link gia' condivisi.
+
+### Cosa fa `npm run foto`
+
+Genera due misure in WebP per ogni scatto, 800 e 1600 px di lato lungo, piu'
+2400 per la sola copertina, e riscrive `src/data/gallerie.json`.
+
+Due misure e non una perche' con `srcset` il telefono scarica la 800 e il
+portatile la 1600: una misura sola vuol dire o spedire 1600 px a uno schermo da
+390, cioe' quattro volte i pixel che servono, o mostrare una foto sgranata sul
+desktop.
+
+Fa anche due cose in silenzio che vale la pena sapere:
+
+- **ruota** secondo l'orientamento EXIF, altrimenti le verticali scattate col
+  telefono escono coricate;
+- **butta via tutti i metadati**, e non e' estetica: le foto dei telefoni
+  contengono le coordinate GPS, e pubblicarle significherebbe mettere online
+  l'indirizzo esatto di un posto dove c'erano dei minorenni.
+
+### Perche' le foto stanno nel repo e non su Firestore
+
+Il sito ha gia' un modo di caricare immagini dal pannello: gli allegati alle
+notizie, salvati dentro Firestore come data URL. Per una galleria non regge, e
+sono numeri non opinioni:
+
+| | nel repo, via GitHub Pages | dentro Firestore |
+| --- | --- | --- |
+| peso per foto | 50-200 kB | 900 kB |
+| una pagina da 10 foto | ~500 kB (caricamento pigro) | 9 MB, tutti subito |
+| letture del database | zero | una per foto, a ogni visita |
+| tetto sul piano gratuito | nessuno in pratica | 1 GiB, cioe' ~1000 foto per sempre |
+
+Un evento completo pesa circa 2,5 MB nel repo. Venti serate l'anno fanno 50 MB:
+si sta larghi per anni.
+
+Il prezzo e' che le foto le carica **chi ha accesso al repo**, non un admin
+qualunque dal pannello. Per le gallerie e' un vantaggio: e' la selezione a
+farle sembrare professionali, e dieci foto scelte battono quaranta scattate col
+telefono.
+
+Gli **originali non entrano nel repo** (`foto-originali/` e' in `.gitignore`).
+Un JPEG da fotocamera pesa 4-8 MB e git non dimentica: resterebbero nella
+storia per sempre anche cancellandoli dopo.
+
+### Perche' il testo del resoconto sta in un file e non su Firestore
+
+`src/config/eventi.js`, accanto alle foto. Su Firestore resta l'elenco degli
+incontri, che serve ancora: e' da li' che escono i **prossimi**, che cambiano
+spesso e che gli admin devono poter aggiornare senza toccare il codice.
+
+Un resoconto e' un'altra cosa: e' archivio, non cambia piu', e tenerlo nel
+bundle significa che la pagina si disegna **prima che Firebase risponda**, che
+il prerender puo' scrivere il titolo dentro l'HTML (quindi l'anteprima su
+WhatsApp funziona), e che si vede anche quando il browser blocca Firestore
+(succede, vedi [Problemi comuni](#problemi-comuni)).
+
+Il legame fra un incontro e il suo resoconto e' il campo **`meetupId`**, cioe'
+l'identificativo del documento su Firestore. Per identificativo e non per
+titolo, perche' un titolo qualcuno lo corregge: e' successo davvero, su
+Firestore l'incontro di Torino si chiama ancora «YET - Contact Vol.1» con
+*Contact* al posto di *Connect*. Quando c'e' un resoconto, **il titolo giusto lo
+prende da li'**, non da Firestore.
+
+**La regola, per non ritrovarsi due verita' sullo stesso evento:** quando un
+incontro finisce e ha le foto, il resoconto diventa la versione buona e la
+scheda su Firestore va accorciata a due righe. Il testo lungo con la scaletta
+oraria («17:30 arrivo, 18:00 aperitivo») non serve piu' a nessuno una volta che
+la serata e' passata, e infatti l'elenco lo nasconde da solo quando trova un
+resoconto.
+
+### Le foto dei minorenni
+
+Il club va dai 16 ai 23 anni, quindi **alcuni sono minorenni**. Pubblicare foto
+in cui si riconoscono richiede il consenso di chi esercita la responsabilita'
+genitoriale. Serve una riga da spuntare all'iscrizione all'evento e un paragrafo
+nella pagina Privacy. Va fatto **prima** che le foto siano online, non dopo.
+
+---
+
 ## Il movimento, e le due regole che non si toccano
 
 Le animazioni sono poche di proposito: sono il punto in cui un sito scivola nel
@@ -1035,7 +1143,9 @@ yet/
 │   ├── hero.mp4               1280x720, 5,1 s, l'animazione della intro
 │   ├── hero-poster.jpg        960x720, fallback della intro
 │   ├── hands.png              162x291, le due lancette, elemento decorativo
-│   └── icon-32/180/512.png    favicon
+│   ├── icon-32/180/512.png    favicon
+│   └── eventi/<slug>/         le foto degli eventi, gia' ridotte in WebP:
+│                              le genera `npm run foto`, si committano
 │
 ├── src/
 │   ├── main.jsx               entry: BrowserRouter + AuthProvider
@@ -1044,8 +1154,13 @@ yet/
 │   ├── config/
 │   │   ├── admins.js          allowlist admin (SOLO per la UI)
 │   │   ├── citta.js           uid -> citta dei referenti (NON da' permessi)
+│   │   ├── eventi.js          i resoconti delle serate: testo e meetupId
 │   │   ├── socials.js         canali, mail e testi della community
 │   │   └── legal.js           titolare del trattamento e data delle informative
+│   │
+│   ├── data/
+│   │   └── gallerie.json      GENERATO da `npm run foto`: quali foto, che
+│   │                          misure, che rapporto. Va committato.
 │   │
 │   ├── i18n/
 │   │   ├── it.js              catalogo italiano: la lingua di riferimento
@@ -1064,19 +1179,24 @@ yet/
 │   │   └── db.js              tutte le query Firestore, in un posto solo
 │   │
 │   ├── components/            Navbar, Layout, Footer, Avatar, Skeleton,
-│   │                          LangSwitch, EmptyState, ErrorState,
+│   │                          LangSwitch, EmptyState, ErrorState, Galleria,
 │   │                          HandsDivider, RequireAdmin, ScrollToTop
 │   │
-│   ├── pages/                 Intro, Home, Membri, Profilo, Eventi, Join,
-│   │                          Contatti, Brand, Sponsor, Admin,
+│   ├── pages/                 Intro, Home, Membri, Profilo, Eventi, Evento,
+│   │                          Join, Contatti, Brand, Sponsor, Admin,
 │   │                          Privacy, Cookie
 │   │
 │   └── styles/
 │       ├── theme.css          TUTTI i token: colori, scala tipografica,
-│       │                      spazi, ritaglio del video. Si tocca solo qui.
+│       │                      spazi, raggi, ombre, ritaglio del video.
+│       │                      Si tocca solo qui.
 │       └── global.css         reset, tipografia di base, .container, focus
 │
+├── foto-originali/            gli scatti come escono dalla fotocamera.
+│                              NON entra nel repo (tranne LEGGIMI.txt).
+│
 ├── scripts/
+│   ├── foto.mjs               originali -> WebP + manifesto  (npm run foto)
 │   ├── backup.mjs             export di Firestore in JSON  (npm run backup)
 │   ├── restore.mjs            ripristino, dry-run di default (npm run restore)
 │   └── i18n-check.mjs         controlla che i due cataloghi combacino
@@ -1181,16 +1301,29 @@ dal logo. Lo usano `HandsDivider` (i divisori fra le sezioni) ed `EmptyState`.
 
 ### 5. Il font è impacchettato, non chiesto a Google
 
-Inter arriva da `@fontsource/inter`, importato in `src/main.jsx`, e viene
-servito dallo stesso dominio del sito. Non è una scelta di prestazioni: chiedere
-il font al CDN di Google significa che il browser di ogni visitatore consegna il
-proprio indirizzo IP a un server di Google prima ancora che la pagina sia
-disegnata, e senza poter dire di no. È il trasferimento che rende necessario il
-banner di consenso, toglierlo lo rende superfluo.
+Schibsted Grotesk arriva da `@fontsource-variable/schibsted-grotesk`, importata
+in `src/main.jsx`, e viene servita dallo stesso dominio del sito. Non è una
+scelta di prestazioni: chiedere il font al CDN di Google significa che il
+browser di ogni visitatore consegna il proprio indirizzo IP a un server di
+Google prima ancora che la pagina sia disegnata, e senza poter dire di no. È il
+trasferimento che rende necessario il banner di consenso, toglierlo lo rende
+superfluo.
 
-Sono importati solo il sottoinsieme latino e i cinque pesi che il tema usa
-davvero: spedire cirillico, greco e vietnamita in nove pesi a chi legge italiano
-sarebbe mezzo megabyte buttato.
+**Prima era Inter**, ed è cambiata per due ragioni. La prima è che Inter non ha
+niente che non va, ed è esattamente il problema: è il carattere più usato del
+web, quindi non dice niente di noi. La seconda è misurabile, ed è il motivo per
+cui non è un compromesso: il font è **variabile**, quindi è un file solo da
+**48 kB con tutti i pesi da 400 a 900**, al posto di cinque file Inter da 120 kB
+in tutto. Meno byte e più pesi disponibili.
+
+È importato solo l'asse `wght`, senza il corsivo: il sito non ne usa nemmeno
+uno e sarebbero altri 52 kB. Il sottoinsieme lo sceglie il browser dalla
+`unicode-range`, quindi a chi legge italiano non arriva il cirillico.
+
+Conseguenza pratica se tocchi il CSS: **non c'è più una lista chiusa di pesi**.
+Qualsiasi valore fra 400 e 900 è vero e non sintetizzato. I cinque token in
+`theme.css` restano come vocabolario condiviso, così nessuno inventa un 630 che
+poi usa da solo.
 
 ### 6. CSS Modules invece di CSS globale
 
@@ -1223,7 +1356,36 @@ viene bloccato dal browser o il file non carica, il poster con il bottone
 `admin1@yetcommunity.it` … `admin4@yetcommunity.it`, sia in `admins.js` sia in
 `firestore.rules`. Vanno sostituite, in entrambi i file.
 
-### 9. Altre scelte minori
+### 9. Raggi e ombre: una regola ribaltata di proposito
+
+`theme.css` **vietava** ombre, gradienti e raggi, e li vietava per iscritto:
+«non esistono nemmeno come variabili, proprio per togliere la tentazione».
+
+Il divieto aveva senso finché il sito era di solo testo. Senza immagini, i bordi
+netti e lo spazio bianco bastano e tengono tutto più nitido. Con le fotografie
+degli eventi come contenuto principale quelle regole si rivoltano: un filetto da
+1px attorno a uno scatto lo fa sembrare un segnaposto invece che una stampa.
+
+C'era anche una contraddizione già in corso, che il divieto non impediva:
+`--radius` valeva `0`, ma **sei moduli scrivevano `border-radius: 999px` a mano**
+sui bottoni. Spigolo vivo sulle schede e pillola sui bottoni sono due epoche
+diverse nella stessa schermata.
+
+Ora c'è una scala (`--radius-xs` … `--radius-pill`) e la pillola è un gradino di
+quella scala, **da usare solo sulle etichette e sui contatori, mai sui bottoni**.
+`--radius` è passato da `0` a `10px`, e quel valore è stato scelto misurando
+sull'elemento più piccolo che lo consuma, l'avatar da 48px: sopra i 12px inizia
+a sembrare un ovale schiacciato.
+
+Le ombre (`--shadow-1/2/3`) lavorano **insieme** alla superficie che si
+schiarisce, non al posto suo: su fondo scuro un'ombra nera sotto una scheda non
+si vedrebbe. Hanno spread negativo, cioè si stringono rispetto all'elemento
+invece di allargarsi.
+
+Per tornare indietro: `--radius: 0` e le tre ombre a `none` in `theme.css`, e il
+resto del sito si adegua da solo.
+
+### 10. Altre scelte minori
 
 - **`CONTACT_EMAIL` è `info.yetcommunity@gmail.com`** e i link social sono segnaposto
   credibili: sono tutti in `src/config/socials.js`, una riga per canale.
@@ -1310,6 +1472,52 @@ Manca `.env`, oppure una delle sei chiavi è vuota, oppure non hai riavviato
 Se l'errore parla di `createdAt`: stai provando a modificare un documento
 creato prima di un cambio di regole. È il vincolo che impedisce a chiunque di
 riscrivere la propria data di iscrizione per finire in cima all'elenco.
+
+### Una fila di errori CORS verso `firestore.googleapis.com`
+
+Sintomo in console, ripetuto ogni due secondi:
+
+```
+Bloccata richiesta multiorigine: … da https://firestore.googleapis.com/…/Listen/channel…
+Motivo: richiesta CORS non riuscita. Codice di stato: (null)
+@firebase/firestore: WebChannelConnection RPC 'Listen' stream … transport errored
+```
+
+**Non è il sito, ed è il «codice di stato (null)» che lo dice.** Una CORS
+configurata male risponde e non manda l'header; qui non arriva alcuna
+risposta, quindi la richiesta è stata fermata **prima di partire**, dentro il
+browser. Verifica in un minuto:
+
+```bash
+curl -s -i -X OPTIONS "https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel" -H "Origin: https://yetcommunity.it" -H "Access-Control-Request-Method: POST" | grep -i access-control
+```
+
+Se risponde `access-control-allow-origin: https://yetcommunity.it`, il server
+sta facendo la cosa giusta e la causa è locale:
+
+1. **La protezione antitracciamento del browser.** In Firefox in modalità
+   rigorosa blocca i domini di Google e partiziona lo spazio di
+   archiviazione. Si disattiva per il solo sito con lo scudo nella barra
+   degli indirizzi. Il messaggio `OpaqueResponseBlocking` nella stessa
+   console è un meccanismo di Firefox, quindi è un buon indizio.
+2. **Un'estensione**: uBlock Origin, Privacy Badger, NoScript. Prova in una
+   finestra anonima con le estensioni disattivate.
+3. **La rete**, se sei su una wifi aziendale o scolastica che filtra.
+
+> [!NOTE]
+> È la **stessa causa** dell'errore di accesso `Unable to process request due
+> to missing initial state … signInWithRedirect in a storage-partitioned
+> browser environment`. Quel messaggio nomina esplicitamente la
+> partizione dello spazio di archiviazione, che è cosa fa la protezione
+> antitracciamento rigorosa. Se vedi uno dei due, cerca l'altro.
+
+Il sito, dalla sua parte, **non finge più che vada tutto bene**: quando
+Firestore non risponde, la vetrina mostra un errore con «Riprova» invece di
+«Ancora nessun profilo». Vedi `esigiRisposta` in
+[`src/lib/db.js`](src/lib/db.js): `getDocs` non rifiuta quando non raggiunge
+il server, risolve con la cache locale, e su una prima visita la cache è
+vuota. Il risultato era una risposta valida e vuota, che la pagina leggeva
+come «non c'è nessuno».
 
 ---
 

@@ -1,0 +1,28 @@
+Qui dentro vanno gli SCATTI ORIGINALI degli eventi, una cartella per serata.
+
+  foto-originali/
+    torino-connect-vol1/      <- il nome della cartella e' anche l'indirizzo:
+      copertina-sala.jpg         il sito la pubblica su /eventi/torino-connect-vol1
+      01-speaker.jpg
+      02-pubblico.jpg
+      ...
+
+Poi:
+
+  npm run foto
+
+che ne ricava le versioni leggere in public/eventi/ e aggiorna
+src/data/gallerie.json. QUELLE si committano, queste no.
+
+DUE REGOLE
+
+1. Il file che si chiama "copertina" diventa la foto grande in cima alla
+   pagina. Se non c'e', viene usato il primo in ordine alfabetico. Per
+   decidere l'ordine della galleria, numera i file: 01-, 02-, 03-.
+
+2. Lo slug della cartella deve essere lo STESSO che sta in
+   src/config/eventi.js, altrimenti le foto non si attaccano a nessun evento.
+
+Questa cartella e' esclusa dal repo (vedi .gitignore): gli originali da
+fotocamera pesano troppo e git non li dimenticherebbe piu'. Tienili dove li
+tieni di solito.

@@ -116,7 +116,7 @@
   color: var(--on-coral);
   background-color: var(--coral-text);
   border: 2px solid var(--coral-text);
-  border-radius: 999px;
+  border-radius: var(--radius);
   transition: background-color var(--transition), border-color var(--transition),
     color var(--transition);
 }

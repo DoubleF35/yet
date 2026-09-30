@@ -403,7 +403,14 @@ export default function Membri() {
               message={
                 error?.code === 'permission-denied'
                   ? t('vetrina.errorePermessi')
-                  : t('vetrina.erroreGenerico')
+                  : /* 'unavailable' arriva da esigiRisposta in lib/db.js: la
+                       richiesta non e' partita, quasi sempre per un blocco
+                       dentro il browser. Merita un messaggio suo perche' e'
+                       l'unico caso in cui la persona che guarda puo' fare
+                       qualcosa per risolverlo. */
+                    error?.code === 'unavailable'
+                    ? t('vetrina.erroreRete')
+                    : t('vetrina.erroreGenerico')
               }
               onRetry={retry}
             />

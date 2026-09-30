@@ -154,6 +154,8 @@ export default {
       'The server refused the read: the Firestore rules have not been published yet, or the published ones are older than the site.',
     indiceMancante:
       'Firestore needs an index for this query. The browser console has a link that creates it in one click.',
+    reteFirestore:
+      'We cannot reach the database. It may be the connection, or something in the browser blocking it: an extension that stops Google domains, or tracking protection in strict mode.',
     serverGiu: 'We cannot reach the server. It is usually the connection: try again in a moment.',
     generico: 'Something went wrong. The details are in the browser console.',
 
@@ -211,6 +213,34 @@ export default {
   },
 
   /* --- deleting the profile ---------------------------------------------- */
+  /* --- galleria di una serata --------------------------------------------- */
+  galleria: {
+    titolo: 'Photos from the night',
+    unaFoto: '{n} photo',
+    tanteFoto: '{n} photos',
+    apri: 'Open photo {n} of {tot}',
+    apriConAlt: '{alt}. Photo {n} of {tot}',
+    senzaDidascalia: 'Photo {n} from the night',
+    posizione: '{n} of {tot}',
+    precedente: 'Previous photo',
+    successiva: 'Next photo',
+    chiudi: 'Close the enlarged view',
+  },
+
+  /* --- resoconto di una serata -------------------------------------------- */
+  evento: {
+    tuttiGliIncontri: 'All meetups',
+    presenti: 'Attended',
+    foto: 'Photos',
+    dove: 'Where',
+    ospiti: 'Speakers',
+    senzaFoto: 'The photos from this night are not up yet.',
+    mancanteTitolo: 'This meetup does not exist',
+    mancanteTesto:
+      'The address does not match any night. It might be an old link, or a typo.',
+    guarda: 'See the night',
+  },
+
   cancella: {
     titolo: 'Deleting your profile',
     testo:
@@ -282,6 +312,8 @@ export default {
     errorePermessi:
       'The server refused to return the list. Try again, and if it keeps happening write to us.',
     erroreGenerico: 'Something went wrong while reading the members list. It may be the connection.',
+    erroreRete:
+      'We cannot reach the profiles database. It may be the connection, or something in the browser blocking it: an extension that stops Google domains, or tracking protection in strict mode. If you have one of those on, turn it off for this site and try again.',
     vuotoTitolo: 'No profiles yet',
     vuotoTesto:
       'Nobody has introduced themselves yet. You can be the first: join, sign in and write a couple of lines about what you are building.',

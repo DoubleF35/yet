@@ -1,0 +1,222 @@
+/* =========================================================================
+   Le foto di una serata.
+
+   La griglia e' a 2 colonne sul telefono e a 4 da tablet in su, con il primo
+   scatto che ne occupa 2x2. Non e' decorazione: in una galleria di evento
+   c'e' quasi sempre UNA foto che racconta la serata, e le altre sono contorno.
+   Dare loro tutte la stessa misura le appiattisce a provini.
+   ========================================================================= */
+
+.wrap {
+  margin-block: var(--space-10) var(--space-11);
+}
+
+.intestazione {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
+}
+
+.titolo {
+  margin: 0;
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+}
+
+.conteggio {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-inline-start: auto;
+}
+
+.griglia {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (min-width: 48rem) {
+  .griglia {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cellaGrande {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+.cella {
+  min-inline-size: 0;
+}
+
+/* Il bottone E' la foto: nessun padding, nessun bordo suo, cosi' l'area
+   cliccabile coincide esattamente con quello che si vede. */
+.bottone {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: zoom-in;
+  /* Il fondo si vede nel mezzo secondo prima che la foto arrivi: senza, resta
+     un buco nero che sembra un errore di caricamento. */
+  background-color: var(--surface);
+  box-shadow: var(--shadow-2);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.bottone:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+
+.bottone:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* object-fit: cover ritaglia invece di deformare. Il rapporto della cella lo
+   decide la griglia, non la foto: scatti verticali e orizzontali devono stare
+   nella stessa fila senza scalini. */
+.foto {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+}
+
+.cellaGrande .foto {
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 48rem) {
+  .cellaGrande .foto {
+    /* Due colonne per due righe piu' il gap in mezzo: il quadrato perfetto
+       lascerebbe un dito di vuoto sotto. */
+    aspect-ratio: auto;
+  }
+}
+
+/* =========================================================================
+   L'ingrandimento.
+
+   E' un <dialog>: Esc, la trappola del focus e il ritorno del focus al
+   bottone che l'ha aperto li fa il browser. Qui c'e' solo l'aspetto.
+   ========================================================================= */
+
+.dialogo {
+  /* Il dialog nativo ha bordo, padding e margini suoi, tutti da azzerare. */
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  max-inline-size: min(96vw, 1200px);
+  max-block-size: 94vh;
+  overflow: visible;
+  color: var(--ink);
+}
+
+.dialogo::backdrop {
+  /* Piu' opaco di un overlay qualsiasi: qui sotto c'e' una pagina piena di
+     altre foto, e devono sparire davvero. */
+  background-color: rgba(13, 12, 10, 0.92);
+}
+
+.dialogoCorpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dialogoFoto {
+  display: block;
+  inline-size: auto;
+  block-size: auto;
+  max-inline-size: 100%;
+  /* La barra dei comandi e l'eventuale didascalia stanno sotto: se la foto
+     prendesse tutta l'altezza le spingerebbe fuori schermo. */
+  max-block-size: 78vh;
+  object-fit: contain;
+  margin-inline: auto;
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+}
+
+.dialogoBarra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.dialogoTasto {
+  /* 2.75rem: la soglia dei 44px per il dito, che vale anche qui dentro. */
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--step-1);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.dialogoTasto:hover {
+  background-color: var(--line-soft);
+  border-color: var(--ink);
+}
+
+.dialogoTasto:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.dialogoChiudi {
+  margin-inline-start: var(--space-4);
+}
+
+.dialogoConteggio {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  min-inline-size: 5rem;
+  text-align: center;
+}
+
+.dialogoDidascalia {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--step--1);
+  max-inline-size: var(--measure);
+  margin-inline: auto;
+}
+
+/* Chi ha chiesto meno movimento non deve vedere le foto sollevarsi al
+   passaggio del mouse. global.css azzera gia' le transizioni, ma il
+   translateY e' una trasformazione e va tolta a parte. */
+@media (prefers-reduced-motion: reduce) {
+  .bottone:hover {
+    transform: none;
+  }
+}
