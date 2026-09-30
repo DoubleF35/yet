@@ -21,8 +21,23 @@
          sola e' semplicemente dire la verita'. -->
     <link rel="canonical" href="https://yetcommunity.it/" />
 
-    <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png" />
-    <link rel="apple-touch-icon" href="./icon-180.png" />
+    <!--
+      INDIRIZZI ASSOLUTI, non "./".
+
+      Questo file diventa il guscio di OGNI pagina generata da
+      scripts/prerender.mjs, compreso dist/vetrina/daniele/index.html. Un
+      "./icon-32.png" si risolve rispetto alla cartella della pagina, quindi
+      su /vetrina/daniele diventava /vetrina/daniele/icon-32.png, che è un
+      404: chi apriva un profilo direttamente da un link si trovava la
+      scheda del browser senza icona. Con la barra iniziale l'indirizzo è
+      lo stesso da qualunque pagina.
+
+      La barra iniziale è anche la forma giusta per Vite: ai file di public/
+      applica `base` da sé, quindi se un domani il sito tornasse su un
+      sottopercorso questi tre indirizzi resterebbero corretti.
+    -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
 
     <!-- Open Graph / social preview -->
     <meta property="og:type" content="website" />
@@ -64,8 +79,14 @@
       Il video dell'intro parte appena la Intro monta: dargli un hint qui
       guadagna qualche centinaio di ms sulla prima visita, che è esattamente
       l'unica visita in cui l'intro viene mostrata.
+
+      Vale SOLO per l'intro, che sta su "/": su ogni altra pagina nessuno usa
+      questa immagine, quindi prerender.mjs toglie questa riga dalle pagine
+      generate. Lasciarla costava 34 kB per niente e il browser lo diceva in
+      console, "preloaded with link preload was not used within a few
+      seconds", che è il modo in cui ci siamo accorti del 404 qui sotto.
     -->
-    <link rel="preload" as="image" href="./hero-poster.jpg" />
+    <link rel="preload" as="image" href="/hero-poster.jpg" />
     <!-- Dati strutturati.
          Non sono "parole chiave": sono il modo in cui si dice a un motore di
          ricerca CHE COSA e' questa pagina, invece di sperare che lo deduca da

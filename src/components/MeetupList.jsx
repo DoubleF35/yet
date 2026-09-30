@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import Reveal, { stagger } from './Reveal.jsx'
+import { eventoDiMeetup } from '../config/eventi.js'
 import { formatMeetupDate, listenMeetups } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -85,6 +87,10 @@ function Scheda({ incontro, passato = false }) {
   const { title, place, body, url } = incontro
   const { lang, t } = useI18n()
 
+  /* Il resoconto con le foto, se questa serata ne ha uno. Il legame e' per
+     identificativo del documento, non per titolo: vedi src/config/eventi.js. */
+  const resoconto = passato ? eventoDiMeetup(incontro.id) : null
+
   return (
     <article className={`${s.scheda} ${passato ? s.schedaPassata : ''}`.trim()}>
       {/* La data la formatta Intl nella lingua scelta; la frase di ripiego,
@@ -92,9 +98,17 @@ function Scheda({ incontro, passato = false }) {
       <p className={s.quando}>
         {formatMeetupDate(incontro.startsAt, lang) ?? t('incontri.dataDaDefinire')}
       </p>
-      <h3 className={s.nome}>{title}</h3>
+      {/* Quando c'e' un resoconto il titolo lo prende da LI', non da Firestore:
+          e' la versione corretta e controllata. Su Firestore questo incontro si
+          chiama ancora "YET - Contact Vol.1", con un refuso. */}
+      <h3 className={s.nome}>{resoconto ? resoconto.titolo : title}</h3>
       {place && <p className={s.dove}>{place}</p>}
-      {body && <p className={s.testo}>{body}</p>}
+
+      {/* Il testo lungo sparisce quando c'e' un resoconto, ed e' il punto:
+          su una serata gia' fatta la scaletta oraria ("17:30 arrivo, 18:00
+          aperitivo") non serve piu' a nessuno e la fa sembrare ancora da
+          venire. Il racconto sta nella pagina del resoconto. */}
+      {body && !resoconto && <p className={s.testo}>{body}</p>}
 
       {/* Il link compare solo sui prossimi: iscriversi a un incontro gia'
           fatto non ha senso, e lasciarlo li' sarebbe una porta che non porta
@@ -104,6 +118,12 @@ function Scheda({ incontro, passato = false }) {
           {t('incontri.iscriviti')}
           <span className="sr-only">{t('stati.nuovaScheda')}</span>
         </a>
+      )}
+
+      {resoconto && (
+        <Link className={s.cta} to={`/eventi/${resoconto.slug}`}>
+          {t('evento.guarda')}
+        </Link>
       )}
     </article>
   )

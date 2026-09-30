@@ -27,6 +27,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { memberSlug, primoFraOmonimi } from '../src/lib/slug.js'
+import { eventiRecenti } from '../src/config/eventi.js'
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = join(RADICE, 'dist')
@@ -158,6 +159,17 @@ function scappa(s) {
 
 const base = readFileSync(join(DIST, 'index.html'), 'utf8')
 
+/* Il precaricamento del poster dell'intro, che qui sotto viene tolto dalle
+   pagine che non sono l'intro. Se un domani il nome del file cambia e questa
+   regex smette di corrispondere, il danno e' silenzioso (34 kB scaricati per
+   niente su quaranta pagine, piu' un avviso in console), quindi conviene
+   dirlo subito invece di scoprirlo un anno dopo. */
+const PRELOAD_POSTER = /\s*<link\s+rel="preload"\s+as="image"\s+href="[^"]*hero-poster\.jpg"\s*\/?>/
+if (!PRELOAD_POSTER.test(base)) {
+  console.warn('  attenzione: il preload di hero-poster.jpg non e\' piu\' dove me lo aspetto.')
+  console.warn('  Controlla index.html: le pagine generate se lo porteranno dietro inutilmente.')
+}
+
 /** Scrive dist/<path>/index.html per una pagina descritta come le ROTTE. */
 function scriviPagina(rotta) {
   let html = base
@@ -188,6 +200,18 @@ function scriviPagina(rotta) {
      questa operazione: dire a Google che queste sono dieci pagine diverse. */
   html = sostituisci(html, /(<link\s+rel="canonical"\s+href=")[^"]*(")/, `$1${url}$2`)
   html = sostituisci(html, /(<meta\s+property="og:url"\s+content=")[^"]*(")/, `$1${url}$2`)
+
+  /* Il poster dell'intro si precarica SOLO sull'intro, che sta su "/".
+     Altrove non lo usa nessuno: e' quello che il tag <video> mostra mentre il
+     filmato arriva, e non c'e' nessun <video> in /privacy.
+
+     Ce ne siamo accorti perche' il browser lo dice ("preloaded with link
+     preload was not used within a few seconds"), e tirando quel filo e'
+     venuto fuori il difetto vero: l'indirizzo era scritto relativo, quindi su
+     /vetrina/daniele diventava /vetrina/daniele/hero-poster.jpg, un 404. Ora
+     l'indirizzo e' assoluto, ma su queste pagine il precaricamento resta uno
+     spreco e quindi si toglie. */
+  if (rotta.path !== '/') html = html.replace(PRELOAD_POSTER, '')
 
   /* Il testo dentro #root, diverso per ogni pagina. Senza questo, i dieci
      indirizzi avrebbero contenuto identico e Google ne terrebbe uno solo
@@ -235,6 +259,51 @@ function scriviPagina(rotta) {
 console.log('Genero una pagina per rotta:\n')
 for (const rotta of ROTTE) {
   console.log(`  ${scriviPagina(rotta).padEnd(30)} ${rotta.title}`)
+}
+
+
+/* --------------------------------------------------------------------------
+   Una pagina per ogni resoconto di serata
+
+   Queste, a differenza delle pagine dei membri, NON dipendono dalla rete: il
+   testo sta in src/config/eventi.js e le foto nel repo. Se la lettura di
+   Firestore fallisce il sito si pubblica lo stesso e i resoconti ci sono.
+
+   E' anche la ragione per cui il titolo finisce davvero dentro l'HTML: questa
+   e' la pagina che la gente condivide, e un'anteprima su WhatsApp senza
+   titolo sembra un link rotto.
+-------------------------------------------------------------------------- */
+
+const gallerie = JSON.parse(readFileSync(join(RADICE, 'src', 'data', 'gallerie.json'), 'utf8'))
+
+const paginaEventi = eventiRecenti().map((evento) => {
+  const quante = gallerie[evento.slug]?.scatti.length ?? 0
+  const dove = [evento.luogo, evento.indirizzo].filter(Boolean).join(', ')
+
+  /* Il primo paragrafo del racconto e' gia' scritto per essere letto da solo:
+     e' lo stesso testo che apre la pagina, quindi non se ne inventa un altro
+     per il motore di ricerca. */
+  const apertura = evento.racconto[0] ?? `${evento.titolo}, a ${evento.citta}.`
+
+  return {
+    path: `/eventi/${evento.slug}`,
+    title: `${evento.titolo} · YET`,
+    desc: riassumi(`${evento.titolo}, ${evento.citta}. ${apertura}`),
+    h1: evento.titolo,
+    testo: [
+      apertura,
+      [dove && `Dove: ${dove}.`, quante > 0 && `${quante} foto della serata.`]
+        .filter(Boolean)
+        .join(' ') || `Un incontro di YET a ${evento.citta}.`,
+    ],
+  }
+})
+
+if (paginaEventi.length) {
+  console.log(`\nGenero una pagina per resoconto (${paginaEventi.length}):\n`)
+  for (const pagina of paginaEventi) {
+    console.log(`  ${scriviPagina(pagina).padEnd(30)} ${pagina.title}`)
+  }
 }
 
 
@@ -404,18 +473,25 @@ try {
 const sitemap =
   '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  [...ROTTE, ...paginaMembri]
+  [...ROTTE, ...paginaEventi, ...paginaMembri]
     /* /home e' la stessa pagina di / per un lettore: elencarle entrambe
        significherebbe dichiarare a Google due pagine identiche. */
     .filter((r) => r.path !== '/home')
     .map((r) => {
       const url = r.path === '/' ? `${SITO}/` : `${SITO}${r.path}/`
-      const priorita = r.path === '/' ? '1.0' : r.path === '/join' || r.path === '/eventi' ? '0.8' : '0.6'
+      const priorita =
+        r.path === '/'
+          ? '1.0'
+          : r.path === '/join' || r.path === '/eventi'
+            ? '0.8'
+            : r.path.startsWith('/eventi/')
+              ? '0.7'
+              : '0.6'
       return `  <url>\n    <loc>${url}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${priorita}</priority>\n  </url>`
     })
     .join('\n') +
   '\n</urlset>\n'
 
 writeFileSync(join(DIST, 'sitemap.xml'), sitemap)
-console.log(`\n  sitemap.xml                    ${ROTTE.length - 1 + paginaMembri.length} indirizzi`)
+console.log(`\n  sitemap.xml                    ${ROTTE.length - 1 + paginaEventi.length + paginaMembri.length} indirizzi`)
 console.log('\nFatto.')

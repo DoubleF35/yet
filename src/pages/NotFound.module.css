@@ -66,7 +66,7 @@
   font-size: var(--step-0);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: var(--radius);
   transition: background-color var(--transition), color var(--transition),
     border-color var(--transition);
 }

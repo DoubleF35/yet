@@ -112,6 +112,53 @@ function currentRole() {
 /* Errore usato quando qualcuno chiama una funzione di scrittura con Firebase
    non configurato. Meglio un messaggio esplicito che un "cannot read property
    of null" tre stack frame più in là. */
+/**
+ * Alza un errore quando la risposta e' arrivata dalla cache locale invece che
+ * dal server, ed e' vuota.
+ *
+ * PERCHE' SERVE. `getDocs` e `getDoc` NON rifiutano quando non riescono a
+ * raggiungere Firestore: risolvono con quello che hanno in cache, e su una
+ * prima visita la cache e' vuota. Il risultato e' una risposta valida e
+ * vuota, che chi chiama legge come "non c'e' nessuno". Sulla vetrina questo
+ * diventava "Ancora nessun profilo, puoi essere il primo" su un club che ne
+ * ha trentadue, cioe' il sito diceva una cosa falsa e faceva sembrare morta
+ * la community. Sulla pagina di un profilo diventava "questo profilo non
+ * c'e'".
+ *
+ * NON e' un caso di laboratorio: basta un'estensione che blocca i domini di
+ * Google, o la protezione antitracciamento di Firefox in modalita' rigorosa,
+ * e le chiamate a firestore.googleapis.com non partono nemmeno. In console si
+ * vede una fila di errori CORS con "codice di stato (null)", che vuol dire
+ * che nessuna risposta e' arrivata.
+ *
+ * `metadata.fromCache` distingue i due casi:
+ *
+ *   vuoto + dal SERVER  -> risposta vera, "davvero non c'e' nessuno", passa
+ *   vuoto + dalla CACHE  -> il server non ha risposto, e' un errore
+ *   pieno + dalla CACHE  -> passa: e' il caso in cui la cache serve, cioe'
+ *                           riaprire il sito senza rete, e dei dati un po'
+ *                           vecchi valgono piu' di una schermata d'errore
+ *
+ * IL PREZZO, detto chiaro: se un giorno il database fosse davvero vuoto e la
+ * cache pure, si vedrebbe un errore con il bottone "riprova" invece
+ * dell'invito a essere il primo. Su un club con trentadue profili approvati
+ * e' uno scambio che conviene: il caso finto lo incontrano dei visitatori
+ * veri, il caso vero non tornera' mai.
+ */
+function esigiRisposta(snapshot) {
+  const vuoto = 'empty' in snapshot ? snapshot.empty : !snapshot.exists()
+  if (vuoto && snapshot.metadata?.fromCache) {
+    const e = new Error('[YET] Firestore non raggiungibile: risposta vuota dalla cache locale.')
+    /* 'unavailable' e' il codice che usa Firestore stesso quando il servizio
+       non risponde: chi controlla err.code non deve imparare un codice
+       nostro. */
+    e.code = 'unavailable'
+    e.chiaveI18n = 'errori.reteFirestore'
+    throw e
+  }
+  return snapshot
+}
+
 function notConfigured() {
   const error = new Error(
     'Firebase non è configurato: copia .env.example in .env, riempi i valori e riavvia il server.',
@@ -353,8 +400,11 @@ export async function deleteNews(id) {
 export async function listUsers() {
   if (!isFirebaseConfigured) throw notConfigured()
 
-  const snapshot = await getDocs(
-    query(collection(db, USERS), where('status', '==', 'approved')),
+  /* esigiRisposta: senza, con Firestore irraggiungibile questa funzione
+     tornava [] e la vetrina mostrava "Ancora nessun profilo". Vedi il
+     commento sulla funzione. */
+  const snapshot = esigiRisposta(
+    await getDocs(query(collection(db, USERS), where('status', '==', 'approved'))),
   )
   return snapshot.docs
     .map((d) => ({ uid: d.id, ...d.data() }))
@@ -396,7 +446,12 @@ export async function getMemberProfile(uid) {
   if (!uid) return null
 
   try {
-    const snapshot = await getDoc(doc(db, USERS, uid))
+    /* esigiRisposta prima di leggere `exists()`: un documento assente perche'
+       il server non ha risposto non e' un profilo che non c'e'. Senza questo
+       controllo, chi apre /vetrina/daniele con i domini di Google bloccati
+       leggeva "questo profilo non c'e'", che manda a cercare il bug
+       sbagliato. */
+    const snapshot = esigiRisposta(await getDoc(doc(db, USERS, uid)))
     return snapshot.exists() ? { uid: snapshot.id, ...snapshot.data() } : null
   } catch (err) {
     if (err?.code === 'permission-denied') return null

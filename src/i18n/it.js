@@ -162,6 +162,11 @@ export default {
     indiceMancante:
       'Firestore chiede un indice per questa ricerca. Nella console del browser c’è un link che lo crea con un clic.',
     serverGiu: 'Non riusciamo a raggiungere il server. Di solito è la connessione: riprova fra un momento.',
+    /* Distinto da serverGiu: quello e' “il server non risponde”, questo e'
+       “la richiesta non e' nemmeno partita”, che nella pratica vuol dire un
+       blocco dentro il browser. Vedi esigiRisposta in lib/db.js. */
+    reteFirestore:
+      'Non riusciamo a raggiungere il database. Può essere la connessione, oppure un blocco del browser: un’estensione che ferma i domini di Google, o la protezione antitracciamento in modalità rigorosa.',
     generico: 'Qualcosa è andato storto. Il dettaglio è nella console del browser.',
 
     /* Errori che nascono dentro lib/: quel codice non ha un t() sotto mano,
@@ -221,6 +226,36 @@ export default {
     giaFatti: 'Già fatti',
     iscriviti: 'Iscriviti',
     dataDaDefinire: 'data da definire',
+  },
+
+  /* --- galleria di una serata --------------------------------------------- */
+  galleria: {
+    titolo: 'Le foto della serata',
+    unaFoto: '{n} foto',
+    tanteFoto: '{n} foto',
+    /* Il nome accessibile del riquadro. Parte dalla didascalia quando c'e',
+       perche' chi naviga a voce cerca il contenuto, non la posizione. */
+    apri: 'Apri la foto {n} di {tot}',
+    apriConAlt: '{alt}. Foto {n} di {tot}',
+    senzaDidascalia: 'Foto {n} della serata',
+    posizione: '{n} di {tot}',
+    precedente: 'Foto precedente',
+    successiva: 'Foto successiva',
+    chiudi: 'Chiudi l\u2019ingrandimento',
+  },
+
+  /* --- resoconto di una serata -------------------------------------------- */
+  evento: {
+    tuttiGliIncontri: 'Tutti gli incontri',
+    presenti: 'Presenti',
+    foto: 'Foto',
+    dove: 'Dove',
+    ospiti: 'Sono intervenuti',
+    senzaFoto: 'Le foto di questa serata non ci sono ancora.',
+    mancanteTitolo: 'Questo incontro non c\u2019\u00e8',
+    mancanteTesto:
+      'L\u2019indirizzo non corrisponde a nessuna serata. Pu\u00f2 essere un link vecchio, o un refuso.',
+    guarda: 'Guarda la serata',
   },
 
   /* --- cancellazione del profilo ----------------------------------------- */
@@ -300,6 +335,8 @@ export default {
       'La lettura dell’elenco è stata rifiutata dal server. Riprova, e se il problema resta scrivici.',
     erroreGenerico:
       'Qualcosa è andato storto nel leggere l’elenco dei membri. Può essere la connessione.',
+    erroreRete:
+      'Non riusciamo a raggiungere il database dei profili. Può essere la connessione, oppure un blocco del browser: un’estensione che ferma i domini di Google, o la protezione antitracciamento in modalità rigorosa. Se ne hai una attiva, disattivala per questo sito e riprova.',
     vuotoTitolo: 'Ancora nessun profilo',
     vuotoTesto:
       'Nessuno si è ancora presentato. Puoi essere il primo: iscriviti, accedi e scrivi due righe su cosa stai costruendo.',

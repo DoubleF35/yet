@@ -136,10 +136,12 @@
   font-size: var(--step-0);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  /* Pillole, come nel riferimento. È l'unico punto del sito in cui il raggio
-     non è zero, e ha una ragione: i bordi netti funzionano su un fondo piatto,
-     su una fotografia sembrano ritagli incollati. */
-  border-radius: 999px;
+  /* Era una pillola a 999px scritta qui a mano, e per un po' è stato l'unico
+     punto del sito col raggio diverso da zero. La ragione di allora vale
+     ancora ed è diventata la regola generale: i bordi netti funzionano su un
+     fondo piatto, su una fotografia sembrano ritagli incollati. Ora il valore
+     viene dalla scala, e la pillola resta alle etichette. */
+  border-radius: var(--radius);
   transition: background-color var(--transition), color var(--transition),
     border-color var(--transition);
 }
