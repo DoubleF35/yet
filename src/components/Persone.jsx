@@ -58,26 +58,65 @@ export default function Persone({ totale = null }) {
   /* Fino a quando restare fermi dopo un tocco dell'utente. */
   const fermoFino = useRef(0)
 
+  /* L'intestazione della sezione, che c'e' sempre: e' lei a dirci quando la
+     fila si sta avvicinando allo schermo. */
+  const testa = useRef(null)
+  const [vicino, setVicino] = useState(false)
+  /* Distingue "non ho ancora chiesto" da "ho chiesto e non c'e' nessuno".
+     Senza, non si saprebbe se non disegnare niente o aspettare. */
+  const [chiesto, setChiesto] = useState(false)
+
+  /* I PROFILI SI LEGGONO SOLO QUANDO LA FILA SI AVVICINA, non quando la home
+     si monta.
+     Perche': sono 782 kB, e 733 sono fotografie. Gli avatar stanno DENTRO i
+     documenti come data URL, quindi arrivano per forza insieme ai nomi e non
+     c'e' caricamento pigro che tenga: l'unico modo di non pagarli e' non
+     chiederli. Questa fila sta sotto la piega, quindi chiederli al montaggio
+     significa far aspettare l'apertura per una cosa che non si vede ancora.
+     Il margine di 600px fa partire la lettura PRIMA che la sezione entri in
+     campo, cosi' chi ci arriva scorrendo trova le tessere gia' pronte. */
   useEffect(() => {
-    if (!isFirebaseConfigured) return undefined
+    const el = testa.current
+    if (!el) return undefined
+    /* Senza IntersectionObserver si legge subito: meglio pesante che vuoto. */
+    if (typeof IntersectionObserver !== 'function') {
+      setVicino(true)
+      return undefined
+    }
+    const osservatore = new IntersectionObserver(
+      (voci) => {
+        if (!voci.some((v) => v.isIntersecting)) return
+        setVicino(true)
+        osservatore.disconnect()
+      },
+      { rootMargin: '600px 0px' },
+    )
+    osservatore.observe(el)
+    return () => osservatore.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !vicino) return undefined
     let vivo = true
 
     listUsers()
       .then((elenco) => {
         if (!vivo) return
         setPersone(ordinaPersone(elenco).tutti)
+        setChiesto(true)
       })
       .catch((e) => {
         /* In silenzio, ed e' voluto: se i profili non arrivano la home deve
            perdere questo blocco, non mostrare un errore. Il posto dove un
            errore sui profili va detto e' la vetrina. */
         console.warn('[YET] Non riesco a leggere i profili per la home.', e)
+        if (vivo) setChiesto(true)
       })
 
     return () => {
       vivo = false
     }
-  }, [])
+  }, [vicino])
 
   /* Quali frecce hanno senso: una freccia che non porta da nessuna parte e'
      peggio di nessuna freccia. */
@@ -227,7 +266,18 @@ export default function Persone({ totale = null }) {
     [toccata],
   )
 
-  if (persone.length === 0) return null
+  if (persone.length === 0) {
+    /* SE NON ABBIAMO ANCORA CHIESTO, qui ci va comunque qualcosa: e' questo
+       elemento a dire all'osservatore che la fila si sta avvicinando. Tornare
+       null e basta sarebbe un cane che si morde la coda, perche' senza niente
+       nel documento l'osservatore non si attacca, la lettura non parte, e il
+       blocco non compare mai.
+
+       Se invece abbiamo gia' chiesto e non c'e' nessuno, si torna a non
+       disegnare niente: la home perde il blocco invece di mostrare una fila
+       vuota, che e' il comportamento voluto da sempre. */
+    return chiesto ? null : <div ref={testa} aria-hidden="true" />
+  }
 
   const quanti = totale ?? persone.length
 
@@ -236,7 +286,7 @@ export default function Persone({ totale = null }) {
        scorre in orizzontale, e scaglionare lascerebbe invisibili le tessere
        fuori schermo, che e' il contrario di quello che serve. */
     <Reveal as="section" className={s.wrap} aria-labelledby="persone-titolo">
-      <div className={`${s.testa} container`}>
+      <div className={`${s.testa} container`} ref={testa}>
         <div className={s.testaTesto}>
           <p className={s.occhiello}>{t('persone.occhiello')}</p>
           <h2 className={s.titolo} id="persone-titolo">

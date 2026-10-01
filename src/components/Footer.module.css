@@ -23,7 +23,13 @@
 }
 
 .brand {
-  display: inline-block;
+  /* Il marchio resta alto 34px, ma il BERSAGLIO arriva a 44: sul telefono e'
+     un link come gli altri e deve potersi centrare col pollice. Si allarga
+     l'area, non il logo, perche' ingrandire il segno cambierebbe il disegno
+     del piede per risolvere un problema di dita. */
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
   border-radius: var(--radius);
 }
 
@@ -78,7 +84,12 @@
 }
 
 .link {
-  display: inline-block;
+  /* `block` e non `inline-block`: da inline il bersaglio era largo quanto la
+     parola, quindi "Join" era un bersaglio da 31px mentre "Gruppo WhatsApp"
+     ne misurava 140. Da block occupano tutta la colonna e sono tutti uguali,
+     che sul telefono e' la differenza fra centrare e sbagliare.
+     L'altezza era gia' a posto, ed e' il motivo per cui non si notava. */
+  display: block;
   /* Il padding verticale porta il bersaglio a 44px senza allontanare le voci
      visivamente: il gap sopra è volutamente piccolo. */
   padding-block: var(--space-3);
