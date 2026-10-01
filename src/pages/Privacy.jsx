@@ -376,7 +376,7 @@ function PrivacyEn() {
           <p className={s.p}>
             The typefaces too are served from our own site and not from Google’s CDN: opening this
             page does not disclose your IP address to third parties. That is why you will not find
-            a banner asking for your consent — there is nothing to ask consent for. The details are
+            a banner asking for your consent: there is nothing to ask consent for. The details are
             in the <Link className={s.link} to="/cookie">cookies page</Link>.
           </p>
           <p className={s.p}>
@@ -434,7 +434,7 @@ function PrivacyEn() {
             your social links are <strong>visible to anyone</strong> who visits the members page,
             even without an account. That is the purpose of the page. Your{' '}
             <strong>email address is never shown</strong> on the site and is not part of the
-            published data — not even for the organisers, who see the name and the introduction in
+            published data, not even for the organisers, who see the name and the introduction in
             the list of requests, not the address.
           </p>
           <p className={s.p}>
@@ -541,7 +541,7 @@ function PrivacyEn() {
               <strong>know</strong> which data we hold and obtain a copy of it;
             </li>
             <li>
-              <strong>correct it</strong> if it is wrong — for name, introduction, photo and links
+              <strong>correct it</strong> if it is wrong: for name, introduction, photo and links
               you can do it yourself from the Join page, at any time;
             </li>
             <li>
@@ -600,7 +600,7 @@ function PrivacyEn() {
           <h2 className={s.h2}>If this notice changes</h2>
           <p className={s.p}>
             The date at the top says from when the version you are reading applies. If anything
-            substantial changes — a new service, a new purpose — we will write it here and, if
+            substantial changes (a new service, a new purpose), we will write it here and, if
             needed, we will ask for your consent again.
           </p>
         </section>
