@@ -213,6 +213,19 @@ export default {
   },
 
   /* --- deleting the profile ---------------------------------------------- */
+  /* --- la fila di persone sulla home -------------------------------------- */
+  persone: {
+    occhiello: 'Who is here',
+    titolo: 'The people of YET',
+    testo:
+      'Students, self-taught builders, first-time founders. Scroll to meet a few, or open the showcase to see everyone.',
+    tutti: 'See all {n} profiles',
+    tuttiFila: 'profiles in the showcase',
+    precedente: 'Scroll back',
+    successiva: 'Scroll forward',
+    regione: 'Some of the people in YET',
+  },
+
   /* --- blocchi della home che mostrano cosa e' gia' successo --------------- */
   prova: {
     numeroIncontri: 'meetups already held',
