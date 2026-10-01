@@ -1,3 +1,5 @@
+import { MANI } from '../lib/marchio.js'
+
 import s from './EmptyState.module.css'
 
 /**
@@ -11,7 +13,7 @@ import s from './EmptyState.module.css'
  * @param {node}   [action]   un Link o un bottone già pronto
  */
 export default function EmptyState({ title, children, action, className = '' }) {
-  const hands = `${import.meta.env.BASE_URL}hands-light.png`
+  const hands = MANI
 
   return (
     <div className={`${s.empty} ${className}`.trim()}>

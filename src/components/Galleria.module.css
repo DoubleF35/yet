@@ -132,7 +132,7 @@
 .dialogo::backdrop {
   /* Piu' opaco di un overlay qualsiasi: qui sotto c'e' una pagina piena di
      altre foto, e devono sparire davvero. */
-  background-color: rgba(13, 12, 10, 0.92);
+  background-color: var(--velo-pieno);
 }
 
 .dialogoCorpo {

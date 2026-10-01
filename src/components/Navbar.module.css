@@ -30,7 +30,7 @@
   /* Il colore non è --bg pieno ma appena traslucido con il vetro smerigliato:
      dà la sensazione che la pagina scorra SOTTO la barra invece che dietro un
      pannello opaco. */
-  background-color: rgba(20, 18, 15, 0.82);
+  background-color: var(--nav-vetro);
   /* Il prefisso serve davvero: Safari ha supportato `backdrop-filter` senza
      prefisso solo dalla 18, e gli iPhone che si fermano a iOS 15-17 sono
      tanti. Senza, lì il vetro non c'era e restava il @supports qui sotto. */
@@ -45,9 +45,57 @@
 }
 
 /* Sopra la foto: nessun fondo, nessun bordo. La barra non esiste come oggetto,
-   esistono solo il logo e i link appoggiati sull'immagine. */
+   esistono solo il logo e i link appoggiati sull'immagine.
+
+   E proprio per questo qui dentro vanno i colori "sopra foto" e non quelli del
+   foglio: senza fondo, sotto le voci c'e' la fotografia. Col tema scuro non si
+   notava, perche' l'inchiostro era chiaro e cadeva bene lo stesso; girando il
+   tema le voci sono diventate nere su una foto nera, cioe' invisibili.
+   Il legame e' con lo STATO della barra, non con il tema: resta giusto
+   qualunque cosa faccia il resto del sito. */
 .headerClear {
   border-block-end: 1px solid transparent;
+}
+
+.headerClear .link,
+.headerClear .signIn {
+  color: var(--su-foto);
+}
+
+.headerClear .signIn {
+  border-color: var(--su-foto-linea);
+  /* Un filo di vetro anche sul bottone: senza fondo, il solo bordo bianco su
+     un punto chiaro della foto si perde. */
+  background-color: rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.headerClear .signIn:hover:not(:disabled) {
+  background-color: var(--su-foto);
+  border-color: var(--su-foto);
+  color: var(--ink);
+}
+
+/* L'ombra lunga e morbida e' la stessa dell'apertura, e per la stessa ragione:
+   su una fotografia il contrasto cambia da pixel a pixel, e un testo piccolo
+   in maiuscoletto e' il primo a perdersi. */
+.headerClear .link {
+  text-shadow: 0 1px 16px rgba(20, 18, 15, 0.75);
+}
+
+/* Il selettore di lingua, il panino e il bottone del profilo stanno in moduli
+   loro e usano --ink e --muted: da qui non si possono raggiungere per classe.
+   Si riscrivono i due token SOLO su questi tre contenitori, che dentro non
+   hanno pannelli chiari. Il menu utente aperto e il pannello del panino sono
+   fuori da questi, e restano col foglio chiaro e l'inchiostro scuro, che e'
+   giusto: hanno un fondo loro. */
+.headerClear .langBar,
+.headerClear .burger,
+.headerClear .userButton {
+  --ink: var(--su-foto);
+  --muted: var(--su-foto-muted);
+  color: var(--su-foto);
 }
 
 /* Dopo lo scroll: fondo pieno e bordo, perché sotto passa il contenuto e i

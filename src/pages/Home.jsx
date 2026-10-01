@@ -19,6 +19,7 @@ import { EVENTI } from '../config/eventi.js'
 import { countApprovedUsers, formatDate, getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
+import { LOGO } from '../lib/marchio.js'
 
 import s from './Home.module.css'
 
@@ -71,7 +72,7 @@ export default function Home() {
      foto non devono scaricarla due volte. */
   const [media, setMedia] = useState({})
 
-  const logo = `${import.meta.env.BASE_URL}logo-light.png`
+  const logo = LOGO
 
   /* Il listener può emettere dopo lo smontaggio (o dopo un retry che ne ha già
      creato un altro): senza questa guardia, il primo listener sovrascriverebbe

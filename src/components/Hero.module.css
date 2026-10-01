@@ -22,9 +22,12 @@
 
   overflow: hidden;
   /* Il segnaposto minuscolo riempie lo schermo di colore mentre la foto vera
-     arriva: senza, il primo istante è un rettangolo nero e il titolo sembra
-     galleggiare nel vuoto. */
-  background-color: var(--bg);
+     arriva: senza, il primo istante è un rettangolo vuoto e il titolo sembra
+     galleggiare nel nulla.
+     Il colore sotto NON è --bg: il foglio del sito è quasi bianco, e un lampo
+     bianco un istante prima di una fotografia scura è peggio del rettangolo
+     che questo segnaposto doveva evitare. */
+  background-color: var(--foto-sotto);
   background-image: url('/hero-bg-tiny.jpg');
   background-size: cover;
   background-position: center;
@@ -71,7 +74,13 @@
     );
 }
 
+/* Tutto quello che sta dentro l'apertura e' SOPRA una fotografia, quindi il
+   colore del testo si decide qui una volta sola e non lo eredita dal body.
+   Senza questa riga il titolo prende --ink, che sul tema chiaro e' nero: nero
+   su fotografia scura, cioe' invisibile. E' successo davvero invertendo il
+   tema, e il titolo non ha un color: suo proprio perche' lo prende da qui. */
 .inner {
+  color: var(--su-foto);
   position: relative;
   inline-size: min(100% - var(--container-pad) * 2, var(--maxw));
   margin-inline: auto;
@@ -102,7 +111,10 @@
 }
 
 .dot {
-  color: var(--coral-text);
+  /* Il coral PIENO del marchio e non --coral-text: quello e' scurito per
+     passare il contrasto sul foglio chiaro, e qui sotto non c'e' il foglio,
+     c'e' una fotografia scura. */
+  color: var(--coral);
 }
 
 .lead {
@@ -110,11 +122,11 @@
   margin: clamp(var(--space-5), 3vw, var(--space-6)) 0 0;
   font-size: var(--step-1);
   line-height: var(--lh-relaxed);
-  color: var(--ink);
+  color: var(--su-foto);
   /* Non --muted: sopra una foto un grigio attenuato perde troppo. Qui si usa
-     l'opacità, che scurisce in modo uniforme sopra qualunque cosa ci sia
+     l'opacità, che schiarisce in modo uniforme sopra qualunque cosa ci sia
      sotto. */
-  opacity: 0.86;
+  opacity: 0.92;
   text-wrap: pretty;
   text-shadow: 0 1px 20px rgba(20, 18, 15, 0.8);
 }
@@ -147,15 +159,21 @@
 }
 
 .primary {
+  /* --coral-text e non --coral, e il motivo e' misurato: bianco sul coral
+     pieno del marchio fa 4,44:1, cioe' sotto la soglia AA per un testo da
+     17px. Sul coral scuro sale a 6,5:1. E' lo stesso tranello descritto nei
+     token, e qui si presenta sul riempimento invece che sul testo.
+     Al passaggio del mouse diventa bianco pieno con testo scuro: su una foto
+     e' l'inversione che si legge sempre, qualunque cosa ci sia sotto. */
   color: var(--on-coral);
   background-color: var(--coral-text);
   border: 2px solid var(--coral-text);
 }
 
 .primary:hover {
-  background-color: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background-color: var(--su-foto);
+  border-color: var(--su-foto);
+  color: var(--ink);
 }
 
 .primary:focus-visible {
@@ -168,9 +186,9 @@
    così ha sempre un fondo suo. Il fallback per chi non supporta backdrop-filter
    è il colore semi-opaco, che regge lo stesso. */
 .secondary {
-  color: var(--ink);
-  background-color: rgba(242, 239, 233, 0.1);
-  border: 2px solid rgba(242, 239, 233, 0.45);
+  color: var(--su-foto);
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 2px solid var(--su-foto-linea);
   /* Il prefisso non è ridondanza: Safari ha supportato `backdrop-filter` senza
      prefisso solo dalla 18. Sugli iPhone rimasti a iOS 15-17 il vetro non si
      applicava e restava il fondo al 10%, cioè quasi trasparente: il bottone
@@ -181,9 +199,9 @@
 }
 
 .secondary:hover {
-  background-color: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background-color: var(--su-foto);
+  border-color: var(--su-foto);
+  color: var(--ink);
 }
 
 .secondary:focus-visible {
@@ -196,8 +214,8 @@
   font-size: var(--step--1);
   letter-spacing: var(--ls-wide);
   text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0.62;
+  color: var(--su-foto);
+  opacity: 0.74;
 }
 
 /* --- invito a scorrere ---------------------------------------------------- */
@@ -210,14 +228,14 @@
   inline-size: 1px;
   block-size: 56px;
   overflow: hidden;
-  background-color: rgba(242, 239, 233, 0.18);
+  background-color: var(--su-foto-linea);
 }
 
 .scrollLine {
   display: block;
   inline-size: 100%;
   block-size: 50%;
-  background-color: var(--coral-text);
+  background-color: var(--coral);
   animation: scorri 2.4s cubic-bezier(0.7, 0, 0.3, 1) infinite;
 }
 
