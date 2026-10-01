@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { Foto } from './Galleria.jsx'
+import Reveal, { stagger } from './Reveal.jsx'
 import { eventiRecenti } from '../config/eventi.js'
 import gallerie from '../data/gallerie.json'
 import { useI18n } from '../lib/i18n.jsx'
@@ -35,7 +36,7 @@ export default function Serate() {
   const ospiti = [...new Set(eventi.flatMap((e) => e.ospiti ?? []))]
 
   return (
-    <section className={s.wrap} aria-labelledby="serate-fatte">
+    <Reveal as="section" className={s.wrap} aria-labelledby="serate-fatte">
       <div className={`${s.testa} container`}>
         <div className={s.testaTesto}>
           <p className={s.occhiello}>{t('prova.serateOcchiello')}</p>
@@ -50,10 +51,10 @@ export default function Serate() {
       </div>
 
       <ul className={`${s.lista} container`}>
-        {eventi.map((evento) => (
-          <li className={s.voce} key={evento.slug}>
+        {eventi.map((evento, i) => (
+          <Reveal as="li" className={s.voce} key={evento.slug} delay={stagger(i)}>
             <Scheda evento={evento} />
-          </li>
+          </Reveal>
         ))}
       </ul>
 
@@ -71,7 +72,7 @@ export default function Serate() {
           </div>
         </div>
       )}
-    </section>
+    </Reveal>
   )
 }
 

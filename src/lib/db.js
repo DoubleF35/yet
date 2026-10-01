@@ -17,6 +17,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit as limita,
   onSnapshot,
   query,
   serverTimestamp,
@@ -397,14 +398,33 @@ export async function deleteNews(id) {
  * regola. Senza questo where l'intera query verrebbe rifiutata con
  * `permission-denied`, non "filtrata".
  */
-export async function listUsers() {
+/**
+ * I profili approvati.
+ *
+ * @param {number} [massimo] quanti al massimo. Serve alla fila di persone
+ *   sulla home, che e' un assaggio e non l'elenco: la foto del profilo sta
+ *   DENTRO il documento come data URL, quindi il peso arriva con la lettura e
+ *   il caricamento pigro non puo' farci niente. Oggi i 45 profili approvati
+ *   fanno 768 kB; quattordici ne fanno meno di 250. La vetrina invece li
+ *   chiede tutti, perche' il suo lavoro e' proprio mostrarli tutti.
+ *
+ *   Senza orderBy, Firestore torna i documenti in ordine di identificativo:
+ *   e' un ordine arbitrario ma STABILE, quindi la fila non cambia a ogni
+ *   caricamento. Ordinare per data di iscrizione sarebbe piu' sensato ma
+ *   richiederebbe un indice composto, e un indice da pubblicare a mano e' una
+ *   cosa che si rompe quando non c'e' nessuno a ripubblicarlo.
+ */
+export async function listUsers({ massimo } = {}) {
   if (!isFirebaseConfigured) throw notConfigured()
+
+  const vincoli = [where('status', '==', 'approved')]
+  if (Number.isFinite(massimo) && massimo > 0) vincoli.push(limita(massimo))
 
   /* esigiRisposta: senza, con Firestore irraggiungibile questa funzione
      tornava [] e la vetrina mostrava "Ancora nessun profilo". Vedi il
      commento sulla funzione. */
   const snapshot = esigiRisposta(
-    await getDocs(query(collection(db, USERS), where('status', '==', 'approved'))),
+    await getDocs(query(collection(db, USERS), ...vincoli)),
   )
   return snapshot.docs
     .map((d) => ({ uid: d.id, ...d.data() }))

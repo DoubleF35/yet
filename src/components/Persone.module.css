@@ -1,0 +1,327 @@
+/* =========================================================================
+   La fila di persone sulla home.
+
+   Scorre in orizzontale, e di proposito l'ULTIMA TESSERA SPORGE dal bordo
+   dello schermo: e' il solo segnale onesto che ce n'e' dell'altro. Una fila
+   che finisce esatta sul margine sembra finita, e nessuno prova a trascinarla.
+   Per questo la pista esce dal contenitore e arriva fino al bordo.
+   ========================================================================= */
+
+.wrap {
+  padding-block: var(--space-11) var(--space-10);
+}
+
+/* ---- intestazione ------------------------------------------------------ */
+
+.testa {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-block-end: var(--space-7);
+}
+
+.testaTesto {
+  max-inline-size: 38rem;
+}
+
+.occhiello {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.titolo {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-heading);
+}
+
+.sottotitolo {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+}
+
+/* ---- frecce ------------------------------------------------------------ */
+
+.comandi {
+  display: flex;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+/* Le frecce ci sono su tutte le misure. Sul telefono si trascina anche col
+   dito, ma averle non toglie niente e dice che la fila continua. */
+
+.freccia {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--step-0);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition: background-color var(--transition), border-color var(--transition),
+    opacity var(--transition);
+}
+
+.freccia:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.freccia:disabled {
+  /* Spenta e non nascosta: una freccia che sparisce sposta l'altra, e il
+     bersaglio si muove sotto il dito mentre lo stai usando. */
+  opacity: 0.34;
+  cursor: default;
+}
+
+.freccia:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- la pista ---------------------------------------------------------- */
+
+.pista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--space-4);
+
+  overflow-x: auto;
+  /* NIENTE scroll-snap, e non e' una dimenticanza: lo scatto e lo scorrimento
+     continuo non possono convivere. Lo scorrimento automatico sposta la fila
+     di mezzo pixel per fotogramma; il browser riporta ogni volta la posizione
+     sul punto di aggancio piu' vicino, finche' l'accumulo non supera la meta'
+     e allora salta una tessera intera. Misurato: con `proximity` la fila non
+     scorreva, faceva un salto da 280px ogni dodici secondi.
+     Il prezzo e' che trascinando col dito ci si ferma dove si vuole invece che
+     sul bordo di una tessera, ed e' il prezzo giusto: una fila che si muove
+     da sola deve potersi fermare ovunque, altrimenti il movimento e' finto. */
+  /* Il margine laterale e' PADDING della pista e non del contenitore: cosi' la
+     prima tessera si allinea al testo sopra, ma lo scorrimento arriva fino al
+     bordo dello schermo e l'ultima puo' sporgere. */
+  padding-inline: var(--container-pad);
+  /* Lo spazio per l'ombra delle tessere, che senza verrebbe tagliata. */
+  padding-block: var(--space-3);
+
+  /* La barra di scorrimento non si nasconde: e' il secondo segnale che la fila
+     continua, e toglierla per estetica lascia senza indizi chi usa un mouse
+     senza rotella orizzontale. */
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+@media (min-width: 70rem) {
+  .pista {
+    /* Su schermi larghi il contenuto e' centrato in 1120px: senza questo la
+       prima tessera partirebbe dal bordo della finestra invece che dal filo
+       del titolo. */
+    padding-inline: max(var(--container-pad), calc((100vw - var(--maxw)) / 2));
+  }
+}
+
+.voce {
+  flex: 0 0 auto;
+  inline-size: 15rem;
+}
+
+@media (min-width: 48rem) {
+  .voce {
+    inline-size: 16.5rem;
+  }
+}
+
+/* ---- la tessera -------------------------------------------------------- */
+
+.tessera {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.tessera:hover {
+  transform: translateY(-2px);
+  border-color: var(--line);
+  box-shadow: var(--shadow-3);
+}
+
+.tessera:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* La foto e' quadrata e a piena larghezza: e' una faccia, non un bollino
+   accanto a un nome. --avatar-size lo consuma Avatar in modalita' fill. */
+.foto {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: var(--surface-sunken);
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  flex-grow: 1;
+}
+
+.nome {
+  font-size: var(--step-1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+}
+
+.dove {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.badge {
+  align-self: flex-start;
+  border-radius: var(--radius-pill);
+  background-color: var(--coral-soft);
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-3);
+  line-height: 1.35;
+}
+
+/* Tre righe e poi taglia. Le biografie sono scritte dalle persone e vanno da
+   sei parole a sei righe: senza un limite, una tessera sarebbe alta il triplo
+   delle altre e la fila diventerebbe un dente di sega. */
+.bio {
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- l'ultima casella, il passaggio alla vetrina ----------------------- */
+
+.voceTutti {
+  inline-size: 11rem;
+}
+
+.tutti {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  block-size: 100%;
+  min-block-size: 14rem;
+
+  border: 2px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background-color: transparent;
+  color: var(--ink);
+  text-align: center;
+  text-decoration: none;
+  padding: var(--space-5);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.tutti:hover {
+  background-color: var(--surface);
+  border-color: var(--ink);
+}
+
+.tutti:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.tuttiNumero {
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: 1;
+  color: var(--coral-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tuttiTesto {
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+}
+
+/* ---- il link sotto ----------------------------------------------------- */
+
+/* Ripetuto sotto la fila, e non e' una svista: chi non scorre fino in fondo
+   non vede mai l'ultima casella, e chi naviga da tastiera non deve
+   attraversare quattordici tessere per trovare l'unico link che conta. */
+.tuttiSotto {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  margin-block-start: var(--space-5);
+  padding-inline: var(--space-6);
+  border: var(--border);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.tuttiSotto:hover {
+  background-color: var(--surface);
+  border-color: var(--ink);
+}
+
+.tuttiSotto:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tessera:hover {
+    transform: none;
+  }
+
+  .pista {
+    scroll-behavior: auto;
+  }
+}

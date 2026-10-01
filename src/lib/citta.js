@@ -176,3 +176,25 @@ export function cittaValida(grezza, filtri) {
   if (!chiave) return ''
   return filtri.some((f) => f.chiave === chiave) ? chiave : ''
 }
+
+/**
+ * L'ordine in cui si mostrano le persone: prima chi organizza, poi gli altri.
+ *
+ * Dentro ciascun gruppo resta l'ordine che arriva da listUsers(), cioe' per
+ * data di iscrizione e a parita' alfabetico. In cima si legge chi tiene in
+ * piedi la community invece di chi ha il nome piu' avanti nell'alfabeto.
+ *
+ * Sta QUI e non dentro la pagina Vetrina perche' ora la usano in due, la
+ * vetrina e la fila sulla home, e due copie della stessa regola divergono al
+ * primo cambiamento: e' lo stesso motivo per cui memberSlug sta in slug.js.
+ *
+ * @returns {{organizzatori: Array, altri: Array, tutti: Array}}
+ */
+export function ordinaPersone(membri = []) {
+  const organizzatori = [
+    ...membri.filter((m) => m.role === 'admin'),
+    ...membri.filter((m) => m.role !== 'admin' && cittaDelReferente(m)),
+  ]
+  const altri = membri.filter((m) => m.role !== 'admin' && !cittaDelReferente(m))
+  return { organizzatori, altri, tutti: [...organizzatori, ...altri] }
+}

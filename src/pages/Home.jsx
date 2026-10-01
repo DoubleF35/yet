@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
+import Persone from '../components/Persone.jsx'
 import Serate from '../components/Serate.jsx'
 import Hero from '../components/Hero.jsx'
 import ErrorState from '../components/ErrorState.jsx'
@@ -210,6 +211,11 @@ export default function Home() {
           <p className={s.tallyLead}>{t('community.descrizione')}</p>
         </section>
       )}
+
+      {/* Le persone subito dopo i numeri: il contatore dice quanti sono, qui
+          si vedono in faccia. L'ordine e' quello delle domande che si fa chi
+          arriva: chi siete, e cosa avete gia' fatto. */}
+      <Persone totale={membri} />
 
       <Serate />
 

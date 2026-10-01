@@ -89,7 +89,14 @@
   gap: var(--space-5);
 }
 
-.provaScura { background-color: var(--surface-sunken); }
+/* I DUE RIQUADRI NON SEGUONO IL TEMA, ed e' il punto della pagina: servono a
+   far vedere come sta il logo su un fondo scuro e su uno chiaro. Sono campioni,
+   come le caselle di colore di un mazzetto, non superfici del sito.
+
+   .provaScura prendeva --surface-sunken, che sul tema scuro era quasi nero.
+   Girando il tema e' diventato beige, e il logo bianco ci e' sparito dentro:
+   il riquadro "versione chiara per fondi scuri" mostrava un fondo chiaro. */
+.provaScura { background-color: #14120f; }
 .provaChiara { background-color: #eceae4; }
 
 .provaScura img,
@@ -108,9 +115,10 @@
   text-align: center;
 }
 
-.provaScura figcaption { color: var(--muted); }
-/* Il riquadro chiaro è l'unico punto del sito con un fondo beige: il testo
-   attenuato del tema scuro sopra sarebbe illeggibile, quindi qui va il nero. */
+/* Le didascalie stanno DENTRO i campioni, quindi anche loro sono fissate:
+   il grigio attenuato del tema e' pensato per il foglio del sito, non per un
+   riquadro nero. 8.4:1 sul nero e 4.8:1 sul beige. */
+.provaScura figcaption { color: #b5aca3; }
 .provaChiara figcaption { color: #6b655c; }
 
 .download {
@@ -130,8 +138,10 @@
 .download:hover { background-color: var(--ink); color: var(--bg); }
 .download:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
-/* Dentro il riquadro chiaro il bottone deve invertirsi, altrimenti eredita
-   il beige del tema scuro e diventa invisibile sul beige del riquadro. */
+/* Stessa ragione dei riquadri: dentro un campione il bottone non puo' seguire
+   il tema, o sparisce. Uno chiaro sul nero, uno scuro sul beige. */
+.provaScura .download { color: #f2efe9; border-color: #f2efe9; }
+.provaScura .download:hover { background-color: #f2efe9; color: #14120f; }
 .provaChiara .download { color: #1e1b18; border-color: #1e1b18; }
 .provaChiara .download:hover { background-color: #1e1b18; color: #eceae4; }
 

@@ -228,6 +228,19 @@ export default {
     dataDaDefinire: 'data da definire',
   },
 
+  /* --- la fila di persone sulla home -------------------------------------- */
+  persone: {
+    occhiello: 'Chi c\u2019\u00e8',
+    titolo: 'Le persone di YET',
+    testo:
+      'Studenti, autodidatti, fondatori alle prime armi. Scorri per conoscerne qualcuno, o apri la vetrina per vederli tutti.',
+    tutti: 'Vedi tutti i {n} profili',
+    tuttiFila: 'profili in vetrina',
+    precedente: 'Scorri indietro',
+    successiva: 'Scorri avanti',
+    regione: 'Alcune persone di YET',
+  },
+
   /* --- blocchi della home che mostrano cosa e' gia' successo --------------- */
   prova: {
     numeroIncontri: 'incontri gi\u00e0 fatti',

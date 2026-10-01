@@ -9,7 +9,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
-import { cittaDelReferente, cittaValida, filtriCitta, membroInCitta } from '../lib/citta.js'
+import { cittaDelReferente, cittaValida, filtriCitta, membroInCitta, ordinaPersone } from '../lib/citta.js'
 import { listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
@@ -275,11 +275,7 @@ export default function Membri() {
      ciascun gruppetto l'alfabeto resta, e in cima si legge chi tiene in
      piedi tutta la community invece di chi capita di avere il nome più
      avanti nell'alfabeto. */
-  const organizzatori = [
-    ...members.filter((m) => m.role === 'admin'),
-    ...members.filter((m) => m.role !== 'admin' && cittaDelReferente(m)),
-  ]
-  const altri = members.filter((m) => m.role !== 'admin' && !cittaDelReferente(m))
+  const { organizzatori, altri } = ordinaPersone(members)
 
   /* I filtri per città. L'elenco torna vuoto quando non ce n'è abbastanza da
      distinguere: la soglia sta in lib/citta.js, qui basta guardare se c'è

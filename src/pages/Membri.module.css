@@ -89,6 +89,7 @@
 
   background: none;
   border: var(--border);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition:
     background-color var(--transition),
@@ -135,6 +136,13 @@
 @media (prefers-reduced-motion: reduce) {
   .filtro {
     transition: none;
+  }
+
+  /* global.css azzera gia' le transizioni, ma il sollevamento della tessera e'
+     una trasformazione e va tolta a parte: senza, resta uno scatto secco
+     invece di un movimento, che e' peggio del movimento. */
+  .card:hover {
+    transform: none;
   }
 }
 
@@ -213,19 +221,32 @@
      bordi. Il respiro lo danno i blocchi di testo, che hanno il loro. */
   padding: 0;
   overflow: hidden;
-  border: var(--border);
+  /* Bordo tenue PIU' ombra, non bordo marcato: su foglio chiaro e' l'ombra a
+     dire che la tessera e' un oggetto posato, e il filetto serve solo a
+     chiuderne il contorno. Un bordo forte con l'ombra sotto fa sembrare la
+     tessera un francobollo incollato. */
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
   background-color: var(--surface);
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition),
+    transform var(--transition);
 }
 
 .card:hover {
-  border-color: var(--ink);
+  border-color: var(--line);
+  box-shadow: var(--shadow-3);
+  transform: translateY(-2px);
 }
 
 /* Il proprio profilo si riconosce dal bordo coral: un segno, non solo un
    colore di sfondo appena diverso. */
 .cardMe {
   border: var(--border-coral);
+  /* --radius-lg come tutte le altre tessere, NON la pillola: la pillola vale
+     per le etichette, e su una scheda alta 400px un raggio da 999px la
+     trasforma in un ovale. */
+  border-radius: var(--radius-lg);
 }
 
 .head {
@@ -324,6 +345,7 @@
   margin-top: var(--space-1);
   padding: 0 var(--space-2);
   border: var(--border-coral);
+  border-radius: var(--radius-pill);
   background-color: var(--coral-soft);
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);
@@ -436,6 +458,7 @@
   padding-inline: var(--space-3);
 
   border: var(--border);
+  border-radius: var(--radius);
   color: var(--ink);
   text-decoration: none;
   font-size: var(--step--1);
@@ -591,16 +614,18 @@
   flex: 1 1 18ch;
 }
 
-/* Le card di chi organizza si distinguono con un bordo pieno, lo stesso
-   trattamento della notizia in evidenza in home: è la gerarchia del sito,
-   non un'eccezione inventata qui. Il coral resta al proprio profilo, che è
-   l'informazione più utile a chi guarda. */
+/* Chi organizza si distingue SOLLEVANDOSI di piu', non con un bordo pieno.
+   Il bordo da 2px era il trattamento giusto quando le tessere non avevano
+   ombra e il contorno era l'unico mezzo disponibile; ora e' la cosa piu' dura
+   della pagina e combatte con la foto che ha dentro. Il distintivo
+   "ORGANIZZA" dice gia' la stessa cosa a parole, quindi il bordo era anche
+   ridondante. Il coral resta al proprio profilo. */
 .cardAdmin {
-  border: var(--border-strong);
+  box-shadow: var(--shadow-3);
 }
 
 .badgeAdmin {
-  border: var(--border-strong);
+  border: var(--border);
   background-color: var(--surface-sunken);
 }
 
