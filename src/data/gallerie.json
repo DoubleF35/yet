@@ -1,1 +1,118 @@
-{}
+{
+  "torino-connect-vol1": {
+    "copertina": "08-copertina-la-foto-di-gruppo",
+    "scatti": [
+      {
+        "id": "torino-connect-vol1/01-la-sala-prima-che-arrivino",
+        "base": "01-la-sala-prima-che-arrivino",
+        "w": 5184,
+        "h": 3456,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "La sala di Blox Space pronta prima che arrivino tutti: file di sedie arancioni davanti allo schermo con il logo YET, e il fondale YET sulla destra."
+      },
+      {
+        "id": "torino-connect-vol1/02-networking-sui-divani",
+        "base": "02-networking-sui-divani",
+        "w": 4662,
+        "h": 3108,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Cinque ragazzi seduti sui divani, che chiacchierano nella luce calda prima dell'inizio."
+      },
+      {
+        "id": "torino-connect-vol1/03-si-fa-conoscenza-in-piedi",
+        "base": "03-si-fa-conoscenza-in-piedi",
+        "w": 5184,
+        "h": 3456,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Sei ragazzi in piedi attorno a un tavolo alto: uno parla e gli altri ascoltano."
+      },
+      {
+        "id": "torino-connect-vol1/04-blox-space-sul-palco",
+        "base": "04-blox-space-sul-palco",
+        "w": 4732,
+        "h": 3155,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "La sala piena durante l'intervento di Blox Space: il pubblico seduto di spalle e sullo schermo la scritta Luoghi di alto rilievo."
+      },
+      {
+        "id": "torino-connect-vol1/05-il-pubblico-che-ascolta",
+        "base": "05-il-pubblico-che-ascolta",
+        "w": 5098,
+        "h": 3399,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Una fila di ragazzi e ragazze seduti sulle sedie arancioni, che ascoltano chi sta parlando."
+      },
+      {
+        "id": "torino-connect-vol1/06-l-intervento-di-blox-space",
+        "base": "06-l-intervento-di-blox-space",
+        "w": 3258,
+        "h": 4887,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Chi e' salito a parlare per Blox Space, microfono in mano, davanti alla propria presentazione."
+      },
+      {
+        "id": "torino-connect-vol1/07-al-fondale-dopo-gli-interventi",
+        "base": "07-al-fondale-dopo-gli-interventi",
+        "w": 4331,
+        "h": 2887,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Cinque persone in posa davanti al fondale YET, dopo gli interventi."
+      },
+      {
+        "id": "torino-connect-vol1/08-copertina-la-foto-di-gruppo",
+        "base": "08-copertina-la-foto-di-gruppo",
+        "w": 5184,
+        "h": 3456,
+        "misure": [
+          800,
+          1600,
+          2400
+        ],
+        "alt": "La foto di gruppo della serata: una ventina di persone davanti allo schermo con il logo YET."
+      },
+      {
+        "id": "torino-connect-vol1/09-i-quattro-che-hanno-fondato-yet",
+        "base": "09-i-quattro-che-hanno-fondato-yet",
+        "w": 5141,
+        "h": 3427,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "I quattro che hanno fondato YET, abbracciati davanti al fondale."
+      },
+      {
+        "id": "torino-connect-vol1/10-al-fondale-prima-di-salutarsi",
+        "base": "10-al-fondale-prima-di-salutarsi",
+        "w": 5022,
+        "h": 3348,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Cinque persone davanti al fondale YET, prima di salutarsi."
+      }
+    ]
+  }
+}
