@@ -22,6 +22,7 @@
   color: var(--ink);
   background-color: transparent;
   border: var(--border-strong);
+  border-radius: var(--radius);
   transition: background-color var(--transition), color var(--transition);
 }
 
@@ -50,6 +51,7 @@
   padding: clamp(var(--space-6), 6vw, var(--space-8));
 
   border: var(--border-strong);
+  border-radius: var(--radius-lg);
   background-color: var(--surface);
 }
 
@@ -121,6 +123,7 @@
   color: var(--on-coral);
   background-color: var(--coral-dark);
   border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
   transition: background-color var(--transition), border-color var(--transition);
 }
 

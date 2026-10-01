@@ -87,6 +87,7 @@
   min-height: 2.75rem; /* 44px: area di tocco minima */
   padding: var(--space-4) var(--space-7);
   border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
   background-color: var(--coral-dark);
   color: var(--on-coral);
   font-size: var(--step-0);
@@ -274,6 +275,7 @@
 .notice {
   padding: var(--space-6);
   border: var(--border);
+  border-radius: var(--radius-lg);
   border-left: 4px solid var(--coral);
   background-color: var(--surface);
 }

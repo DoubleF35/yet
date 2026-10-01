@@ -50,6 +50,7 @@
 
   border-inline-start: 3px solid var(--coral);
   background-color: var(--coral-soft);
+  border-radius: var(--radius);
   text-wrap: pretty;
 }
 
@@ -69,8 +70,21 @@
 .photo {
   flex: 0 0 auto;
   inline-size: clamp(7.5rem, 30vw, 12rem);
-  border: var(--border);
+
+  /* NIENTE bordo qui, e non e' una dimenticanza: il bordo lo disegna gia'
+     Avatar. Finche' entrambi erano a spigolo vivo le due righe combaciavano e
+     non si vedeva; con i raggi no, e intorno alla foto e' comparso un riquadro
+     quadrato attorno a una foto arrotondata. */
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   background-color: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+/* Qui la foto e' grande quanto una tessera della vetrina, quindi prende lo
+   stesso raggio e non quello piccolo che Avatar usa quando sta in riga. */
+.photo > * {
+  border-radius: var(--radius-lg);
 }
 
 .identity {
@@ -124,6 +138,7 @@
   display: inline-block;
   padding: 0 var(--space-2);
   border: var(--border-coral);
+  border-radius: var(--radius-pill);
   background-color: var(--coral-soft);
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);
@@ -166,6 +181,7 @@
 
   background: none;
   border: var(--border);
+  border-radius: var(--radius);
   cursor: pointer;
   transition:
     background-color var(--transition),
@@ -206,6 +222,7 @@
   color: var(--ink);
 
   border: var(--border-strong);
+  border-radius: var(--radius);
   transition: background-color var(--transition), color var(--transition);
 }
 
@@ -281,6 +298,7 @@
   padding-inline: var(--space-4);
 
   border: var(--border);
+  border-radius: var(--radius);
   color: var(--ink);
   text-decoration: none;
   font-size: var(--step-0);

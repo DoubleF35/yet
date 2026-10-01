@@ -22,6 +22,7 @@
 
 import { REFERENTI } from '../config/citta.js'
 import { normalizza } from './slug.js'
+import { eCofondatore, postoCofondatore } from '../config/cofondatori.js'
 
 /**
  * Quante persone servono perché una città diventi un filtro a sé.
@@ -190,11 +191,71 @@ export function cittaValida(grezza, filtri) {
  *
  * @returns {{organizzatori: Array, altri: Array, tutti: Array}}
  */
+/**
+ * Davanti chi ha caricato una foto, dietro gli altri, SENZA mescolare il
+ * resto: e' una partizione e non un riordino.
+ *
+ * Perche' serve: su 45 profili ne hanno una 19. Una fila di facce che a meta'
+ * diventa una fila di iniziali grigie sembra mezza rotta; con le facce davanti
+ * la parte che si vede per prima e' fatta di persone, e il resto arriva dopo.
+ *
+ * Perche' NON e' un sort: `Array.prototype.sort` con un comparatore che
+ * guarda solo la foto e' stabile per specifica, ma il comparatore direbbe
+ * "uguali" per due persone che foto non ce l'hanno, e l'ordine fra loro
+ * dipenderebbe da dettagli che non controlliamo. Due filtri dicono invece
+ * esattamente cosa succede: dentro ogni gruppo l'ordine di partenza resta.
+ */
+function fotoDavanti(gruppo) {
+  return [...gruppo.filter((m) => m.photoURL), ...gruppo.filter((m) => !m.photoURL)]
+}
+
 export function ordinaPersone(membri = []) {
-  const organizzatori = [
-    ...membri.filter((m) => m.role === 'admin'),
-    ...membri.filter((m) => m.role !== 'admin' && cittaDelReferente(m)),
-  ]
-  const altri = membri.filter((m) => m.role !== 'admin' && !cittaDelReferente(m))
-  return { organizzatori, altri, tutti: [...organizzatori, ...altri] }
+  /* I quattro che hanno fondato il club stanno davanti NELL'ORDINE SCRITTO in
+     config/cofondatori.js, e sono gli unici esenti dalla regola della foto:
+     quello e' un ordine deciso, e una regola automatica non deve poterlo
+     riscrivere perche' uno di loro non ha caricato un'immagine. */
+  const cofondatori = membri
+    .filter(eCofondatore)
+    .sort((a, b) => postoCofondatore(a) - postoCofondatore(b))
+
+  /* La preferenza per la foto si applica DENTRO ogni fascia, non sopra tutte.
+     Altrimenti chi tiene in piedi il club finirebbe dietro a un iscritto di
+     ieri solo per non aver caricato un'immagine, e la gerarchia che la vetrina
+     dichiara ("ORGANIZZA" in cima) sarebbe smentita dall'ordine. */
+  const altriOrganizzatori = fotoDavanti([
+    ...membri.filter((m) => !eCofondatore(m) && m.role === 'admin'),
+    ...membri.filter(
+      (m) => !eCofondatore(m) && m.role !== 'admin' && cittaDelReferente(m),
+    ),
+  ])
+
+  const organizzatori = [...cofondatori, ...altriOrganizzatori]
+  const altri = fotoDavanti(
+    membri.filter(
+      (m) => !eCofondatore(m) && m.role !== 'admin' && !cittaDelReferente(m),
+    ),
+  )
+  return { cofondatori, organizzatori, altri, tutti: [...organizzatori, ...altri] }
+}
+
+/**
+ * Cosa dice il distintivo sotto al nome.
+ *
+ * STA QUI, e non dentro la tessera della vetrina dov'era prima, perche' le
+ * tessere che lo mostrano sono due: quella della vetrina e quella della fila
+ * sulla home. Finche' la regola era scritta in un posto solo e ricopiata
+ * nell'altro, le due dicevano gia' cose diverse (la fila non sapeva niente
+ * degli admin). Una copia sola non puo' divergere.
+ *
+ * L'ORDINE DEI CASI E' LA GERARCHIA. Aver fondato il club vince su tutto:
+ * e' il fatto piu' raro e non scade. Poi la citta', che e' piu' precisa di
+ * "Organizza" perche' dice anche dove. Poi "Organizza" per gli altri admin.
+ * Null per tutti gli altri, cosi' la tessera non disegna un riquadro vuoto.
+ */
+export function etichettaRuolo(membro, t) {
+  if (eCofondatore(membro)) return t('vetrina.cofondatore')
+  const citta = cittaDelReferente(membro)
+  if (citta) return t('vetrina.organizzaCitta', { citta })
+  if (membro?.role === 'admin') return t('vetrina.organizza')
+  return null
 }
