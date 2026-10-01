@@ -67,6 +67,15 @@ export const EVENTI = [
        non mostra uno zero. Non inventarlo, e' il genere di numero che qualcuno
        poi controlla. */
     presenti: null,
+    /* Chi ha scattato. Un oggetto e non una stringa: scrivere solo "@tizio" e
+       ricavarne l'indirizzo vorrebbe dire dare per scontato che il prossimo
+       fotografo stia su Instagram pure lui. null quando non lo sappiamo: la
+       riga sparisce invece di uscire vuota. */
+    fotografo: {
+      nome: 'Pietro Gelati',
+      handle: '@_pg_artworks_',
+      url: 'https://www.instagram.com/_pg_artworks_/',
+    },
     racconto: [
       'Il 13 settembre Blox Space ci ha aperto le porte per un pomeriggio riservato ai membri del club, dai 16 ai 23 anni.',
       'Si e’ partiti con il networking di apertura, per conoscersi prima di cominciare. Poi la presentazione di YET, gli interventi di Blox Space ed Enter Academy, e una sessione di domande aperta a tutti. Si e’ chiuso con l’aperitivo e il networking libero.',
@@ -82,6 +91,8 @@ export const EVENTI = [
     indirizzo: 'Via Palestro 51',
     ospiti: [],
     presenti: null,
+    /* Non sappiamo ancora chi ha fotografato la serata di Roma. */
+    fotografo: null,
     racconto: [
       'Il 18 settembre il primo incontro YET a Roma: un aperitivo per conoscersi di persona, confrontarsi sui progetti e incontrare altri della stessa eta’ che stanno costruendo qualcosa.',
     ],

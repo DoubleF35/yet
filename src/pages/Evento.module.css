@@ -241,3 +241,29 @@
   color: var(--muted);
   max-inline-size: var(--measure);
 }
+
+/* --- il credito al fotografo -------------------------------------------- */
+
+/* Piccolo e in grigio: e' una nota, non un titolo. Ma non piu' piccolo del
+   corpo meno uno, perche' resta un nome di persona e va potuto leggere. */
+.credito {
+  margin: var(--space-5) 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.creditoLink {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  transition: color var(--transition);
+}
+
+.creditoLink:hover {
+  color: var(--ink);
+}
+
+.creditoLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

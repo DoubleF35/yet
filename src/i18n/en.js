@@ -262,6 +262,7 @@ export default {
     dove: 'Where',
     ospiti: 'Speakers',
     senzaFoto: 'The photos from this night are not up yet.',
+    fotoDi: 'Photos by {chi}',
     mancanteTitolo: 'This meetup does not exist',
     mancanteTesto:
       'The address does not match any night. It might be an old link, or a typo.',

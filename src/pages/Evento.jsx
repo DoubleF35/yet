@@ -113,7 +113,36 @@ export default function Evento() {
         </div>
 
         {galleria ? (
-          <Galleria slug={slug} scatti={resto.length > 0 ? resto : galleria.scatti} />
+          <>
+            <Galleria slug={slug} scatti={resto.length > 0 ? resto : galleria.scatti} />
+            {/* Il credito sta SOTTO le foto e non in cima fra i dati della
+                serata: chi si chiede chi le ha scattate se lo chiede dopo
+                averle guardate, non prima. Compare solo se c'e' qualcosa da
+                dire, cosi' le serate senza un fotografo non mostrano una riga
+                vuota. */}
+            {evento.fotografo && (
+              <p className={s.credito}>
+                {t('evento.fotoDi', { chi: evento.fotografo.nome })}
+                {evento.fotografo.handle && (
+                  <>
+                    {' - '}
+                    {evento.fotografo.url ? (
+                      <a
+                        className={s.creditoLink}
+                        href={evento.fotografo.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {evento.fotografo.handle}
+                      </a>
+                    ) : (
+                      evento.fotografo.handle
+                    )}
+                  </>
+                )}
+              </p>
+            )}
+          </>
         ) : (
           <p className={s.senzaFoto}>{t('evento.senzaFoto')}</p>
         )}
