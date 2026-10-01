@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { useI18n } from '../lib/i18n.jsx'
+import { LOGO_SU_FOTO } from '../lib/marchio.js'
 import { useParallax } from '../lib/motion.js'
 
 import s from './Hero.module.css'
@@ -56,7 +57,7 @@ export default function Hero() {
       <div className={s.veil} aria-hidden="true" />
 
       <div className={s.inner}>
-        <img className={s.logo} src={`${base}logo-light.png`} alt="YET" width="486" height="291" />
+        <img className={s.logo} src={LOGO_SU_FOTO} alt="YET" width="486" height="291" />
 
         <h1 className={s.title}>
           {taglineTesto}

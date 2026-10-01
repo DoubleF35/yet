@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { COMMUNITY, CONTACT_EMAIL } from '../config/socials.js'
 import { useI18n } from '../lib/i18n.jsx'
+import { LOGO } from '../lib/marchio.js'
 import { useSocials } from '../lib/socials.jsx'
 
 import s from './Footer.module.css'
@@ -23,7 +24,7 @@ const PAGINE = [
 export default function Footer() {
   const { t } = useI18n()
   const socials = useSocials()
-  const logo = `${import.meta.env.BASE_URL}logo-light.png`
+  const logo = LOGO
   const year = new Date().getFullYear()
 
   return (

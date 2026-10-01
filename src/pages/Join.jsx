@@ -18,6 +18,7 @@ import {
   saveUserProfile,
 } from '../lib/db.js'
 import { AVATAR_MAX_BYTES, compressAvatar, humanBytes } from '../lib/imageCompress.js'
+import { LOGO } from '../lib/marchio.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
 import s from './Join.module.css'
@@ -33,7 +34,7 @@ import s from './Join.module.css'
    ========================================================================= */
 
 // La base di GitHub Pages non è '/', quindi ogni asset in public/ va prefissato.
-const LOGO_SRC = `${import.meta.env.BASE_URL}logo-light.png`
+const LOGO_SRC = LOGO
 
 // Sotto questa soglia di caratteri residui il contatore passa al coral.
 const BIO_WARN_AT = 30

@@ -5,6 +5,7 @@ import Avatar from './Avatar.jsx'
 import LangSwitch from './LangSwitch.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { useI18n } from '../lib/i18n.jsx'
+import { LOGO, LOGO_SU_FOTO } from '../lib/marchio.js'
 
 import s from './Navbar.module.css'
 
@@ -71,7 +72,10 @@ export default function Navbar() {
   const userMenuRef = useRef(null)
   const navRef = useRef(null)
 
-  const logo = `${import.meta.env.BASE_URL}logo-light.png`
+  /* Sopra la fotografia serve il logo chiaro, sul foglio quello scuro. Non e'
+     un dettaglio estetico: con il tema chiaro il logo scuro sopra l'apertura
+     scompariva del tutto. */
+  const logo = scrolled ? LOGO : LOGO_SU_FOTO
   const displayName =
     profile?.displayName || user?.displayName || user?.email || t('nav.ilTuoProfilo')
 

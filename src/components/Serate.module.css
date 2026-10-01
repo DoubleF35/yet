@@ -154,7 +154,10 @@
 .etichetta {
   border: var(--border-soft);
   border-radius: var(--radius-pill);
-  background-color: var(--bg);
+  /* --surface-sunken e non --bg: la scheda e' bianca e il foglio e' quasi
+     bianco, quindi un'etichetta col colore del foglio sparirebbe dentro la
+     scheda. Serve il beige, che e' l'unico dei tre che si stacca da entrambi. */
+  background-color: var(--surface-sunken);
   color: var(--muted);
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);

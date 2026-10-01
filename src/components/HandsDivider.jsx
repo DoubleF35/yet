@@ -1,3 +1,5 @@
+import { MANI } from '../lib/marchio.js'
+
 import s from './HandsDivider.module.css'
 
 /**
@@ -11,7 +13,7 @@ import s from './HandsDivider.module.css'
  * @param {'left'|'center'|'right'} [align] dove sta il segno (default 'center')
  */
 export default function HandsDivider({ align = 'center', className = '' }) {
-  const hands = `${import.meta.env.BASE_URL}hands-light.png`
+  const hands = MANI
 
   return (
     <div className={`${s.divider} ${s[align] ?? s.center} ${className}`.trim()} aria-hidden="true">

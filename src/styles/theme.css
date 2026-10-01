@@ -19,6 +19,10 @@
    uno scatto lo fa sembrare un segnaposto invece che una stampa, e senza
    nessun distacco dal fondo la pagina torna piatta.
 
+   IL TEMA E' TORNATO CHIARO. Il beige del marchio fa da foglio e il nero
+   caldo da inchiostro. Chi cerca i valori di quando era scuro li trova nel
+   commit 0e09714; chi cerca il chiaro di prima, in 03ccfa4.
+
    C'era poi una contraddizione già in corso, che il divieto non impediva:
    --radius valeva 0, ma sei moduli scrivevano border-radius: 999px a mano per
    i bottoni. Spigolo vivo sulle schede e pillola sui bottoni sono due epoche
@@ -40,55 +44,100 @@
      --------------------------------------------------------------------- */
 
   /* I due colori del marchio non cambiano, cambia quale dei due sta sotto.
-     Il beige di YET diventa il TESTO e il nero diventa il fondo: e' la stessa
-     identita' rovesciata, non una palette nuova. Il coral resta l'accento. */
-  --bg: #14120f; /* nero caldo di fondo */
-  --ink: #f2efe9; /* il beige del marchio, ora come testo: 16.3:1 su --bg, AAA */
+     Il sito e' tornato CHIARO: il beige fa da foglio, il nero caldo fa da
+     inchiostro, il coral resta l'accento. E' la stessa identita' di prima
+     rigirata, non una palette nuova.
+
+     Il fondo non e' il beige pieno del marchio ma una sua versione quasi
+     bianca: le fotografie degli eventi stanno su schede BIANCHE sollevate, e
+     perche' si vedano sollevate il foglio sotto deve essere appena piu' scuro
+     di loro. Col beige pieno sotto, le schede bianche sembrerebbero buchi. */
+  --bg: #fbfaf7; /* bianco caldo: il foglio */
+  --ink: #14120f; /* il nero caldo del marchio: 17.4:1 su --bg, AAA */
   --coral: #d14a2c; /* il coral esatto del marchio */
 
-  /* Superfici.
-     Su fondo scuro le card si staccano andando verso l'ALTO, non verso il
-     basso: schiarire resta il gesto principale, e l'ombra (vedi --shadow-*)
-     lavora insieme a questo, non al posto di questo. Un'ombra nera sotto una
-     scheda su fondo gia' nero non si vedrebbe.
-     --surface-sunken e' piu' scuro del fondo e serve agli incavi (skeleton,
-     campi disabilitati, barre di progresso). */
-  --surface: #1e1b18;
-  --surface-sunken: #0d0c0a;
+  /* Superfici, e qui sta il ribaltamento che conta.
+     Sul tema scuro le schede si staccavano SCHIARENDO, perche' era l'unico
+     modo senza ombre. Qui succede l'opposto: la scheda e' BIANCA, piu' chiara
+     del foglio, e l'ombra fa il resto. --surface-sunken e' il beige vero del
+     marchio e serve agli incavi (skeleton, campi disabilitati, riquadri in
+     attesa di una foto). --surface-band e' per le fasce a tutta larghezza che
+     spezzano il ritmo, dove un bianco su bianco non si distinguerebbe. */
+  --surface: #ffffff;
+  --surface-sunken: #efeae1;
+  --surface-band: #f5f1e9;
 
-  /* Bordi. Stessa distinzione di prima, ribaltata:
-     --line       porta informazione (input, bottoni, card cliccabili)
-     --line-soft  puramente decorativo, mai per delimitare un controllo. */
-  --line: #4a423a;
-  --line-soft: #2a2622;
+  /* Bordi. Due pesi, e la differenza NON e' estetica ma di accessibilita':
+     --line       3.7:1 su --bg -> passa WCAG 1.4.11 (non-text contrast),
+                  quindi e' l'unico ammesso per bordi che PORTANO informazione:
+                  input, bottoni, schede cliccabili.
+     --line-soft  decorativo. Divisori e filetti fra le righe di una lista.
+                  Mai per delimitare un controllo. */
+  --line: #8a8177;
+  --line-soft: #e8e3da;
 
-  /* Testo attenuato: 8.4:1 su --bg. Grigio CALDO, che tira al beige: un
-     grigio neutro su questo fondo sembrerebbe cenere. */
-  --muted: #b5aca3;
+  /* Testo attenuato: 5.8:1 su --bg, quindi passa AA anche a 16px.
+     Grigio CALDO, che tira al beige: un grigio neutro su questo foglio
+     sembrerebbe sporco. */
+  --muted: #6b635a;
 
   /* Coral, e qui sta il tranello di questa palette, misurato non stimato.
-     Il coral del marchio su --bg fa 4.21:1: basta per il testo GRANDE, per
-     le icone e per i bordi, ma NON per un paragrafo o un link inline.
-     Per quelli c'e' --coral-text, che fa 5.32:1.
+     Il coral del marchio su --bg fa 3.6:1: basta per il testo GRANDE, per le
+     icone e per i bordi, ma NON per un paragrafo o un link inline.
+     Per quelli c'e' --coral-text, che fa 6.2:1.
 
-     Il nome --coral-dark e' rimasto per non spezzare i moduli che gia' lo
-     usano, ma sul tema scuro il coral "sicuro" e' piu' CHIARO, non piu'
-     scuro: e' l'unico punto in cui il nome mente, ed e' scritto qui. */
-  --coral-text: #e2603c; /* 5.32:1 su --bg, AA anche a 16px */
-  --coral-dark: #e2603c; /* stesso valore: alias per i moduli esistenti */
-  --coral-soft: #2b1a14; /* fondo tenue per badge; --ink sopra fa 12.4:1 */
+     Sul tema scuro il coral "sicuro" era piu' CHIARO del marchio. Qui torna a
+     essere piu' SCURO, che e' il verso naturale: il nome --coral-dark dice di
+     nuovo la verita'. */
+  --coral-text: #a83a22; /* 6.2:1 su --bg, AA anche a 16px */
+  --coral-dark: #a83a22; /* stesso valore: alias per i moduli esistenti */
+  --coral-soft: #f6e2dc; /* fondo tenue per badge; --ink sopra fa 15.8:1 */
 
-  /* CONTROINTUITIVO, e verificato con la formula WCAG: sopra un riempimento
-     coral il testo va SCURO, non bianco. Su #e2603c il nero caldo fa 5.32:1,
-     il bianco solo 3.52:1. Sul tema chiaro era l'opposto. */
-  --on-coral: #14120f;
+  /* Sopra un riempimento coral il testo va BIANCO, e di nuovo e' l'opposto del
+     tema scuro: su #a83a22 il bianco fa 6.5:1, il nero caldo solo 2.7:1. */
+  --on-coral: #ffffff;
 
-  /* Stati. Schiariti rispetto al tema chiaro, perche' un rosso e un verde
-     cupi su fondo nero diventano fango. Entrambi passano AA su --bg. */
-  --danger: #e8736f;
-  --danger-soft: #2c1616;
-  --ok: #6bbf94;
-  --ok-soft: #12241b;
+  /* Stati. Desaturati apposta per stare nella palette: non sono il rosso e il
+     verde di sistema, che accanto al coral stonerebbero. Entrambi passano AA
+     su --bg. Le varianti -soft sono fondi, con --ink sopra. */
+  --danger: #9b2226;
+  --danger-soft: #f3dede;
+  --ok: #2f6b4f;
+  --ok-soft: #dce8e1;
+
+  /* -----------------------------------------------------------------------
+     1a. SOPRA UNA FOTOGRAFIA
+
+     Questi NON seguono il tema, ed e' il punto. Su una fotografia il testo e'
+     bianco perche' sotto c'e' un velo scuro, e resterebbe bianco anche se il
+     sito tornasse scuro domani. Scrivere var(--ink) sopra una foto e' il
+     difetto che si e' creato invertendo il tema la prima volta: l'inchiostro
+     e' diventato nero e il testo sull'apertura e' sparito.
+
+     Regola: dentro l'apertura e dentro la copertina di un evento si usano
+     QUESTI, mai --ink e mai --bg.
+     --------------------------------------------------------------------- */
+
+  --su-foto: #ffffff;
+  --su-foto-muted: #ddd7cf; /* 9.7:1 sul velo in basso */
+  --su-foto-vetro: rgba(20, 18, 15, 0.58); /* riempimento delle etichette */
+  --su-foto-linea: rgba(255, 255, 255, 0.32);
+
+  /* Il colore che si vede nell'istante prima che una fotografia arrivi.
+     NON e' --bg: il foglio e' quasi bianco, e un lampo bianco un attimo prima
+     di una foto scura e' peggio del rettangolo vuoto che si voleva evitare. */
+  --foto-sotto: #241f1a;
+
+  /* Il velo dell'ingrandimento di una foto. Resta scuro anche col sito chiaro:
+     sotto c'e' una pagina piena di altre foto e devono sparire davvero. */
+  --velo-pieno: rgba(20, 18, 15, 0.93);
+
+  /* Il vetro della barra in alto. E' --bg a poco meno dell'opacita' piena:
+     deve lasciar intravedere quello che le scorre sotto senza che il testo
+     della barra perda contrasto. Era scritto a mano dentro Navbar.module.css,
+     ed e' il motivo per cui invertendo il tema la barra e' rimasta scura con
+     le voci scure sopra, cioe' illeggibile. */
+  --nav-vetro: rgba(251, 250, 247, 0.84);
 
   /* -----------------------------------------------------------------------
      1b. IMMAGINE DI APERTURA
@@ -236,19 +285,24 @@
 
   /* Le ombre.
 
-     Su fondo scuro un'ombra nera sotto una scheda non si vede: il fondo è già
-     scuro. Quella che si vede è la combinazione di DUE cose, ed è per questo
-     che non basta l'ombra da sola: la superficie che si schiarisce (--surface)
-     e un alone stretto che stacca il bordo inferiore.
+     Su fondo chiaro sono il mezzo PRINCIPALE per staccare una scheda, non un
+     rinforzo: sul tema scuro un'ombra nera sul nero non si vedeva e il lavoro
+     lo faceva la superficie che si schiariva. Qui e' l'opposto, e infatti le
+     opacita' sono molto piu' basse: su un foglio quasi bianco un'ombra al 50%
+     diventa una macchia sporca.
 
-     Lo spread NEGATIVO è il dettaglio che distingue un'ombra del 2026 da una
-     del 2012: l'ombra si stringe rispetto all'elemento invece di allargarsi,
+     Sono costruite sul nero CALDO del marchio e non sul nero puro: un'ombra
+     neutra su un foglio caldo vira al grigio cenere e si vede che e' estranea.
+
+     Due strati ciascuna, ed e' quello che le fa sembrare vere: uno largo e
+     tenue per la distanza dal foglio, uno stretto e piu' denso per il contatto
+     col bordo. Lo spread NEGATIVO fa stringere l'ombra rispetto all'elemento,
      quindi si vede sotto e non intorno, come farebbe una luce dall'alto. */
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-1: 0 1px 2px rgba(20, 18, 15, 0.06);
   --shadow-2:
-    0 8px 18px -10px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.35);
+    0 10px 20px -10px rgba(20, 18, 15, 0.18), 0 2px 6px -2px rgba(20, 18, 15, 0.08);
   --shadow-3:
-    0 18px 36px -14px rgba(0, 0, 0, 0.65), 0 3px 10px -3px rgba(0, 0, 0, 0.4);
+    0 20px 38px -14px rgba(20, 18, 15, 0.22), 0 3px 10px -3px rgba(20, 18, 15, 0.1);
 
   /* Il velo sopra una fotografia, quando ci va del testo.
 

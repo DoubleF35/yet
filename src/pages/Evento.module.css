@@ -28,15 +28,22 @@
      meta' scroll e la copertina "salta". */
   min-block-size: min(68svh, 34rem);
   overflow: hidden;
-  background-color: var(--surface);
+  background-color: var(--foto-sotto);
+  /* Come nell'apertura: qui sotto c'e' una fotografia, quindi il colore del
+     testo si decide una volta sola e non si eredita dal foglio. Senza, il
+     titolo prende --ink e diventa nero su foto scura. */
+  color: var(--su-foto);
   border-block-end: var(--border-soft);
 }
 
-/* Senza foto la pagina deve comunque reggere: niente buco nero, solo un
-   blocco di titolo su fondo di superficie. */
+/* Senza foto la pagina deve comunque reggere. E senza foto non c'e' niente di
+   scuro sotto, quindi il testo torna a essere quello del foglio: e' l'unico
+   punto in cui il colore dipende davvero dal contenuto. */
 .copertinaVuota {
   min-block-size: auto;
   padding-block-start: var(--space-10);
+  background-color: var(--surface-band);
+  color: var(--ink);
 }
 
 .copertinaFoto {
@@ -63,6 +70,14 @@
   display: none;
 }
 
+/* Senza foto le etichette tornano sul foglio, quindi il vetro scuro non ha
+   piu' niente da schiarire e diventerebbe un adesivo nero sul beige. */
+.copertinaVuota .etichetta {
+  background-color: var(--surface);
+  border-color: var(--line-soft);
+  color: var(--muted);
+}
+
 .copertinaTesto {
   position: relative;
   padding-block: var(--space-9) var(--space-8);
@@ -70,7 +85,7 @@
 
 .indietro {
   display: inline-block;
-  color: var(--muted);
+  color: var(--su-foto-muted);
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);
   text-decoration: none;
@@ -81,8 +96,16 @@
 }
 
 .indietro:hover {
-  color: var(--ink);
+  color: var(--su-foto);
   text-decoration: underline;
+}
+
+.copertinaVuota .indietro {
+  color: var(--muted);
+}
+
+.copertinaVuota .indietro:hover {
+  color: var(--ink);
 }
 
 .indietro:focus-visible {
@@ -106,8 +129,9 @@
   border-radius: var(--radius-pill);
   /* Semitrasparente: sotto c'e' una fotografia, un riempimento pieno
      sembrerebbe un adesivo appiccicato sopra. */
-  background-color: rgba(30, 27, 24, 0.82);
-  color: var(--ink);
+  background-color: var(--su-foto-vetro);
+  border-color: var(--su-foto-linea);
+  color: var(--su-foto);
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);
   padding: var(--space-2) var(--space-4);
