@@ -279,6 +279,9 @@ export default {
     dove: 'Dove',
     ospiti: 'Sono intervenuti',
     senzaFoto: 'Le foto di questa serata non ci sono ancora.',
+    /* Il credito al fotografo. {chi} arriva da config/eventi.js, dove sta
+       scritto come vuole essere citato lui. */
+    fotoDi: 'Foto di {chi}',
     mancanteTitolo: 'Questo incontro non c\u2019\u00e8',
     mancanteTesto:
       'L\u2019indirizzo non corrisponde a nessuna serata. Pu\u00f2 essere un link vecchio, o un refuso.',
