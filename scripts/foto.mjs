@@ -222,12 +222,17 @@ async function main() {
     console.log(`${slug}: ${nomi.length} scatti`)
     await mkdir(join(USCITA, slug), { recursive: true })
 
-    /* La copertina e' il file che si chiama "copertina", altrimenti il primo
+    /* La copertina e' il file che ha "copertina" NEL nome, altrimenti il primo
        in ordine. Nominare gli scatti 01-, 02-, ... e' il modo piu' semplice
-       per decidere l'ordine della galleria. */
+       per decidere l'ordine della galleria.
+       Prima si cercava il prefisso, e le due cose si pestavano i piedi: la
+       copertina compare anche nella galleria, quindi ha anche una sua
+       posizione, e "copertina-sala.jpg" la inchiodava in testa. Cercandolo
+       dentro al nome, "08-copertina-sala.jpg" dice tutte e due le cose: fa da
+       copertina ed e' l'ottava della fila. */
     const indiceCopertina = Math.max(
       0,
-      nomi.findIndex((n) => ripulisci(n.replace(extname(n), '')).startsWith('copertina')),
+      nomi.findIndex((n) => ripulisci(n.replace(extname(n), '')).includes('copertina')),
     )
 
     const voci = []
