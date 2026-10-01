@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
+import Serate from '../components/Serate.jsx'
 import Hero from '../components/Hero.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
@@ -14,6 +15,7 @@ import {
   safeImageSrc,
   safeUrl,
 } from '../lib/attachments.js'
+import { EVENTI } from '../config/eventi.js'
 import { countApprovedUsers, formatDate, getMedia, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -36,6 +38,10 @@ import { useCountUp, useReveal } from '../lib/motion.js'
 /* --------------------------------------------------------------------------
    La pagina
 -------------------------------------------------------------------------- */
+/* Ricavati una volta sola: la configurazione non cambia a runtime. */
+const quantiIncontri = EVENTI.length
+const quanteCitta = new Set(EVENTI.map((e) => e.citta)).size
+
 export default function Home() {
   const { t } = useI18n()
   const [news, setNews] = useState([])
@@ -157,21 +163,54 @@ export default function Home() {
           className={`${s.tallyBlock} container ${contatore.revealed ? s.tallyIn : s.tallyOut}`}
           ref={contatore.ref}
         >
-          <Link className={s.tallyLink} to="/vetrina">
-            {/* Il numero sale da zero quando la sezione entra nello schermo,
-                non al caricamento della pagina: partire mentre e' ancora
-                sotto la piega vuol dire che nessuno lo vede salire, e resta
-                solo il costo dell'animazione.
-                Con "riduci animazioni" attivo useCountUp restituisce subito il
-                valore finale. */}
-            <span className={s.tallyNumber}>{numeroMostrato}</span>
-            <span className={s.tallyLabel}>
-              {membri === 1 ? t('home.contatorePersona') : t('home.contatorePersone')}
-            </span>
-          </Link>
+          {/* Tre numeri e non piu' uno. Il contatore dei membri da solo dice
+              quanti siamo; questi tre dicono anche che ci siamo gia' visti, ed
+              e' la domanda che si fa chi arriva da fuori.
+              Gli altri due si ricavano dalla configurazione degli eventi
+              invece di essere scritti a mano: aggiungendo una serata si
+              aggiornano da soli, e non possono dire il falso. */}
+          <ul className={s.numeri}>
+            <li className={s.numero}>
+              <Link className={s.numeroLink} to="/vetrina">
+                {/* Il numero sale da zero quando la sezione entra nello
+                    schermo, non al caricamento della pagina: partire mentre e'
+                    ancora sotto la piega vuol dire che nessuno lo vede salire,
+                    e resta solo il costo dell'animazione.
+                    Con "riduci animazioni" attivo useCountUp restituisce
+                    subito il valore finale. */}
+                <span className={s.tallyNumber}>{numeroMostrato}</span>
+                <span className={s.tallyLabel}>
+                  {membri === 1 ? t('home.contatorePersona') : t('home.contatorePersone')}
+                </span>
+              </Link>
+            </li>
+
+            <li className={s.numero}>
+              <Link className={s.numeroLink} to="/eventi">
+                <span className={s.tallyNumber}>{quantiIncontri}</span>
+                <span className={s.tallyLabel}>
+                  {t(quantiIncontri === 1 ? 'prova.numeroIncontro' : 'prova.numeroIncontri')}
+                </span>
+              </Link>
+            </li>
+
+            {/* Senza link: non esiste una pagina per citta', e un link che
+                porta dove si era gia' e' peggio di nessun link. */}
+            <li className={s.numero}>
+              <span className={s.numeroFermo}>
+                <span className={s.tallyNumber}>{quanteCitta}</span>
+                <span className={s.tallyLabel}>
+                  {t(quanteCitta === 1 ? 'prova.numeroCittaUna' : 'prova.numeroCitta')}
+                </span>
+              </span>
+            </li>
+          </ul>
+
           <p className={s.tallyLead}>{t('community.descrizione')}</p>
         </section>
       )}
+
+      <Serate />
 
       <HandsDivider />
 

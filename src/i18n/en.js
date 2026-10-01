@@ -213,6 +213,20 @@ export default {
   },
 
   /* --- deleting the profile ---------------------------------------------- */
+  /* --- blocchi della home che mostrano cosa e' gia' successo --------------- */
+  prova: {
+    numeroIncontri: 'meetups already held',
+    numeroIncontro: 'meetup already held',
+    numeroCitta: 'cities, and we keep opening more',
+    numeroCittaUna: 'city, the first of many',
+    serateOcchiello: 'Already happened',
+    serateTitolo: 'Where we have met',
+    serateTesto:
+      'Not a plan: this is what we have already done. Every night has its own page.',
+    serateTutte: 'All meetups',
+    ospiti: 'They hosted us and spoke on stage',
+  },
+
   /* --- galleria di una serata --------------------------------------------- */
   galleria: {
     titolo: 'Photos from the night',
