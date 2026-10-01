@@ -228,6 +228,20 @@ export default {
     dataDaDefinire: 'data da definire',
   },
 
+  /* --- blocchi della home che mostrano cosa e' gia' successo --------------- */
+  prova: {
+    numeroIncontri: 'incontri gi\u00e0 fatti',
+    numeroIncontro: 'incontro gi\u00e0 fatto',
+    numeroCitta: 'citt\u00e0, e continuiamo ad aprirne',
+    numeroCittaUna: 'citt\u00e0, la prima di molte',
+    serateOcchiello: 'Gi\u00e0 successo',
+    serateTitolo: 'Dove ci siamo visti',
+    serateTesto:
+      'Non \u00e8 un programma: \u00e8 quello che abbiamo gi\u00e0 fatto. Ogni serata ha la sua pagina.',
+    serateTutte: 'Tutti gli incontri',
+    ospiti: 'Ci hanno ospitato e sono saliti a parlare',
+  },
+
   /* --- galleria di una serata --------------------------------------------- */
   galleria: {
     titolo: 'Le foto della serata',

@@ -1,0 +1,241 @@
+/* =========================================================================
+   Le serate gia' fatte, sulla home.
+
+   Due schede affiancate da tablet in su, una sotto l'altra sul telefono. La
+   striscia degli ospiti chiude il blocco con una banda a tutta larghezza su
+   superficie: serve a staccarla dalle schede, perche' e' informazione di un
+   altro tipo (loro, non noi).
+   ========================================================================= */
+
+.wrap {
+  padding-block: var(--space-11) 0;
+}
+
+/* ---- intestazione ------------------------------------------------------ */
+
+.testa {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-block-end: var(--space-8);
+}
+
+.testaTesto {
+  max-inline-size: 38rem;
+}
+
+.occhiello {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.titolo {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-heading);
+}
+
+.sottotitolo {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+}
+
+.tutte {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-6);
+  border: var(--border);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.tutte:hover {
+  background-color: var(--surface);
+  border-color: var(--ink);
+}
+
+.tutte:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- le schede --------------------------------------------------------- */
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding-inline: var(--container-pad);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-5);
+}
+
+.voce {
+  min-inline-size: 0;
+}
+
+.scheda {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.scheda:hover {
+  transform: translateY(-2px);
+  border-color: var(--line);
+  box-shadow: var(--shadow-3);
+}
+
+.scheda:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.copertina {
+  /* Rapporto fisso: due schede affiancate devono avere le foto della stessa
+     altezza anche se gli scatti sono uno verticale e uno orizzontale. */
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: var(--surface-sunken);
+}
+
+.copertinaImg {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  aspect-ratio: auto;
+}
+
+.corpo {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex-grow: 1;
+}
+
+.etichette {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.etichetta {
+  border: var(--border-soft);
+  border-radius: var(--radius-pill);
+  background-color: var(--bg);
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  padding: var(--space-1) var(--space-3);
+}
+
+.nome {
+  margin: 0;
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+}
+
+.riga {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+/* margin-block-start auto: il link resta incollato in fondo anche quando le
+   due schede hanno testi di lunghezza diversa. */
+.vai {
+  margin-block-start: auto;
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border-soft);
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+}
+
+.scheda:hover .vai {
+  text-decoration: underline;
+}
+
+/* ---- chi ci ha ospitato ------------------------------------------------ */
+
+.ospiti {
+  margin-block-start: var(--space-10);
+  border-block: var(--border-soft);
+  background-color: var(--surface);
+}
+
+.ospitiRiga {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+  padding-block: var(--space-6);
+}
+
+.ospitiEtichetta {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.ospitiElenco {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-7);
+}
+
+/* Scritti nel carattere del sito e non come loghi: non abbiamo i loro file, e
+   un logo rifatto a mano e' peggio del nome scritto bene. */
+.ospite {
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scheda:hover {
+    transform: none;
+  }
+}
