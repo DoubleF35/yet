@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 import Avatar from './Avatar.jsx'
 import Reveal from './Reveal.jsx'
-import { cittaDelReferente, ordinaPersone } from '../lib/citta.js'
+import { etichettaRuolo, ordinaPersone } from '../lib/citta.js'
 import { listUsers } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -297,7 +297,7 @@ export default function Persone({ totale = null }) {
 function Tessera({ persona }) {
   const { t } = useI18n()
   const nome = memberName(persona)
-  const citta = cittaDelReferente(persona)
+  const etichetta = etichettaRuolo(persona, t)
   const dove = String(persona.location ?? '').trim()
   const bio = String(persona.bio ?? '').trim()
 
@@ -310,8 +310,8 @@ function Tessera({ persona }) {
       <span className={s.corpo}>
         <span className={s.nome}>{nome}</span>
 
-        {citta ? (
-          <span className={s.badge}>{t('vetrina.organizzaCitta', { citta })}</span>
+        {etichetta ? (
+          <span className={s.badge}>{etichetta}</span>
         ) : (
           dove && <span className={s.dove}>{dove}</span>
         )}

@@ -10,7 +10,9 @@
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-6);
-  border: var(--border);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
   background-color: var(--surface);
 
   /* Quante righe di corpo si vedono prima di "Leggi tutto". È una custom
@@ -18,17 +20,21 @@
      riscrivere il calcolo dell'altezza. */
   --collapsed-lines: 7;
 }
-/* Notizia in evidenza: prima card a piena larghezza e bordo pieno da 2px.
-   Scelta editoriale, serve a rompere la griglia regolare. */
+/* Notizia in evidenza: prima card a piena larghezza, e si stacca ALZANDOSI
+   invece che con un bordo da 2px. Il bordo pieno era la scelta giusta quando
+   tutto il sito era a spigolo vivo e piatto; adesso che le tessere hanno
+   un'ombra sarebbe la cosa piu' dura della pagina, e peserebbe piu' del titolo
+   che ci sta dentro. La larghezza doppia dice gia' che e' la principale. */
 .featured {
   grid-column: 1 / -1;
   padding: var(--space-8);
-  border: var(--border-strong);
+  box-shadow: var(--shadow-3);
   --collapsed-lines: 10;
 }
 .badge {
   padding: var(--space-1) var(--space-3);
   border: var(--border-coral);
+  border-radius: var(--radius-pill);
   background-color: var(--coral-soft);
   color: var(--ink);
   font-size: var(--step--1);
@@ -98,10 +104,6 @@
 .skelLine {
   margin-bottom: var(--space-2);
 }
-.featured {
-    padding: var(--space-6);
-    border: var(--border);
-  }
 /* =========================================================================
    5. ALLEGATI
    ====================================================================== */
@@ -117,7 +119,9 @@
 }
 .shot {
   display: block;
-  border: var(--border);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
   /* line-height a 0: altrimenti il baseline dell'immagine lascia una striscia
      chiara sotto, dentro il bordo, e sembra un errore di allineamento. */
   line-height: 0;
@@ -154,6 +158,7 @@
   min-height: 2.75rem;
   padding: var(--space-2) var(--space-3);
   border: var(--border);
+  border-radius: var(--radius);
   color: var(--ink);
   text-decoration: none;
   font-size: var(--step-0);
@@ -184,7 +189,9 @@
 @media (max-width: 47.9375rem) {
   .featured {
     padding: var(--space-6);
-    border: var(--border);
+    /* Su schermo stretto si alza di meno: li' la notizia e' larga quanto le
+       altre, quindi non deve anche pesare di piu'. */
+    box-shadow: var(--shadow-2);
   }
 
   .featured .cardTitle {

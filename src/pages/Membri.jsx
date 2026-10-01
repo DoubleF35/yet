@@ -9,7 +9,13 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
-import { cittaDelReferente, cittaValida, filtriCitta, membroInCitta, ordinaPersone } from '../lib/citta.js'
+import {
+  cittaValida,
+  etichettaRuolo,
+  filtriCitta,
+  membroInCitta,
+  ordinaPersone,
+} from '../lib/citta.js'
 import { listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
@@ -37,21 +43,6 @@ function sortMembers(list) {
     if (byName !== 0) return byName
     return collator.compare(a.uid, b.uid)
   })
-}
-
-/**
- * Cosa dice il distintivo di chi organizza.
- *
- * La citta' vince su "Organizza": se un domani un admin diventasse anche
- * referente di una citta', l'informazione precisa e' la citta'. Torna null
- * per chi non organizza niente, cosi' la tessera non mostra un distintivo
- * vuoto.
- */
-function etichettaRuolo(membro, t) {
-  const citta = cittaDelReferente(membro)
-  if (citta) return t('vetrina.organizzaCitta', { citta })
-  if (membro?.role === 'admin') return t('vetrina.organizza')
-  return null
 }
 
 /**

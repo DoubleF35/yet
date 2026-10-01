@@ -336,6 +336,9 @@ export default {
     contatoreTanti: 'persone nella community',
     nomeRipiego: 'Membro YET',
     tuoProfilo: 'Il tuo profilo',
+    /* In inglese anche qui: e' come si presentano loro, e nessuno dice
+       "cofondatrice" parlando del proprio club. */
+    cofondatore: 'Co-Founder',
     organizza: 'Organizza',
     /* Il distintivo di chi e' referente di una citta'. La citta' arriva da
        config/citta.js, dove e' scritta come si vuole leggerla. */

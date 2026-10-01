@@ -315,6 +315,7 @@ export default {
     contatoreTanti: 'people in the community',
     nomeRipiego: 'YET member',
     tuoProfilo: 'Your profile',
+    cofondatore: 'Co-Founder',
     organizza: 'Organiser',
     /* Un nome e non un verbo, per stare accanto a "Organiser" sulla tessera
        vicina. La citta' resta come l'hanno scritta i profili, cioe' in

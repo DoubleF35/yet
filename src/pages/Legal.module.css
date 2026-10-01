@@ -120,6 +120,7 @@
   padding: 0.15em 0.4em;
   background-color: var(--surface-sunken);
   border: var(--border-soft);
+  border-radius: var(--radius-xs);
   overflow-wrap: anywhere;
 }
 
@@ -132,6 +133,7 @@
   overflow-x: auto;
   margin: 0 0 var(--space-4);
   border: var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .table {
@@ -192,6 +194,7 @@
   padding: var(--space-4);
 
   border-inline-start: var(--border-coral);
+  border-radius: var(--radius);
   background-color: var(--surface);
 
   font-size: var(--step--1);
