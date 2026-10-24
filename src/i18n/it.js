@@ -447,6 +447,8 @@ export default {
      SISTEMARE IL PROFILO DI UN MEMBRO
      --------------------------------------------------------------------- */
   membriAdmin: {
+    mostraAltri: 'Mostrane altri {n}',
+    conteggio: '{visti} di {totale}',
     titolo: 'I profili',
     intro:
       'Qui si sistema il profilo di un membro: la foto che non si carica, un nome scritto male, una bio rimasta vuota. Non si possono toccare i profili degli altri admin, e lo stato (approvato o in attesa) si cambia dalla coda delle richieste.',

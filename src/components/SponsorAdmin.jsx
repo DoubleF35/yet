@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { COMPRESSIBLE, compressImage, humanBytes } from '../lib/imageCompress.js'
-import { createMedia, createSponsor, deleteSponsor, getMedia, listSponsors } from '../lib/db.js'
+import {
+  createMedia,
+  createSponsor,
+  deleteSponsor,
+  getMedia,
+  getSponsorRiservati,
+  listSponsors,
+  riordinaSponsorPerImporto,
+  setSponsorRiservato,
+  updateSponsor,
+} from '../lib/db.js'
 import { safeImageSrc } from '../lib/attachments.js'
 import { useAuth } from '../lib/auth.jsx'
 import { messaggioErrore, useI18n } from '../lib/i18n.jsx'

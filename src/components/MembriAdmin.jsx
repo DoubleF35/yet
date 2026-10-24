@@ -33,6 +33,12 @@ import s from './MembriAdmin.module.css'
    ancora quelle vecchie: vanno ripubblicate a mano dalla console.
    ========================================================================= */
 
+/* Quanti profili si vedono prima di chiedere il resto. Dieci perche' e' il
+   numero che ci sta in una schermata senza scorrere: chi cerca qualcuno usa
+   la casella di ricerca, chi guarda e basta non ha bisogno di quaranta
+   schede tutte insieme. */
+const PASSO = 10
+
 const VUOTO = {
   displayName: '',
   location: '',
@@ -68,6 +74,7 @@ export default function MembriAdmin() {
   const [fase, setFase] = useState(null) // 'foto' | 'salvo'
   const [fatto, setFatto] = useState(null)
   const [cerca, setCerca] = useState('')
+  const [quanti, setQuanti] = useState(PASSO)
 
   const fileRef = useRef(null)
 
@@ -90,13 +97,19 @@ export default function MembriAdmin() {
     carica()
   }, [carica, tentativo])
 
-  const visibili = useMemo(() => {
+  const trovati = useMemo(() => {
     const q = cerca.trim().toLowerCase()
     if (!q) return membri
     return membri.filter((m) =>
       `${m.displayName ?? ''} ${m.location ?? ''}`.toLowerCase().includes(q),
     )
   }, [membri, cerca])
+
+  /* Chi vede solo i primi dieci. Non e' paginazione: la lista e' gia' tutta
+     in memoria, qui si decide solo quante schede disegnare. Con quaranta
+     profili pieni di foto, disegnarle tutte si sente. */
+  const visibili = useMemo(() => trovati.slice(0, quanti), [trovati, quanti])
+  const restanti = trovati.length - visibili.length
 
   function apri(m) {
     setApertoUid(m.uid)
@@ -205,7 +218,13 @@ export default function MembriAdmin() {
               className={s.input}
               type="search"
               value={cerca}
-              onChange={(e) => setCerca(e.target.value)}
+              onChange={(e) => {
+                setCerca(e.target.value)
+                /* Da capo a ogni ricerca: senza, cercando una parola che
+                   trova trenta persone se ne vedrebbero dieci o quaranta a
+                   seconda di quanti "mostra altri" si erano premuti prima. */
+                setQuanti(PASSO)
+              }}
               placeholder={t('membriAdmin.cerca')}
             />
           </label>
@@ -221,7 +240,10 @@ export default function MembriAdmin() {
               const senzaFoto = !String(m.photoURL ?? '').trim()
 
               return (
-                <li className={s.voce} key={m.uid}>
+                <li
+                  className={aperto ? `${s.voce} ${s.voceAperta}` : s.voce}
+                  key={m.uid}
+                >
                   <div className={s.riga}>
                     <Avatar src={m.photoURL} name={nome} size={44} />
                     <span className={s.info}>
@@ -354,6 +376,21 @@ export default function MembriAdmin() {
               )
             })}
           </ul>
+
+          {restanti > 0 && (
+            <div className={s.ancora}>
+              <button
+                type="button"
+                className={s.piccolo}
+                onClick={() => setQuanti((n) => n + PASSO)}
+              >
+                {t('membriAdmin.mostraAltri', { n: Math.min(PASSO, restanti) })}
+              </button>
+              <span className={s.conteggio}>
+                {t('membriAdmin.conteggio', { visti: visibili.length, totale: trovati.length })}
+              </span>
+            </div>
+          )}
 
           {visibili.length === 0 && <p className={s.vuoto}>{t('membriAdmin.nessuno')}</p>}
         </>
