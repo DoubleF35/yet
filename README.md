@@ -986,6 +986,31 @@ l'eta'. Mentre compila, pero', gli compare un avviso che dice che prima di
 farlo entrare dovete parlare con chi e' responsabile per lui. Il consenso di
 un genitore non e' una casella da spuntare dentro un form.
 
+### Il gruppo WhatsApp si vede solo da dentro
+
+Il riquadro "entra nel gruppo" e la voce nel piede compaiono solo a chi ha il
+profilo `approved`. Chi sta ancora aspettando una risposta non li vede, ed e'
+voluto: in attesa non si e' dentro. Il filtro sta in un punto solo,
+`useSocials()` in [`src/lib/socials.jsx`](src/lib/socials.jsx), e da li'
+passano tutti e sei i punti che mostravano quel canale.
+
+**Due cose che questo NON fa**, e vanno sapute:
+
+1. **Il link gia' uscito resta valido.** Nasconderlo adesso non lo disattiva:
+   chi se l'era salvato entra lo stesso. Per chiudere davvero va reimpostato
+   da WhatsApp (Info gruppo, Invita tramite link, Reimposta link) e il nuovo
+   va incollato in `src/config/socials.js`.
+2. **Il link sta nel bundle JavaScript.** Non compare nelle pagine statiche
+   generate, quindi i motori di ricerca non lo vedono, ma viene spedito a
+   chiunque apra il sito: chi apre gli strumenti per sviluppatori lo trova.
+   Il filtro ferma chi naviga, non chi cerca.
+
+   Per renderlo davvero riservato il link andrebbe spostato su Firestore, in
+   una collection leggibile solo da chi e' approvato, come gia' si fa per
+   `sponsorRiservato`. Non e' stato fatto perche' richiede di popolare il
+   documento a mano prima che il riquadro torni a funzionare, e nel frattempo
+   sparirebbe anche ai membri.
+
 ### Admin e superadmin
 
 Con questa parte sono cambiate le regole di sicurezza, e **vanno

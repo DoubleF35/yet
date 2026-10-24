@@ -922,6 +922,7 @@ export default {
     ordine: 'Order',
     ordineVoce: 'order {n}',
     togli: 'Remove',
+    incollaLogo: 'or copy the image and paste it here with Ctrl+V',
     caricaLogo: 'Upload the logo',
     preparoLogo: 'Preparing the logo…',
     salvo: 'Saving…',

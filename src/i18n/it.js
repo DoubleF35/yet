@@ -978,6 +978,7 @@ export default {
     ordine: 'Ordine',
     ordineVoce: 'ordine {n}',
     togli: 'Togli',
+    incollaLogo: 'oppure copia l’immagine e incollala qui con Ctrl+V',
     caricaLogo: 'Carica il logo',
     preparoLogo: 'Preparo il logo…',
     salvo: 'Salvo…',
