@@ -6,7 +6,8 @@
   "description": "YET, Young Entrepreneurs Together. Sito della community di giovani builder di Torino.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.mjs",
+    "controlla": "node scripts/import-check.mjs && node scripts/i18n-check.mjs",
+    "build": "node scripts/import-check.mjs && vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
     "foto": "node scripts/foto.mjs",
     "backup": "node scripts/backup.mjs",
