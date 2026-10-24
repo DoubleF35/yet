@@ -1,0 +1,253 @@
+/* =========================================================================
+   LE DOMANDE DI SELEZIONE
+
+   Stili pensati per stare DENTRO il form di Join, non accanto: le classi
+   ripetono i nomi di quel modulo (gruppo, campo, etichetta, aiuto) perche'
+   chi legge il form deve vedere una cosa sola, non due pezzi cuciti.
+
+   Il motivo per cui sono un file a parte e non righe aggiunte a
+   Join.module.css e' lo stesso del componente: queste domande non si vedono
+   mai in vetrina, e tenerle separate rende difficile mescolarle per sbaglio
+   con i campi pubblici.
+   ========================================================================= */
+
+.gruppo {
+  margin: 0 0 var(--space-8) 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-block-end: var(--space-4);
+  font-size: var(--step-1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+}
+
+.lead {
+  margin: 0 0 var(--space-3) 0;
+  max-inline-size: var(--measure);
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+/* Dove finiscono queste risposte, detto con una riga che si nota.
+   Il filetto coral a sinistra e non un riquadro pieno: deve farsi leggere,
+   non spaventare. */
+.privato {
+  margin: 0 0 var(--space-6) 0;
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--coral);
+  border-radius: var(--radius);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+/* ---- un campo qualsiasi ------------------------------------------------ */
+
+.campo {
+  margin-block-end: var(--space-6);
+}
+
+.etichetta {
+  display: block;
+  margin-block-end: var(--space-2);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+}
+
+.req {
+  color: var(--coral-text);
+}
+
+.input,
+.textarea {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--space-3) var(--space-4);
+
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--ink);
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition);
+}
+
+.textarea {
+  min-block-size: 5rem;
+  resize: vertical;
+  line-height: var(--lh-base);
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-color: var(--ink);
+}
+
+.aiuto {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.errore {
+  margin: var(--space-2) 0 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+/* Non e' un errore: e' una cosa che la persona deve sapere mentre scrive.
+   Giallo e non rosso, perche' non ha sbagliato niente. */
+.avviso {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface-band);
+  color: var(--ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  text-wrap: pretty;
+}
+
+/* ---- una domanda a scelta singola -------------------------------------- */
+
+.scelta {
+  margin: 0 0 var(--space-6) 0;
+  padding: 0;
+  border: 0;
+}
+
+.domanda {
+  padding: 0;
+  margin-block-end: var(--space-3);
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+}
+
+/* In colonna e non in riga: le etichette qui sono frasi ("Voglio diventare
+   founder"), e in riga andrebbero a capo in mezzo alla frase o
+   costringerebbero a scorrere di lato. In colonna si leggono e basta. */
+.opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Tutta la riga e' il bersaglio, non solo il pallino: su un telefono
+   centrare un cerchio da 20px col pollice e' esattamente il genere di cosa
+   che fa sbagliare risposta. */
+.opzione {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.opzione:hover {
+  border-color: var(--line);
+}
+
+/* UNA CLASSE, non `:has(.radio:checked)`, e la prima versione usava proprio
+   quello.
+
+   Non funzionava, ed e' stato misurato e non immaginato: la regola finiva nel
+   foglio di stile giusta, `elemento.matches()` diceva che corrispondeva, e
+   l'opzione selezionata restava identica alle altre. Su HTML scritto a mano
+   la stessa regola funziona. La differenza e' che qui l'input e' controllato
+   da React, cioe' lo stato `checked` lo mette il codice e non un dito: in quel
+   caso il browser non rifa' il calcolo degli stili per `:has()`.
+
+   Quindi lo stato selezionato lo dice React, che e' gia' l'unico a saperlo per
+   davvero. Il pallino resta un vero input radio, quindi tastiera, lettori di
+   schermo e invio del form continuano a funzionare da soli. */
+.opzioneScelta {
+  /* L'abbreviazione `border` e non il solo `border-color`, e anche questo e'
+     stato misurato: `.opzione` sopra scrive `border: var(--border-soft)`, cioe'
+     un'abbreviazione che contiene una variabile. Finche' la variabile non e'
+     risolta il browser non sa quali proprieta' tocchera', e un `border-color`
+     scritto dopo con la stessa specificita' non riusciva a vincere.
+     Riscrivendo l'abbreviazione intera il confronto torna fra pari, e vince
+     quella che viene dopo, che e' questa. */
+  border: 1px solid var(--coral);
+  background-color: var(--coral-soft);
+}
+
+.opzione:has(.radio:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.radio {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--coral);
+  cursor: pointer;
+}
+
+.opzioneTesto {
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+}
+
+/* ---- i consensi -------------------------------------------------------- */
+
+/* align-items: flex-start e non center: queste etichette vanno a capo, e
+   centrate verticalmente il quadratino finirebbe a meta' del paragrafo. */
+.consenso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-block-end: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  cursor: pointer;
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.consenso:has(.checkbox:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.checkbox {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  flex: 0 0 auto;
+  /* Allinea il quadratino alla prima riga del testo invece che al bordo
+     della scatola, che a occhio sta sempre un filo troppo in alto. */
+  margin-block-start: 0.1rem;
+  accent-color: var(--coral);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opzione,
+  .input,
+  .textarea {
+    transition: none;
+  }
+}

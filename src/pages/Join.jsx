@@ -15,9 +15,13 @@ import {
   LOOKING_MAX,
   PROJECT_MAX,
   SKILLS_MAX,
+  getCandidatura,
+  saveCandidatura,
   saveUserProfile,
 } from '../lib/db.js'
 import { AVATAR_MAX_BYTES, compressAvatar, humanBytes } from '../lib/imageCompress.js'
+import DomandeSelezione from '../components/DomandeSelezione.jsx'
+import { anniCompiuti } from '../config/candidatura.js'
 import { LOGO } from '../lib/marchio.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 
@@ -291,7 +295,33 @@ const EMPTY_FORM = {
   linkedin: '',
   instagram: '',
   other: '',
+
+  /* LE RISPOSTE DI SELEZIONE.
+     Stanno nello stesso stato dei campi pubblici perche' il form e' uno solo
+     e si manda in una volta, ma finiscono in DUE documenti diversi: questi in
+     candidature/{uid}, che leggono solo l'interessato e gli admin. Il confine
+     e' in handleSubmit, ed e' l'unico punto dove le due strade si separano. */
+  dataNascita: '',
+  whatsapp: '',
+  occupazione: '',
+  ruolo: '',
+  fonte: '',
+  stadioProgetto: '',
+  progettoLink: '',
+  nPitch: '',
+  nEventi: '',
+  eventiQuali: '',
+  motivazione: '',
+  consensoPrivacy: false,
+  consensoWhatsapp: false,
 }
+
+/* I campi qui sopra che vanno nella candidatura e non nel profilo. */
+const CAMPI_CANDIDATURA = [
+  'dataNascita', 'whatsapp', 'occupazione', 'ruolo', 'fonte',
+  'stadioProgetto', 'progettoLink', 'nPitch', 'nEventi', 'eventiQuali',
+  'motivazione', 'consensoPrivacy', 'consensoWhatsapp',
+]
 
 /** Dal documento Firestore (più i dati Google come ripiego) allo stato del form. */
 function formFromProfile(profile, user) {
@@ -385,6 +415,38 @@ function ProfileForm({ firebaseMissing }) {
     setForm(formFromProfile(profile, user))
   }, [user, profile, profileLoading])
 
+  /* Le risposte di selezione arrivano da un'altra collection, quindi da una
+     lettura a parte. Vanno fuse in quello che c'e' GIA' nel form e non messe
+     al posto suo: l'effetto qui sopra ha appena scritto i campi pubblici, e
+     un setForm che parte da zero li cancellerebbe.
+
+     Non tocca niente se la persona ha gia' cominciato a scrivere: una
+     risposta di rete che arriva tardi e sovrascrive quello che uno sta
+     battendo e' il modo piu' veloce di far perdere fiducia a un form. */
+  useEffect(() => {
+    if (!user) return undefined
+    let vivo = true
+
+    getCandidatura(user.uid)
+      .then((c) => {
+        if (!vivo || !c || dirty.current) return
+        const risposte = {}
+        for (const campo of CAMPI_CANDIDATURA) {
+          if (c[campo] !== undefined) risposte[campo] = c[campo]
+        }
+        setForm((prec) => ({ ...prec, ...risposte }))
+      })
+      .catch(() => {
+        /* In silenzio: non averne una e non riuscire a leggerla portano
+           allo stesso posto, cioe' un form da riempire. Un errore qui
+           direbbe solo "e' successo qualcosa" a chi non puo' farci niente. */
+      })
+
+    return () => {
+      vivo = false
+    }
+  }, [user])
+
   // Un timer pendente su un componente smontato scriverebbe su uno stato morto.
   useEffect(() => () => clearTimeout(savedTimer.current), [])
 
@@ -441,6 +503,18 @@ function ProfileForm({ firebaseMissing }) {
     }
   }
 
+  /* Come update(), ma prende il valore gia' pronto invece di cavarlo
+     dall'evento. Serve ai campi che non sono caselle di testo: una casella a
+     scelta singola porta il valore nell'attributo, una spunta lo porta in
+     `checked`, e un solo handler che legge `event.target.value` prenderebbe
+     la stringa "on" da tutte le spunte. */
+  function scrivi(campo, valore) {
+    dirty.current = true
+    setForm((prec) => ({ ...prec, [campo]: valore }))
+    setErrors((prec) => (prec[campo] ? { ...prec, [campo]: undefined } : prec))
+    if (saveState === 'error') setSaveState('idle')
+  }
+
   const bioLength = form.bio.length
   const bioRemaining = BIO_MAX - bioLength
   const bioOver = bioRemaining < 0
@@ -476,17 +550,53 @@ function ProfileForm({ firebaseMissing }) {
       nextErrors.photoURL = t('join.form.fotoErrore')
     }
 
+    /* Le domande di selezione. Sono tutte obbligatorie tranne il link al
+       progetto e l'elenco degli eventi, che hanno senso solo per alcuni.
+
+       La data si controlla con anniCompiuti e non con una regex: una regex
+       accetta allegramente il 30 febbraio, e un campo <input type="date">
+       su un browser vecchio o compilato a mano puo' mandare qualunque cosa. */
+    if (anniCompiuti(form.dataNascita) === null) {
+      nextErrors.dataNascita = t('candidatura.dataNascitaErrore')
+    }
+    if (!/^\+[0-9]{8,15}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
+      nextErrors.whatsapp = t('candidatura.whatsappErrore')
+    }
+    for (const campo of ['occupazione', 'ruolo', 'fonte', 'stadioProgetto', 'nPitch', 'nEventi']) {
+      if (!form[campo]) nextErrors[campo] = t('join.form.obbligatorio')
+    }
+    if (!form.motivazione.trim()) {
+      nextErrors.motivazione = t('join.form.obbligatorio')
+    }
+    if (form.consensoPrivacy !== true || form.consensoWhatsapp !== true) {
+      nextErrors.consensi = t('candidatura.consensoMancante')
+    }
+
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
       // Spostiamo il focus sul primo campo sbagliato: senza questo, chi naviga
       // da tastiera resta in fondo alla pagina e non sa dove sia il problema.
-      const first = nextErrors.displayName
-        ? nameRef.current
-        : nextErrors.bio
-          ? bioRef.current
-          : photoRef.current
-      if (first) first.focus()
+      /* I campi pubblici hanno un ref; quelli di selezione no, perche' li
+         disegna un altro componente. Per loro si cerca l'elemento
+         nell'ordine in cui compare, cosi' il fuoco va sul PRIMO problema e
+         non sull'ultimo che il codice ha controllato. */
+      const first =
+        (nextErrors.displayName && nameRef.current) ||
+        (nextErrors.bio && bioRef.current) ||
+        (nextErrors.photoURL && photoRef.current) ||
+        (nextErrors.dataNascita && document.getElementById(`${fid}-nascita`)) ||
+        (nextErrors.whatsapp && document.getElementById(`${fid}-whatsapp`)) ||
+        ['occupazione', 'ruolo', 'stadioProgetto', 'nPitch', 'nEventi', 'fonte']
+          .filter((c) => nextErrors[c])
+          .map((c) => document.querySelector(`input[name="${c}"]`))
+          .find(Boolean) ||
+        (nextErrors.motivazione && document.getElementById(`${fid}-motivazione`)) ||
+        null
+      if (first) {
+        first.focus()
+        first.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      }
       setSaveState('idle')
       return
     }
@@ -509,6 +619,30 @@ function ProfileForm({ firebaseMissing }) {
           instagram: form.instagram.trim(),
           other: form.other.trim(),
         },
+      })
+
+      /* La candidatura DOPO il profilo, e di proposito in questo ordine: se
+         la prima scrittura passa e la seconda no, quello che resta e' un
+         profilo senza risposte, che si corregge tornando sul form. Al
+         contrario resterebbero risposte senza profilo, cioe' una persona che
+         ha scritto il suo numero di telefono e non compare da nessuna parte.
+
+         Non passa di qui nessun punteggio: lo calcola il pannello quando
+         guarda la scheda. Vedi src/lib/punteggio.js. */
+      await saveCandidatura(user.uid, {
+        dataNascita: form.dataNascita,
+        whatsapp: form.whatsapp,
+        occupazione: form.occupazione,
+        ruolo: form.ruolo,
+        fonte: form.fonte,
+        stadioProgetto: form.stadioProgetto,
+        progettoLink: form.stadioProgetto === 'nessuno' ? '' : form.progettoLink,
+        nPitch: form.nPitch,
+        nEventi: form.nEventi,
+        eventiQuali: form.nEventi === 'zero' ? '' : form.eventiQuali,
+        motivazione: form.motivazione,
+        consensoPrivacy: form.consensoPrivacy,
+        consensoWhatsapp: form.consensoWhatsapp,
       })
 
       // Il profilo in memoria è ora vecchio: navbar e /membri devono vedere i
@@ -922,6 +1056,17 @@ function ProfileForm({ firebaseMissing }) {
               />
             </div>
           </fieldset>
+
+          {/* Le domande di selezione chiudono il form, e l'ordine e' voluto:
+              prima si racconta chi si e' (cose che poi si vedono in vetrina),
+              poi si risponde a noi. Chiederle per prime farebbe sembrare un
+              esame quello che e' una presentazione. */}
+          <DomandeSelezione
+            fid={fid}
+            valori={form}
+            onCambia={scrivi}
+            errori={errors}
+          />
 
           <div className={s.actions}>
             <button

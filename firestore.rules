@@ -66,6 +66,32 @@ service cloud.firestore {
           && request.auth.token.email.lower() in adminEmails();
     }
 
+    // -------------------------------------------------------------------------
+    // IL SUPERADMIN
+    //
+    // Gli admin sono quattro e possono sistemare il profilo di un membro. Il
+    // superadmin e' uno solo e puo' toccare CHIUNQUE, gli altri admin
+    // compresi. Due livelli e non uno perche' "posso modificare tutto di
+    // tutti" dato a quattro persone vuol dire che ognuna delle quattro puo'
+    // riscrivere la presentazione delle altre tre, e non e' quello che serve:
+    // serve che chi tiene in piedi il sito possa mettere a posto le cose.
+    //
+    // Vale qui lo stesso discorso di adminEmails(): in minuscolo, e il
+    // confronto abbassa l'email del token.
+    // -------------------------------------------------------------------------
+    function superadminEmails() {
+      return [
+        'fedefas.210@gmail.com'
+      ];
+    }
+
+    function isSuperadmin() {
+      return isSignedIn()
+          && request.auth.token.email != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() in superadminEmails();
+    }
+
     function isOwner(uid) {
       return isSignedIn() && request.auth.uid == uid;
     }
@@ -294,15 +320,73 @@ service cloud.firestore {
                     && incoming().status == storedStatus()
                     && incoming().updatedAt == request.time;
 
+      // Il ruolo che il documento ha ADESSO, con un ripiego per i profili nati
+      // prima che il campo esistesse. Stessa ragione di storedStatus(): in
+      // Security Rules leggere una chiave assente fa fallire tutta
+      // l'espressione, non torna "vuoto".
+      function storedRole() {
+        return 'role' in stored() ? stored().role : 'member';
+      }
+
+      // La forma del profilo SENZA il vincolo sul ruolo.
+      //
+      // usersShapeOk() pretende che il ruolo in arrivo sia quello di CHI
+      // SCRIVE, che è giusto quando uno salva il proprio profilo e sbagliato
+      // quando un admin salva quello di un altro: li' il ruolo e' di
+      // qualcun altro e il vincolo va messo fuori, caso per caso.
+      function usersShapeSenzaRuolo() {
+        return usersKeysOk() && displayNameOk() && locationOk() && bioOk()
+            && projectOk() && lookingOk() && skillsOk()
+            && photoOk() && socialsOk() && statusValid();
+      }
+
       // --- approvazione o rifiuto da parte di un admin ----------------------
       // diff().affectedKeys() elenca i campi che la scrittura cambia davvero.
-      // Limitarlo a status e updatedAt fa sì che un admin possa decidere chi
-      // entra ma non riscrivere la presentazione di qualcun altro: un potere
-      // che non serve a niente e che tanto vale non concedere.
       allow update: if isAdmin()
                     && incoming().diff(stored()).affectedKeys()
                          .hasOnly(['status', 'updatedAt'])
                     && statusValid()
+                    && incoming().updatedAt == request.time;
+
+      // --- un admin sistema il profilo di un MEMBRO -------------------------
+      //
+      // Prima qui c'era scritto che questo potere "non serve a niente e tanto
+      // vale non concederlo". Serve: ci sono foto profilo che puntano a
+      // indirizzi scaduti e si vedono come iniziali grigie, e la persona che
+      // dovrebbe sistemarle non torna sul sito da mesi. Quindi adesso si puo'.
+      //
+      // Con due limiti che restano:
+      //   - NON su un altro admin. Un admin puo' mettere a posto un membro,
+      //     non riscrivere la presentazione di un co-fondatore. Per quello
+      //     c'e' il superadmin.
+      //   - NON il ruolo e NON la data di iscrizione: il ruolo resta quello
+      //     che era, e createdAt e' il campo su cui la vetrina ordina.
+      allow update: if isAdmin()
+                    && !isOwner(uid)
+                    && storedRole() != 'admin'
+                    && usersShapeSenzaRuolo()
+                    && incoming().role == storedRole()
+                    && incoming().createdAt == stored().createdAt
+                    && incoming().updatedAt == request.time;
+
+      // --- il superadmin puo' toccare chiunque ------------------------------
+      //
+      // Admin compresi, e puo' cambiare anche il ruolo.
+      //
+      // ATTENZIONE A COSA SIGNIFICA quel ruolo: e' un'ETICHETTA, non un
+      // permesso. Chi puo' fare cose da admin lo decide adminEmails() qui
+      // sopra, non questo campo. Mettere 'admin' nel documento di qualcuno
+      // non gli da' nessun potere: per quello si aggiunge la sua email alla
+      // lista e si ripubblicano le regole. Scritto qui perche' il contrario
+      // sembra vero e non lo e'.
+      //
+      // createdAt resta intoccabile anche per lui: non e' una questione di
+      // fiducia, e' che riscriverlo cambierebbe l'ordine della vetrina senza
+      // che si capisca perche'.
+      allow update: if isSuperadmin()
+                    && usersShapeSenzaRuolo()
+                    && incoming().role in ['member', 'admin']
+                    && incoming().createdAt == stored().createdAt
                     && incoming().updatedAt == request.time;
 
       // Solo il proprietario può cancellarsi. Nemmeno un admin: cancellare il
@@ -324,6 +408,107 @@ service cloud.firestore {
     // Regola pratica: non scrivere in una bozza niente che non possa diventare
     // pubblico.
     // =========================================================================
+    // =========================================================================
+    // LE CANDIDATURE
+    //
+    // Collection separata da `users`, e la ragione e' tutta qui: `users` lo
+    // legge CHIUNQUE, perche' e' la vetrina. Qui dentro invece ci sono una
+    // data di nascita e un numero di telefono, e l'unica cosa che puo'
+    // proteggerli e' una regola, non il fatto che il sito non li disegni.
+    //
+    // Nota sui nomi: `ruolo` qui dentro e' come la persona si colloca rispetto
+    // al fare impresa (aspirante founder, founder, ...), e non ha niente a che
+    // vedere con `role` di users, che e' member o admin.
+    // =========================================================================
+    match /candidature/{uid} {
+
+      // La legge chi l'ha scritta e chi deve valutarla. Nessun altro.
+      allow read: if isOwner(uid) || isAdmin();
+
+      function candidaturaKeysOk() {
+        return incoming().keys().hasOnly([
+          'dataNascita', 'whatsapp',
+          'occupazione', 'ruolo', 'fonte',
+          'stadioProgetto', 'progettoLink',
+          'nPitch', 'nEventi', 'eventiQuali',
+          'motivazione',
+          'consensoPrivacy', 'consensoWhatsapp',
+          'stato', 'createdAt', 'updatedAt'
+        ]);
+      }
+
+      // Le stesse liste che stanno in src/config/candidatura.js. Sono scritte
+      // due volte perche' li' servono a disegnare le domande e qui a impedire
+      // che arrivi altro: se ne cambi una, cambia anche l'altra.
+      function risposteValide() {
+        return incoming().dataNascita is string
+            && incoming().dataNascita.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            && incoming().whatsapp is string
+            && incoming().whatsapp.matches('\\+[0-9]{8,15}')
+            && incoming().occupazione in ['scuola', 'universita', 'lavoro', 'altro']
+            && incoming().ruolo in ['aspirante_founder', 'founder', 'startup', 'curioso']
+            && incoming().fonte in ['instagram', 'whatsapp', 'evento', 'passaparola', 'altro']
+            && incoming().stadioProgetto in ['nessuno', 'idea', 'prodotto', 'utenti']
+            && incoming().nPitch in ['mai', 'uno', 'piu']
+            && incoming().nEventi in ['zero', 'uno', 'piu']
+            && incoming().eventiQuali is string && incoming().eventiQuali.size() <= 300
+            && incoming().motivazione is string && incoming().motivazione.size() <= 200
+            && incoming().progettoLink is string && incoming().progettoLink.size() <= 200;
+      }
+
+      // Tutti e due, e tutti e due veri. Un consenso che si puo' mandare a
+      // false non e' un consenso.
+      function consensiOk() {
+        return incoming().consensoPrivacy == true
+            && incoming().consensoWhatsapp == true;
+      }
+
+      function statoValido() {
+        return incoming().stato in
+          ['nuovo', 'contattato', 'accettato', 'eventi', 'escluso', 'minorenne'];
+      }
+
+      // --- la manda l'interessato -------------------------------------------
+      // Nasce sempre come 'nuovo': lo stato lo muove chi valuta, non chi si
+      // candida.
+      allow create: if isOwner(uid)
+                    && candidaturaKeysOk()
+                    && risposteValide()
+                    && consensiOk()
+                    && incoming().stato == 'nuovo'
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time;
+
+      // --- la corregge l'interessato ----------------------------------------
+      // Puo' cambiare le risposte finche' vuole, ma NON lo stato: se un admin
+      // l'ha gia' spostata, tornare sul form non deve riportarla in coda.
+      allow update: if isOwner(uid)
+                    && candidaturaKeysOk()
+                    && risposteValide()
+                    && consensiOk()
+                    && incoming().stato == stored().stato
+                    && incoming().createdAt == stored().createdAt
+                    && incoming().updatedAt == request.time;
+
+      // --- la valuta un admin -----------------------------------------------
+      // Solo lo stato. Un admin non riscrive le risposte di nessuno: quelle
+      // sono quello che la persona ha detto, e vanno lette come le ha dette.
+      //
+      // Il PUNTEGGIO non compare da nessuna parte qui dentro, e non e' una
+      // dimenticanza: non viene mai salvato. Lo calcola il pannello mentre lo
+      // guardi, perche' questo sito non ha un server e qualunque cosa fosse
+      // scritta nel documento la potrebbe leggere anche chi si e' candidato.
+      // Vedi il commento in testa a src/lib/punteggio.js.
+      allow update: if isAdmin()
+                    && incoming().diff(stored()).affectedKeys()
+                         .hasOnly(['stato', 'updatedAt'])
+                    && statoValido()
+                    && incoming().updatedAt == request.time;
+
+      // Si cancella chi l'ha scritta, o il superadmin per fare pulizia.
+      allow delete: if isOwner(uid) || isSuperadmin();
+    }
+
     match /news/{newsId} {
 
       allow read: if true;

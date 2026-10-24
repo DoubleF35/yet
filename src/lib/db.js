@@ -28,6 +28,15 @@ import {
 
 import { auth, db, isFirebaseConfigured } from './firebase.js'
 import { isAdminEmail } from '../config/admins.js'
+import {
+  FONTI,
+  N_EVENTI,
+  N_PITCH,
+  OCCUPAZIONI,
+  RUOLI,
+  STADI_PROGETTO,
+  STATI,
+} from '../config/candidatura.js'
 import { normalizeAttachments, safeUrl } from './attachments.js'
 
 /** Limite della bio, in caratteri. Vive qui perché lo usano sia il contatore
@@ -1099,4 +1108,131 @@ export async function deleteSponsorRiservato(sponsorId) {
   } catch (error) {
     console.warn('[YET] Non riesco a cancellare i dati riservati dello sponsor.', error)
   }
+}
+
+/* =========================================================================
+   LE CANDIDATURE
+
+   Le risposte di selezione stanno in una collection SEPARATA da `users`, e
+   non in piu' campi dentro il profilo, per una ragione sola ma grossa: il
+   profilo e' pubblico e queste risposte non lo sono. Dentro ci sono una data
+   di nascita e un numero di telefono. Tenerli nello stesso documento che la
+   vetrina legge per chiunque passi vorrebbe dire che l'unica cosa che li
+   protegge e' che il sito non li disegna, e una regola di sicurezza non si
+   scrive nel componente React: si scrive nelle rules, e le rules ragionano
+   per documento.
+
+   Quindi: `users/{uid}` resta leggibile da tutti e porta solo cio' che si
+   vede in vetrina; `candidature/{uid}` lo leggono l'interessato e gli admin,
+   e porta tutto il resto.
+
+   STESSO uid IN TUTTI E DUE, cosi' profilo e candidatura si trovano senza un
+   campo che faccia da collegamento, e senza il rischio che quel campo punti
+   alla persona sbagliata.
+   ====================================================================== */
+
+const CANDIDATURE = 'candidature'
+
+/* Quanto puo' essere lungo cosa. Gli stessi numeri stanno nelle rules: qui
+   servono a dire alla persona cosa non va mentre scrive, li' a impedirlo
+   davvero. Se ne cambi uno, cambiali tutti e due. */
+const MOTIVAZIONE_MAX = 200
+const EVENTI_QUALI_MAX = 300
+const LINK_MAX = 200
+
+/* Un numero scritto in forma internazionale: piu', poi da 8 a 15 cifre.
+   Niente spazi e niente trattini, che li toglie chi scrive sopra. */
+const WHATSAPP = /^\+[0-9]{8,15}$/
+
+function unaDi(valore, ammessi, campo) {
+  if (!ammessi.includes(valore)) {
+    throw new Error(`Valore non ammesso per ${campo}: ${valore}`)
+  }
+  return valore
+}
+
+/**
+ * Salva (o riscrive) la candidatura di chi ha fatto l'accesso.
+ *
+ * NON calcola e non salva nessun punteggio, ed e' il punto delicato di tutto
+ * il meccanismo: vedi il commento in testa a lib/punteggio.js. Qui dentro
+ * arrivano solo le risposte, cosi' come le ha date la persona.
+ *
+ * Lo `stato` lo mette solo alla CREAZIONE: se la persona torna indietro e
+ * corregge una risposta, lo stato che nel frattempo gli ha dato un admin non
+ * deve tornare a "nuovo" da solo.
+ */
+export async function saveCandidatura(uid, dati) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) throw new Error('Manca l’identificativo dell’utente.')
+
+  const whatsapp = String(dati.whatsapp ?? '').replace(/[\s-]/g, '')
+  if (!WHATSAPP.test(whatsapp)) {
+    throw new Error('Il numero WhatsApp va scritto col prefisso, per esempio +39…')
+  }
+
+  const dataNascita = String(dati.dataNascita ?? '').trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dataNascita)) {
+    throw new Error('La data di nascita non è valida.')
+  }
+
+  if (dati.consensoPrivacy !== true || dati.consensoWhatsapp !== true) {
+    throw new Error('Servono tutti e due i consensi per mandare la candidatura.')
+  }
+
+  const risposte = {
+    dataNascita,
+    whatsapp,
+    occupazione: unaDi(dati.occupazione, OCCUPAZIONI, 'occupazione'),
+    ruolo: unaDi(dati.ruolo, RUOLI, 'ruolo'),
+    fonte: unaDi(dati.fonte, FONTI, 'fonte'),
+    stadioProgetto: unaDi(dati.stadioProgetto, STADI_PROGETTO, 'stadioProgetto'),
+    nPitch: unaDi(dati.nPitch, N_PITCH, 'nPitch'),
+    nEventi: unaDi(dati.nEventi, N_EVENTI, 'nEventi'),
+    eventiQuali: String(dati.eventiQuali ?? '').trim().slice(0, EVENTI_QUALI_MAX),
+    motivazione: String(dati.motivazione ?? '').trim().slice(0, MOTIVAZIONE_MAX),
+    progettoLink: normalizeUrlScheme(dati.progettoLink).slice(0, LINK_MAX),
+    consensoPrivacy: true,
+    consensoWhatsapp: true,
+    updatedAt: serverTimestamp(),
+  }
+
+  const esistente = await getDoc(doc(db, CANDIDATURE, uid))
+  if (!esistente.exists()) {
+    risposte.createdAt = serverTimestamp()
+    risposte.stato = 'nuovo'
+  }
+
+  await setDoc(doc(db, CANDIDATURE, uid), risposte, { merge: true })
+}
+
+/** La candidatura di una persona. null se non ne ha mandata nessuna. */
+export async function getCandidatura(uid) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) return null
+  const snap = await getDoc(doc(db, CANDIDATURE, uid))
+  return snap.exists() ? { uid: snap.id, ...snap.data() } : null
+}
+
+/**
+ * Tutte le candidature, per il pannello.
+ *
+ * Senza filtri e senza ordinamento sul server: le rules aprono questa lettura
+ * ai soli admin, quindi una query che chiede tutto non e' un buco, e con i
+ * numeri di un club ordinare in memoria costa meno di un indice da mantenere.
+ */
+export async function listCandidature() {
+  if (!isFirebaseConfigured) throw notConfigured()
+  const snapshot = esigiRisposta(await getDocs(collection(db, CANDIDATURE)))
+  return snapshot.docs
+    .map((d) => ({ uid: d.id, ...d.data() }))
+    .sort((a, b) => sortKey(b.createdAt) - sortKey(a.createdAt))
+}
+
+/** Sposta una candidatura da uno stato all'altro. Solo admin, per le rules. */
+export async function setStatoCandidatura(uid, stato) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) throw new Error('Manca l’identificativo dell’utente.')
+  unaDi(stato, STATI, 'stato')
+  await updateDoc(doc(db, CANDIDATURE, uid), { stato, updatedAt: serverTimestamp() })
 }
