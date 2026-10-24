@@ -409,6 +409,8 @@ export default {
   },
 
   membriAdmin: {
+    mostraAltri: 'Show {n} more',
+    conteggio: '{visti} of {totale}',
     titolo: 'Profiles',
     intro:
       'This is where you fix a member profile: a photo that will not load, a misspelled name, a bio left empty. You cannot touch other admins\u2019 profiles, and the status (approved or pending) is changed from the requests queue.',

@@ -34,13 +34,19 @@
 
 /* ---- l'elenco ---------------------------------------------------------- */
 
+/* Tre per riga dove c'e' posto, una sotto l'altra sul telefono.
+   auto-fill con una larghezza minima e non `repeat(3, 1fr)` fisso: a 900px
+   tre colonne da 300 ci stanno, a 700 no, e con un numero fisso la terza
+   sarebbe andata a capo da sola lasciando un buco. Cosi' il numero di colonne
+   lo decide lo spazio. */
 .elenco {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-3);
+  align-items: start;
 }
 
 .voce {
@@ -48,6 +54,14 @@
   border-radius: var(--radius-lg);
   background-color: var(--surface);
   overflow: hidden;
+}
+
+/* La scheda aperta prende TUTTA la riga.
+   Senza, il modulo starebbe dentro una colonna da 18rem: tre caselle di
+   testo larghe sei centimetri, e la bio in una finestrella. Il modulo e' la
+   cosa che si sta usando, quindi e' lui a decidere la larghezza. */
+.voceAperta {
+  grid-column: 1 / -1;
 }
 
 .riga {
@@ -265,4 +279,20 @@
   color: var(--muted);
   font-size: var(--step--1);
   font-style: italic;
+}
+
+/* ---- mostrarne altri --------------------------------------------------- */
+
+.ancora {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-block-start: var(--space-4);
+}
+
+.conteggio {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
 }
