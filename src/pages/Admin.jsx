@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import AttachmentEditor from '../components/AttachmentEditor.jsx'
+import MembriAdmin from '../components/MembriAdmin.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
 import SponsorAdmin from '../components/SponsorAdmin.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -350,6 +351,11 @@ export default function Admin() {
             in cui qualcuno sta aspettando una risposta. Una notizia può
             attendere domani, una persona in coda no. */}
         {isFirebaseConfigured && <PendingRequests />}
+
+        {/* Dopo la coda e non prima: l'ordine della pagina segue l'urgenza.
+            Una richiesta in attesa blocca una persona, un profilo da
+            sistemare no. */}
+        {isFirebaseConfigured && <MembriAdmin />}
 
         <HandsDivider />
 

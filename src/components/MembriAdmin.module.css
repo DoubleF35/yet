@@ -1,0 +1,268 @@
+/* =========================================================================
+   SISTEMARE IL PROFILO DI UN MEMBRO, DENTRO /admin
+
+   Il modulo si apre DENTRO la riga della persona e non in una finestra: cosi'
+   si vede chi si sta modificando mentre lo si modifica. Una finestra che
+   copre l'elenco e' il modo piu' facile per correggere il profilo sbagliato.
+   ========================================================================= */
+
+.sezione {
+  margin-block-start: var(--space-10);
+}
+
+.titolo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-heading);
+}
+
+.intro {
+  margin: 0 0 var(--space-5);
+  max-inline-size: var(--measure);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.cerca {
+  display: block;
+  margin-block-end: var(--space-4);
+  max-inline-size: 22rem;
+}
+
+/* ---- l'elenco ---------------------------------------------------------- */
+
+.elenco {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.voce {
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  overflow: hidden;
+}
+
+.riga {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.nome {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.fatto {
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  flex: 0 0 auto;
+}
+
+/* ---- il modulo --------------------------------------------------------- */
+
+/* Fondo appena diverso: dice "questa parte e' aperta" senza disegnare un
+   secondo riquadro dentro al primo. */
+.form {
+  padding: var(--space-5);
+  border-block-start: var(--border-soft);
+  background-color: var(--surface-band);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fotoRiga {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.fotoAzioni {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.fileLabel {
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* E' una <label> travestita da bottone, quindi il bersaglio lo fa il padding
+   e non il tag: senza min-block-size resterebbe alta quanto il testo. */
+.fileBottone {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.fileLabel:hover .fileBottone {
+  border-color: var(--ink);
+}
+
+.fileLabel:focus-within .fileBottone {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.aiuto {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.campo {
+  display: block;
+}
+
+.etichetta {
+  display: block;
+  margin-block-end: var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.input,
+.textarea {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--ink);
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.textarea {
+  min-block-size: 5rem;
+  resize: vertical;
+  line-height: var(--lh-base);
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-color: var(--ink);
+}
+
+/* Tre colonne dove c'e' posto, una sotto l'altra sul telefono: a 375px tre
+   caselle in riga sarebbero larghe un centimetro l'una. */
+.treCampi {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .treCampi {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---- i bottoni --------------------------------------------------------- */
+
+.azioni {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.primario {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-6);
+  border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.primario:hover:not(:disabled) {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+.primario:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.piccolo {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.piccolo:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.piccolo:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.primario:focus-visible,
+.piccolo:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.errore {
+  margin: 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.vuoto {
+  margin: var(--space-4) 0 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-style: italic;
+}
