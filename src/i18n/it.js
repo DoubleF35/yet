@@ -968,15 +968,23 @@ export default {
   sponsorAdmin: {
     titolo: 'Sponsor',
     intro:
-      'Compaiono nella pagina Sponsor. Il numero d’ordine decide chi sta in cima: più basso, più in alto. A parità va in ordine alfabetico.',
+      'Compaiono nella pagina Sponsor. L’ordine lo decide l’importo: chi ha dato di più sta in cima, a parità va in ordine alfabetico. L’importo lo vedete solo voi admin, sul sito non compare.',
     nome: 'Nome',
     sito: 'Sito',
     facoltativo: '(facoltativo)',
     nota: 'Nota',
     notaSpiegazione: '(una riga sotto il logo)',
     notaPlaceholder: 'Sede del primo incontro',
-    ordine: 'Ordine',
-    ordineVoce: 'ordine {n}',
+    importo: 'Importo',
+    /* Detto qui, perche' e' l'unico posto dove qualcuno si chiede dove
+       finisce la cifra che sta scrivendo. */
+    importoAiuto: 'In euro. Chi ha dato di più sta davanti. Resta privato: sul sito si vede solo l’ordine.',
+    importoVoce: '{n} euro',
+    senzaImporto: 'importo non indicato',
+    modifica: 'Modifica',
+    modificaAria: 'Modifica {nome}',
+    salvaModifiche: 'Salva le modifiche',
+    annullaModifica: 'Annulla',
     togli: 'Togli',
     incollaLogo: 'oppure copia l’immagine e incollala qui con Ctrl+V',
     caricaLogo: 'Carica il logo',
