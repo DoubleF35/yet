@@ -310,3 +310,22 @@
   font-size: var(--step--1);
   line-height: var(--lh-base);
 }
+
+/* I bottoni in fondo al modulo. In riga, e "Annulla" accanto e non sotto:
+   sono due passi della stessa decisione, non due cose diverse. */
+.azioniForm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* La riga che spiega dove finisce l'importo. Dentro la <label>, quindi va
+   messa a blocco o finirebbe di fianco al campo. */
+.aiutoCampo {
+  display: block;
+  margin-block-start: var(--space-2);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}

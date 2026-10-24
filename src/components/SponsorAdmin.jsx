@@ -8,7 +8,11 @@ import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 
 import s from './SponsorAdmin.module.css'
 
-const VUOTO = { nome: '', url: '', nota: '', ordine: '500' }
+/* `importo` e non `ordine`: si scrive quanto ha dato lo sponsor, e la fila la
+   calcola il sito. L'importo NON finisce sullo sponsor pubblico, che lo legge
+   chiunque: va in sponsorRiservato, e in pubblico resta solo la posizione.
+   Vedi riordinaSponsorPerImporto() in lib/db.js. */
+const VUOTO = { nome: '', url: '', nota: '', importo: '' }
 
 /**
  * Gestione degli sponsor, dentro /admin.
@@ -35,8 +39,14 @@ export default function SponsorAdmin() {
      confronto `fase === 'Salvo…'` si romperebbe cambiando lingua. */
   const [fase, setFase] = useState(null)
   const [errore, setErrore] = useState(null)
-  const [conferma, setConferma] = useState(null) // id in attesa di conferma
+  const [conferma, setConferma] = useState(null)
+  /* Quale sponsor stiamo modificando, o null se ne stiamo aggiungendo uno
+     nuovo. Si riusa IL MODULO IN CIMA invece di disegnarne un secondo dentro
+     la riga: due moduli uguali sono due moduli che prima o poi divergono. */
+  const [inModifica, setInModifica] = useState(null)
+  const [riservati, setRiservati] = useState({}) // id in attesa di conferma
   const fileRef = useRef(null)
+  const formRef = useRef(null)
 
   const carica = useCallback(async () => {
     setStato('loading')
@@ -46,6 +56,10 @@ export default function SponsorAdmin() {
       setStato('ready')
       const ids = l.map((x) => x.logoMediaId).filter(Boolean)
       if (ids.length) setMedia(await getMedia(ids))
+      /* Gli importi li legge solo un admin, e se la lettura non passa la
+         funzione torna {} invece di lanciare: il pannello resta usabile anche
+         senza, mostrando solo la fila senza le cifre. */
+      setRiservati(await getSponsorRiservati())
     } catch (err) {
       setErrore(messaggioErrore(t, err, 'sponsorAdmin.erroreLettura'))
       setStato('error')
@@ -128,6 +142,37 @@ export default function SponsorAdmin() {
     }
   }
 
+  /** Porta uno sponsor gia' salvato dentro il modulo in cima. */
+  function modifica(sp) {
+    setErrore(null)
+    setConferma(null)
+    setInModifica(sp.id)
+    setForm({
+      nome: sp.nome ?? '',
+      url: sp.url ?? '',
+      nota: sp.nota ?? '',
+      importo: riservati[sp.id]?.importo != null ? String(riservati[sp.id].importo) : '',
+    })
+    /* Il logo gia' caricato si riusa com'e': ha gia' il suo mediaId, quindi
+       non va ricaricato. Se se ne incolla uno nuovo, quello vecchio viene
+       sostituito e basta. */
+    setLogo(
+      sp.logoMediaId
+        ? { mediaId: sp.logoMediaId, dataUrl: media[sp.logoMediaId]?.dataUrl, nome: sp.nome }
+        : null,
+    )
+    /* Il modulo sta in cima e la riga toccata puo' essere in fondo: senza
+       questo si preme "Modifica" e non succede niente di visibile. */
+    formRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
+
+  function annullaModifica() {
+    setInModifica(null)
+    setForm(VUOTO)
+    setLogo(null)
+    setErrore(null)
+  }
+
   async function salva(e) {
     e.preventDefault()
     setErrore(null)
@@ -139,9 +184,29 @@ export default function SponsorAdmin() {
 
     setFase('salvo')
     try {
-      await createSponsor({ ...form, logoMediaId: logo?.mediaId || '' })
+      const campi = {
+        nome: form.nome,
+        url: form.url,
+        nota: form.nota,
+        logoMediaId: logo?.mediaId || '',
+      }
+
+      const id = inModifica
+        ? (await updateSponsor(inModifica, campi), inModifica)
+        : await createSponsor(campi)
+
+      /* L'importo va nel documento riservato, MAI in quello pubblico. Poi si
+         rifa' la fila: cambiare quanto ha dato uno puo' spostare tutti. */
+      await setSponsorRiservato(id, {
+        livello: riservati[id]?.livello ?? '',
+        nota: riservati[id]?.nota ?? '',
+        importo: form.importo,
+      })
+      await riordinaSponsorPerImporto()
+
       setForm(VUOTO)
       setLogo(null)
+      setInModifica(null)
       await carica()
     } catch (err) {
       setErrore(
@@ -180,7 +245,7 @@ export default function SponsorAdmin() {
       <p className={s.intro}>{t('sponsorAdmin.intro')}</p>
 
       {/* --- nuovo ------------------------------------------------------- */}
-      <form className={s.form} onSubmit={salva} onPaste={incollaLogo}>
+      <form className={s.form} onSubmit={salva} onPaste={incollaLogo} ref={formRef}>
         <div className={s.riga}>
           <label className={s.campo}>
             <span className={s.etichetta}>{t('sponsorAdmin.nome')}</span>
@@ -226,15 +291,19 @@ export default function SponsorAdmin() {
           </label>
 
           <label className={`${s.campo} ${s.campoStretto}`}>
-            <span className={s.etichetta}>{t('sponsorAdmin.ordine')}</span>
+            <span className={s.etichetta}>{t('sponsorAdmin.importo')}</span>
             <input
               className={s.input}
               type="number"
               min="0"
-              max="9999"
-              value={form.ordine}
-              onChange={aggiorna('ordine')}
+              max="1000000"
+              step="1"
+              inputMode="numeric"
+              placeholder="0"
+              value={form.importo}
+              onChange={aggiorna('importo')}
             />
+            <span className={s.aiutoCampo}>{t('sponsorAdmin.importoAiuto')}</span>
           </label>
         </div>
 
@@ -271,9 +340,29 @@ export default function SponsorAdmin() {
           )}
         </div>
 
-        <button type="submit" className={s.primario} disabled={!!fase}>
-          {fase === 'salvo' ? t('sponsorAdmin.salvo') : t('sponsorAdmin.aggiungi')}
-        </button>
+        <div className={s.azioniForm}>
+          <button type="submit" className={s.primario} disabled={!!fase}>
+            {fase === 'salvo'
+              ? t('sponsorAdmin.salvo')
+              : inModifica
+                ? t('sponsorAdmin.salvaModifiche')
+                : t('sponsorAdmin.aggiungi')}
+          </button>
+
+          {/* Compare solo in modifica: aggiungendo uno sponsor nuovo non c'e'
+              niente da annullare, e un bottone che non fa niente e' peggio di
+              un bottone che non c'e'. */}
+          {inModifica && (
+            <button
+              type="button"
+              className={s.piccolo}
+              onClick={annullaModifica}
+              disabled={!!fase}
+            >
+              {t('sponsorAdmin.annullaModifica')}
+            </button>
+          )}
+        </div>
 
         {/* Sempre nel DOM: una live region aggiunta al momento non viene
             annunciata, perché lo screen reader non la stava osservando. */}
@@ -303,7 +392,9 @@ export default function SponsorAdmin() {
                 <span className={s.voceInfo}>
                   <span className={s.voceNome}>{sp.nome}</span>
                   <span className={s.voceMeta}>
-                    {t('sponsorAdmin.ordineVoce', { n: sp.ordine })}
+                    {riservati[sp.id]?.importo != null
+                      ? t('sponsorAdmin.importoVoce', { n: riservati[sp.id].importo })
+                      : t('sponsorAdmin.senzaImporto')}
                     {sp.url ? ` · ${sp.url.replace(/^https?:\/\//, '').slice(0, 40)}` : ''}
                   </span>
                 </span>
@@ -320,14 +411,25 @@ export default function SponsorAdmin() {
                     </button>
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    className={s.piccolo}
-                    onClick={() => setConferma(sp.id)}
-                    aria-label={t('sponsorAdmin.eliminaAria', { nome: sp.nome })}
-                  >
-                    {t('sponsorAdmin.elimina')}
-                  </button>
+                  <span className={s.conferma}>
+                    <button
+                      type="button"
+                      className={s.piccolo}
+                      onClick={() => modifica(sp)}
+                      disabled={!!fase}
+                      aria-label={t('sponsorAdmin.modificaAria', { nome: sp.nome })}
+                    >
+                      {t('sponsorAdmin.modifica')}
+                    </button>
+                    <button
+                      type="button"
+                      className={s.piccolo}
+                      onClick={() => setConferma(sp.id)}
+                      aria-label={t('sponsorAdmin.eliminaAria', { nome: sp.nome })}
+                    >
+                      {t('sponsorAdmin.elimina')}
+                    </button>
+                  </span>
                 )}
               </li>
             )

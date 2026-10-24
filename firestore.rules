@@ -751,8 +751,21 @@ service cloud.firestore {
 
       allow read: if isAdmin();
 
+      // `importo` e' quanto ci ha dato lo sponsor, in euro, ed e' IL motivo per
+      // cui questa collection esiste separata: `sponsors` la legge chiunque,
+      // perche' e' la pagina pubblica. Una cifra commerciale li' dentro
+      // sarebbe leggibile dal mondo anche senza che il sito la disegni.
+      //
+      // In pubblico va solo la POSIZIONE (il campo `ordine` su sponsors), e
+      // quella e' una classifica, non una formula: da "sei terzo" non si
+      // ricava quanto hai dato, mentre da "9999 meno il tuo importo" si'.
       allow write: if isAdmin()
-                   && request.resource.data.keys().hasOnly(['livello', 'nota', 'aggiornatoIl'])
+                   && request.resource.data.keys()
+                        .hasOnly(['livello', 'nota', 'importo', 'aggiornatoIl'])
+                   && (!('importo' in request.resource.data)
+                       || (request.resource.data.importo is number
+                           && request.resource.data.importo >= 0
+                           && request.resource.data.importo <= 1000000))
                    && (!('livello' in request.resource.data)
                        || (request.resource.data.livello is string
                            && request.resource.data.livello.size() <= 40))

@@ -1087,15 +1087,88 @@ export async function getSponsorRiservati() {
   }
 }
 
-export async function setSponsorRiservato(sponsorId, { livello, nota }) {
+export async function setSponsorRiservato(sponsorId, { livello, nota, importo }) {
   if (!isFirebaseConfigured) throw notConfigured()
   if (!sponsorId) throw new Error('Manca l’identificativo dello sponsor.')
 
+  const quanto = Number(importo)
   await setDoc(doc(db, SPONSOR_RISERVATO, sponsorId), {
     livello: String(livello ?? '').trim().slice(0, 40),
     nota: String(nota ?? '').trim().slice(0, 500),
+    /* Quanto ci ha dato, in euro. Sta QUI e non sullo sponsor pubblico
+       perche' `sponsors` la legge chiunque: una cifra commerciale li' dentro
+       sarebbe leggibile dal mondo anche senza che il sito la disegni. */
+    importo: Number.isFinite(quanto) && quanto >= 0 ? Math.round(quanto) : 0,
     aggiornatoIl: serverTimestamp(),
   })
+}
+
+/**
+ * Rimette in fila gli sponsor secondo quanto hanno dato, dal piu' al meno.
+ *
+ * IN PUBBLICO FINISCE UNA POSIZIONE, NON UNA CIFRA, ed e' tutto il punto.
+ * Scrivere `ordine = 9999 - importo` sarebbe stato piu' corto e avrebbe
+ * regalato gli importi a chiunque: quella formula si inverte a mente. Una
+ * classifica no: da "sei terzo" non si ricava quanto hai dato.
+ *
+ * Si ricalcola TUTTA la fila a ogni modifica invece di aggiustare una riga:
+ * cambiare l'importo di uno puo' spostare tutti, e con quattro sponsor
+ * riscrivere quattro numeri costa meno che ragionare su quali sono cambiati.
+ *
+ * Scrive solo gli sponsor la cui posizione cambia davvero: una scrittura che
+ * non cambia niente conta lo stesso nella quota gratuita.
+ */
+export async function riordinaSponsorPerImporto() {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const [sponsor, riservati] = await Promise.all([listSponsors(), getSponsorRiservati()])
+
+  const inFila = [...sponsor].sort((a, b) => {
+    const ia = Number(riservati[a.id]?.importo) || 0
+    const ib = Number(riservati[b.id]?.importo) || 0
+    /* Chi ha dato di piu' sta davanti. A parita' l'ordine alfabetico, che e'
+       l'unico che non sembra deciso da qualcuno. */
+    if (ia !== ib) return ib - ia
+    return String(a.nome ?? '').localeCompare(String(b.nome ?? ''), 'it')
+  })
+
+  await Promise.all(
+    inFila.map((sp, posto) =>
+      sp.ordine === posto
+        ? null
+        : updateDoc(doc(db, SPONSORS, sp.id), { ordine: posto }),
+    ),
+  )
+
+  return inFila.map((sp) => sp.id)
+}
+
+/**
+ * Cambia uno sponsor gia' esistente.
+ *
+ * updateDoc e non setDoc: le regole pretendono che `createdAt` resti quello
+ * di prima, e con una fusione il campo arriva dal documento salvato senza che
+ * lo si debba rimandare indietro (e senza il rischio di rimandarlo sbagliato).
+ */
+export async function updateSponsor(id, { nome, url, nota, logoMediaId, ordine }) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!id) throw new Error('Manca l’identificativo dello sponsor.')
+
+  const pulito = String(nome ?? '').trim()
+  if (!pulito) throw new Error('Il nome dello sponsor non puo\' essere vuoto.')
+
+  const cambi = {
+    nome: pulito.slice(0, 80),
+    url: String(url ?? '').trim().slice(0, 500),
+    nota: String(nota ?? '').trim().slice(0, 120),
+    logoMediaId: String(logoMediaId ?? '').trim().slice(0, 64),
+  }
+  /* L'ordine si tocca solo se chi chiama lo passa: di norma lo decide
+     riordinaSponsorPerImporto(), e sovrascriverlo qui con un valore di
+     ripiego rimetterebbe lo sponsor in mezzo alla fila a ogni salvataggio. */
+  if (Number.isFinite(Number(ordine))) cambi.ordine = Math.round(Number(ordine))
+
+  await updateDoc(doc(db, SPONSORS, id), cambi)
 }
 
 /** Da chiamare quando si cancella uno sponsor: senza, il documento riservato
