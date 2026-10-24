@@ -1309,3 +1309,79 @@ export async function setStatoCandidatura(uid, stato) {
   unaDi(stato, STATI, 'stato')
   await updateDoc(doc(db, CANDIDATURE, uid), { stato, updatedAt: serverTimestamp() })
 }
+
+/**
+ * Un admin sistema il profilo di qualcun altro.
+ *
+ * SEPARATA DA saveUserProfile, e non un parametro in piu', perche' le due
+ * fanno cose diverse su un punto che conta: quella scrive `role` e `status`
+ * di CHI STA SCRIVENDO, il che e' giusto quando salvi il tuo profilo e
+ * sbagliato quando ne salvi uno altrui. Qui non si manda ne' l'uno ne'
+ * l'altro: con `merge: true` restano quelli del documento, che e' anche cio'
+ * che le regole pretendono (`incoming().role == storedRole()`).
+ *
+ * Non crea niente: se il profilo non c'e', si ferma. Un admin sistema una
+ * persona che esiste, non ne inventa una.
+ *
+ * Cosa lascia stare, e sono i campi che non si toccano mai da qui:
+ *   createdAt   e' l'ordine della vetrina
+ *   status      si cambia dalla coda delle richieste, che e' il posto suo
+ *   role        lo decide la lista di email nelle regole, non un campo
+ */
+export async function adminSaveUserProfile(uid, data) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) throw new Error('Manca l’identificativo dell’utente.')
+
+  const displayName = String(data.displayName ?? '').trim()
+  if (!displayName) throw new Error('Il nome non può essere vuoto.')
+
+  const photo = String(data.photoURL ?? '').trim().startsWith('data:')
+    ? String(data.photoURL).trim()
+    : normalizeUrlScheme(data.photoURL).slice(0, 500)
+
+  if (photo.length > PHOTO_MAX_CHARS) {
+    const e = new Error('[YET] foto profilo troppo grande')
+    e.chiaveI18n = 'errori.fotoTroppoGrande'
+    throw e
+  }
+
+  const location = String(data.location ?? '').trim()
+  if (location.length > LOCATION_MAX) {
+    throw new Error(`La provenienza supera i ${LOCATION_MAX} caratteri.`)
+  }
+
+  const bio = String(data.bio ?? '').trim()
+  if (bio.length > BIO_MAX) {
+    throw new Error(`La bio supera i ${BIO_MAX} caratteri.`)
+  }
+
+  const ref = doc(db, USERS, uid)
+  const esistente = await getDoc(ref)
+  if (!esistente.exists()) {
+    throw new Error('Questo profilo non esiste.')
+  }
+  const salvato = esistente.data()
+
+  const payload = {
+    displayName: displayName.slice(0, 80),
+    location,
+    bio,
+    photoURL: photo,
+    socials: {
+      linkedin: String(data.socials?.linkedin ?? '').trim().slice(0, 200),
+      instagram: String(data.socials?.instagram ?? '').trim().slice(0, 200),
+      other: String(data.socials?.other ?? '').trim().slice(0, 200),
+    },
+    updatedAt: serverTimestamp(),
+  }
+
+  /* Un profilo nato prima che l'approvazione esistesse non ha `status`, e le
+     regole lo leggono: una chiave assente in Security Rules non vale "vuoto",
+     fa fallire l'intera condizione e la scrittura torna indietro con un
+     permission-denied che non spiega niente. Glielo mettiamo qui, e
+     'approved' perche' si sta sistemando qualcuno che e' gia' in vetrina. */
+  if (salvato.status === undefined) payload.status = 'approved'
+
+  await setDoc(ref, payload, { merge: true })
+  return payload
+}

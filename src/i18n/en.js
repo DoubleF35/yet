@@ -408,6 +408,34 @@ export default {
     },
   },
 
+  membriAdmin: {
+    titolo: 'Profiles',
+    intro:
+      'This is where you fix a member profile: a photo that will not load, a misspelled name, a bio left empty. You cannot touch other admins\u2019 profiles, and the status (approved or pending) is changed from the requests queue.',
+    cerca: 'Search for someone',
+    nessuno: 'Nobody by that name.',
+    senzaCitta: 'city not set',
+    senzaFoto: 'no photo',
+    modifica: 'Edit',
+    modificaAria: 'Edit {nome}\u2019s profile',
+    chiudi: 'Close',
+    cambiaFoto: 'Change the photo',
+    incollaFoto: 'or copy the image and paste it here with Ctrl+V',
+    preparo: 'Preparing…',
+    formatoFoto: 'The photo has to be a JPEG, PNG, WebP or AVIF image.',
+    nome: 'Name',
+    citta: 'City',
+    bio: 'Bio',
+    sito: 'Website',
+    salva: 'Save the profile',
+    salvo: 'Saving…',
+    salvato: 'Saved',
+    annulla: 'Cancel',
+    erroreLettura: 'I cannot read the profiles.',
+    erroreSalvataggio:
+      'I cannot save. If it says permissions are missing, the rules on the database are still the old ones and need republishing.',
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',

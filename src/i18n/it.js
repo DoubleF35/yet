@@ -443,6 +443,37 @@ export default {
     },
   },
 
+  /* ---------------------------------------------------------------------
+     SISTEMARE IL PROFILO DI UN MEMBRO
+     --------------------------------------------------------------------- */
+  membriAdmin: {
+    titolo: 'I profili',
+    intro:
+      'Qui si sistema il profilo di un membro: la foto che non si carica, un nome scritto male, una bio rimasta vuota. Non si possono toccare i profili degli altri admin, e lo stato (approvato o in attesa) si cambia dalla coda delle richieste.',
+    cerca: 'Cerca una persona',
+    nessuno: 'Nessuno con questo nome.',
+    senzaCitta: 'città non indicata',
+    senzaFoto: 'senza foto',
+    modifica: 'Modifica',
+    modificaAria: 'Modifica il profilo di {nome}',
+    chiudi: 'Chiudi',
+    cambiaFoto: 'Cambia la foto',
+    incollaFoto: 'oppure copia l’immagine e incollala qui con Ctrl+V',
+    preparo: 'Preparo…',
+    formatoFoto: 'La foto dev’essere un’immagine JPEG, PNG, WebP o AVIF.',
+    nome: 'Nome',
+    citta: 'Città',
+    bio: 'Bio',
+    sito: 'Sito',
+    salva: 'Salva il profilo',
+    salvo: 'Salvo…',
+    salvato: 'Salvato',
+    annulla: 'Annulla',
+    erroreLettura: 'Non riesco a leggere i profili.',
+    erroreSalvataggio:
+      'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database sono ancora quelle vecchie e vanno ripubblicate.',
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',
