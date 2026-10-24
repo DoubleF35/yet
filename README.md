@@ -24,12 +24,13 @@ sta nel piano gratuito Spark di Firebase.
 11. [Il movimento, e le due regole che non si toccano](#il-movimento-e-le-due-regole-che-non-si-toccano)
 12. [Allegati alle notizie](#allegati-alle-notizie)
 13. [Iscrizione con approvazione](#iscrizione-con-approvazione)
-14. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
-15. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
-16. [Le due lingue](#le-due-lingue)
-17. [Struttura delle cartelle](#struttura-delle-cartelle)
-18. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
-19. [Problemi comuni](#problemi-comuni)
+14. [Le domande di selezione, e il punteggio](#le-domande-di-selezione-e-il-punteggio)
+15. [Privacy, cookie e cosa devi compilare](#privacy-cookie-e-cosa-devi-compilare)
+16. [Dove stanno i dati, e come non perderli](#dove-stanno-i-dati-e-come-non-perderli)
+17. [Le due lingue](#le-due-lingue)
+18. [Struttura delle cartelle](#struttura-delle-cartelle)
+19. [Scelte fatte al posto tuo](#scelte-fatte-al-posto-tuo)
+20. [Problemi comuni](#problemi-comuni)
 
 ---
 
@@ -925,6 +926,86 @@ pagina non avrebbe modo di distinguere gli organizzatori dagli altri.
 Se aggiungi qualcuno alla allowlist mesi dopo la sua iscrizione, il suo `role`
 viene riallineato da solo al primo accesso successivo (`reconcileUserRole` in
 `src/lib/db.js`).
+
+---
+
+## Le domande di selezione, e il punteggio
+
+Vengono dal form che Greta aveva scritto a parte, in
+[gretadall/Diventa-uno-Yets](https://github.com/gretadall/Diventa-uno-Yets):
+una applicazione Next.js con Supabase, su Vercel. Qui sono rimaste le
+domande ed e' sparito tutto il resto, perche' il sito aveva gia' l'accesso
+con Google, il suo database e la sua approvazione. Tenere in piedi due
+applicazioni per fare la stessa cosa vuol dire avere due elenchi di persone
+che prima o poi non combaciano.
+
+**Il form e' uno solo.** Si accede con Google, si scrive la propria
+presentazione (quella che poi si vede in vetrina) e si risponde alle domande
+di selezione, tutto di seguito. Si manda una volta e basta.
+
+**Le risposte finiscono in due posti diversi**, ed e' la cosa piu'
+importante da sapere:
+
+| Dove | Cosa | Chi lo legge |
+|---|---|---|
+| `users/{uid}` | nome, foto, citta', bio, link | chiunque, e' la vetrina |
+| `candidature/{uid}` | data di nascita, WhatsApp, risposte, consensi | l'interessato e gli admin |
+
+Due collection e non piu' campi nello stesso documento, perche' `users` lo
+legge il mondo intero. Dentro le candidature ci sono una data di nascita e un
+numero di telefono: l'unica cosa che puo' proteggerli e' una regola di
+sicurezza, e le regole ragionano per documento.
+
+### Il punteggio non e' nel database
+
+Quattro criteri da un punto: ha presentato piu' di una volta, sta costruendo
+il prodotto o ha gia' utenti, e' stato ad almeno un evento, vuole fare o sta
+gia' facendo impresa. Da tre in su la scheda propone di accettare.
+
+**Il punteggio non viene mai salvato.** Nel form originale lo calcolava il
+server, apposta perche' il candidato non lo vedesse. Questo sito un server non
+ce l'ha: e' statico su GitHub Pages e Firebase sta sul piano gratuito, quindi
+niente Cloud Functions. Qualunque numero fosse scritto nel documento, chi si e'
+candidato se lo leggerebbe dalla console del browser in dieci secondi.
+
+Quindi il punteggio lo calcola il **pannello**, mentre tu guardi la scheda, e
+muore quando chiudi la pagina. La proprieta' che contava resta in piedi senza
+un server: non c'e' niente da leggere, perche' non c'e' niente di scritto.
+
+Il prezzo e' che non si puo' ordinare per punteggio con una query: va
+calcolato su quelle che hai gia' letto. Con i numeri di un club non si sente.
+
+Se tocchi i criteri o la soglia, stanno tutti in
+[`src/lib/punteggio.js`](src/lib/punteggio.js). **Non passare mai il risultato
+di `calcolaPunteggio()` a una funzione che scrive su Firestore.**
+
+### Chi ha meno di 16 anni
+
+Non viene rifiutato: la candidatura arriva come le altre e la scheda mostra
+l'eta'. Mentre compila, pero', gli compare un avviso che dice che prima di
+farlo entrare dovete parlare con chi e' responsabile per lui. Il consenso di
+un genitore non e' una casella da spuntare dentro un form.
+
+### Admin e superadmin
+
+Con questa parte sono cambiate le regole di sicurezza, e **vanno
+ripubblicate a mano** (vedi [Pubblicare le regole](#pubblicare-le-regole-di-sicurezza)):
+cambiare il file nel repo non ha nessun effetto sul database.
+
+Cosa e' cambiato:
+
+- **Un admin** adesso puo' sistemare il profilo di un membro, non solo
+  approvarlo o rifiutarlo. Serviva: ci sono foto profilo che puntano a
+  indirizzi scaduti e la persona che dovrebbe rimetterle a posto non torna sul
+  sito da mesi. Non puo' pero' toccare il profilo di un altro admin, e non puo'
+  cambiare il ruolo a nessuno.
+- **Il superadmin** e' uno solo, ed e' l'email in `superadminEmails()` dentro
+  `firestore.rules`. Puo' modificare chiunque, admin compresi.
+
+Una cosa che sembra vera e non lo e': il campo `role` su un profilo e'
+un'**etichetta**, non un permesso. Chi puo' fare cose da admin lo decide la
+lista di email nelle regole. Scrivere `admin` nel documento di qualcuno non
+gli da' nessun potere.
 
 ---
 

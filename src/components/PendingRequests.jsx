@@ -4,7 +4,8 @@ import Avatar from './Avatar.jsx'
 import EmptyState from './EmptyState.jsx'
 import ErrorState from './ErrorState.jsx'
 import Skeleton from './Skeleton.jsx'
-import { formatDate, listPendingUsers, setUserStatus } from '../lib/db.js'
+import SchedaCandidatura from './SchedaCandidatura.jsx'
+import { formatDate, listCandidature, listPendingUsers, setUserStatus } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
 
 import s from './PendingRequests.module.css'
@@ -14,8 +15,13 @@ import s from './PendingRequests.module.css'
  *
  * Chi chiede di entrare resta invisibile sul sito finché uno dei quattro
  * amministratori non lo approva da qui. Le regole Firestore fanno rispettare
- * la cosa davvero: nessuno può auto-approvarsi, e un admin può cambiare lo
- * stato di un profilo ma non riscriverne il contenuto.
+ * la cosa davvero: nessuno può auto-approvarsi.
+ *
+ * Qui c'era scritto anche che un admin «può cambiare lo stato di un profilo
+ * ma non riscriverne il contenuto». Non è più vero: adesso un admin può
+ * sistemare il profilo di un membro (serviva, per le foto che non si
+ * caricano più), ma non quello di un altro admin. Quello può farlo solo il
+ * superadmin. Le condizioni esatte stanno in firestore.rules.
  *
  * NOTA SULLE NOTIFICHE: senza Cloud Functions (piano Spark) non è possibile
  * mandare una mail automatica quando arriva una richiesta. Il conteggio qui
@@ -29,6 +35,9 @@ export default function PendingRequests({ onCountChange }) {
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
   const [attempt, setAttempt] = useState(0)
+  /* Le candidature indicizzate per uid, cosi' ogni riga trova la sua senza
+     scorrere tutto l'elenco a ogni ridisegno. */
+  const [schede, setSchede] = useState({})
 
   /* Quale richiesta sta cambiando stato, e come. Per riga e non globale: con
      un flag solo, cliccare "Approva" su una riga bloccherebbe tutte. */
@@ -40,12 +49,24 @@ export default function PendingRequests({ onCountChange }) {
     setStatus('loading')
     setError(null)
 
-    listPendingUsers()
-      .then((list) => {
+    /* Le due letture insieme, e con allSettled e non con all: se le
+       candidature non arrivano, l'elenco delle richieste deve comparire lo
+       stesso. Chi approva puo' farlo anche senza le risposte sotto gli occhi,
+       mentre una pagina vuota non serve a nessuno. */
+    Promise.allSettled([listPendingUsers(), listCandidature()])
+      .then(([richieste, candidature]) => {
         if (!alive) return
-        setItems(list)
+        if (richieste.status === 'rejected') throw richieste.reason
+
+        if (candidature.status === 'fulfilled') {
+          const perUid = {}
+          for (const c of candidature.value) perUid[c.uid] = c
+          setSchede(perUid)
+        }
+
+        setItems(richieste.value)
         setStatus('ready')
-        onCountChange?.(list.length)
+        onCountChange?.(richieste.value.length)
       })
       .catch((err) => {
         if (!alive) return
@@ -147,6 +168,11 @@ export default function PendingRequests({ onCountChange }) {
                 ) : (
                   <p className={s.bioEmpty}>{t('richieste.senzaPresentazione')}</p>
                 )}
+
+                {/* Le risposte di selezione e il punteggio. Il punteggio NON
+                    sta nel database: lo calcola questa scheda mentre la
+                    guardi. Vedi src/lib/punteggio.js. */}
+                <SchedaCandidatura candidatura={schede[item.uid]} />
 
                 <div className={s.actions}>
                   <button

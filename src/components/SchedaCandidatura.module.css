@@ -1,0 +1,166 @@
+/* =========================================================================
+   LA SCHEDA DI UNA CANDIDATURA, DENTRO LE RICHIESTE
+
+   Sta dentro una riga che ha gia' il suo bordo, quindi qui niente riquadro
+   dentro il riquadro: un fondo appena piu' scuro e un filetto in alto
+   bastano a dire "questa e' un'altra cosa".
+   ========================================================================= */
+
+.scheda {
+  margin-block-start: var(--space-4);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border-soft);
+}
+
+.nessuna {
+  margin: var(--space-4) 0 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-style: italic;
+}
+
+/* ---- la proposta ------------------------------------------------------- */
+
+.verdetto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  margin-block-end: var(--space-4);
+}
+
+.proposta {
+  font-size: var(--step-0);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.punti {
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* I tre esiti si distinguono anche SENZA colore: la parola scritta e' sempre
+   li'. Il colore e' un rinforzo, non l'informazione, perche' una persona su
+   dodici non distingue il verde dal rosso. */
+.accettato {
+  background-color: var(--coral-soft);
+  color: var(--coral-text);
+}
+
+.valutare {
+  background-color: var(--surface-band);
+  color: var(--ink);
+}
+
+.eventi {
+  background-color: var(--surface-sunken);
+  color: var(--muted);
+}
+
+/* ---- i quattro criteri ------------------------------------------------- */
+
+.criteri {
+  list-style: none;
+  margin: 0 0 var(--space-5) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.criterioSi,
+.criterioNo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.criterioSi {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.criterioNo {
+  color: var(--muted);
+}
+
+/* Larghezza fissa e cifre tabellari: i segni restano incolonnati anche
+   quando sopra c'e' un + e sotto un meno. */
+.segno {
+  inline-size: 0.9rem;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+}
+
+/* ---- le risposte ------------------------------------------------------- */
+
+.elenco {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Due colonne su schermo largo, una sotto l'altra sul telefono: a 375px una
+   griglia a due colonne lascerebbe alla risposta meno spazio della domanda. */
+.riga {
+  display: grid;
+  gap: var(--space-1);
+}
+
+@media (min-width: 34rem) {
+  .riga {
+    grid-template-columns: 11rem 1fr;
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+}
+
+.domanda {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.risposta {
+  margin: 0;
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  overflow-wrap: anywhere;
+}
+
+.link {
+  color: var(--coral-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- la motivazione ---------------------------------------------------- */
+
+/* Le parole della persona, staccate dalle risposte a scelta multipla: sono
+   l'unica cosa qui dentro che non ha scelto da un elenco. */
+.motivazione {
+  margin: var(--space-5) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--line-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.motivazione p {
+  margin: 0;
+}

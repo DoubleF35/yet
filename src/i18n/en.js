@@ -306,6 +306,108 @@ export default {
   },
 
   /* --- members ----------------------------------------------------------- */
+  candidatura: {
+    punteggio: '{punti} of {su} criteria',
+    eta: '{anni} years old',
+    nessuna: 'Has not answered the selection questions yet.',
+    sezioneProgetto: 'What you are building',
+    sezioneAltro: 'Two more things',
+    titolo: 'A little about where you are',
+    lead:
+      'This helps us understand where you are, it is not a test. There is no right answer: someone just starting interests us as much as someone with users.',
+    privato: 'This part never goes on the showcase. Only the organisers read it.',
+
+    dataNascita: 'Date of birth',
+    dataNascitaHint: 'The club runs from 16 to 23. That is what this is for, nothing else.',
+    dataNascitaErrore: 'Check the date, it does not add up.',
+
+    whatsapp: 'WhatsApp number',
+    whatsappHint: 'With the country code. That is where things get organised between meetups.',
+    whatsappErrore: 'Write it with the country code, for example +39 333 1234567.',
+
+    occupazione: 'What you do right now',
+    occupazioneScuola: 'School',
+    occupazioneUniversita: 'University',
+    occupazioneLavoro: 'Work',
+    occupazioneAltro: 'Something else',
+
+    ruolo: 'Where you place yourself',
+    ruoloAspiranteFounder: 'I want to become a founder',
+    ruoloFounder: 'I am already a founder',
+    ruoloStartup: 'I work at a startup',
+    ruoloCurioso: 'I am here out of curiosity',
+
+    stadioProgetto: 'How far along is what you are building',
+    stadioNessuno: 'Nothing yet',
+    stadioIdea: 'I have an idea',
+    stadioProdotto: 'I am building the product',
+    stadioUtenti: 'I already have users or customers',
+
+    progettoLink: 'Link to the project',
+    progettoLinkHint: 'If there is something to look at. A single page is fine.',
+
+    nPitch: 'How many times you have pitched it',
+    nPitchMai: 'Never',
+    nPitchUno: 'Once',
+    nPitchPiu: 'More than once',
+
+    nEventi: 'How many events in this world you have been to',
+    nEventiZero: 'None',
+    nEventiUno: 'One',
+    nEventiPiu: 'Two or more',
+
+    eventiQuali: 'Which ones',
+    eventiQualiHint: 'Just the names, as you remember them.',
+
+    motivazione: 'Why you want to join',
+    motivazioneHint: 'Two lines are enough. {rimasti} characters left.',
+
+    fonte: 'How you heard about us',
+    fonteInstagram: 'Instagram',
+    fonteWhatsapp: 'WhatsApp',
+    fonteEvento: 'At an event',
+    fontePassaparola: 'Word of mouth',
+    fonteAltro: 'Somewhere else',
+
+    consensi: 'Before you send',
+    consensoPrivacy: 'I have read how you handle my data and I agree.',
+    consensoWhatsapp: 'You can message me on WhatsApp about this application.',
+    consensoMancante: 'Both are needed to send the application.',
+
+    minorenne:
+      'You are under 16. You can still send this, but before you join we need to speak with whoever is responsible for you: we will get in touch.',
+    fuoriFascia:
+      'The club runs from 16 to 23 and you are outside that range. Send it anyway if you like: we will still read it.',
+
+    invia: 'Send the application',
+    inviata: 'Application sent',
+    inviataTesto:
+      'We have got it. We will write to you, on WhatsApp or by email. Until we reply your profile is not visible to anyone.',
+    modifica: 'Change an answer',
+
+    criterio: {
+      pitch: 'Has pitched more than once',
+      prodotto: 'Is building the product or already has users',
+      eventi: 'Has been to at least one event',
+      ambizione: 'Wants to build, or is already building, a company',
+    },
+
+    proposta: {
+      accettato: 'To accept',
+      valutare: 'To weigh up',
+      eventi: 'Events only',
+    },
+
+    stato: {
+      nuovo: 'New',
+      contattato: 'Contacted',
+      accettato: 'Accepted',
+      eventi: 'Events only',
+      escluso: 'Excluded',
+      minorenne: 'Under 16, to speak with',
+    },
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',

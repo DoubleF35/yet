@@ -329,6 +329,120 @@ export default {
   },
 
   /* --- vetrina ----------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     LE DOMANDE DI SELEZIONE
+
+     Vengono dal form che Greta aveva scritto a parte. Le etichette stanno
+     qui e non in config/candidatura.js perche' il sito e' bilingue e c'e'
+     uno script che controlla che i due cataloghi combacino: scritte li',
+     quel controllo non le vedrebbe e l'inglese resterebbe indietro.
+     --------------------------------------------------------------------- */
+  candidatura: {
+    punteggio: '{punti} criteri su {su}',
+    eta: '{anni} anni',
+    nessuna: 'Non ha ancora risposto alle domande di selezione.',
+    sezioneProgetto: 'Quello che stai costruendo',
+    sezioneAltro: 'Ancora due cose',
+    titolo: 'Due parole su dove sei',
+    lead:
+      'Serve a capire a che punto sei, non a darti un voto. Non c’è una risposta giusta: chi è all’inizio ci interessa quanto chi ha già utenti.',
+    privato:
+      'Questa parte non finisce in vetrina. La leggiamo solo noi che organizziamo.',
+
+    dataNascita: 'Data di nascita',
+    dataNascitaHint: 'Il club va dai 16 ai 23 anni. Serve per quello, non per altro.',
+    dataNascitaErrore: 'Controlla la data: così non torna.',
+
+    whatsapp: 'Numero WhatsApp',
+    whatsappHint: 'Col prefisso. È lì che ci si organizza fra un incontro e l’altro.',
+    whatsappErrore: 'Scrivilo col prefisso, per esempio +39 333 1234567.',
+
+    occupazione: 'Cosa fai adesso',
+    occupazioneScuola: 'Scuola',
+    occupazioneUniversita: 'Università',
+    occupazioneLavoro: 'Lavoro',
+    occupazioneAltro: 'Altro',
+
+    ruolo: 'Come ti collochi',
+    ruoloAspiranteFounder: 'Voglio diventare founder',
+    ruoloFounder: 'Sono già founder',
+    ruoloStartup: 'Lavoro in una startup',
+    ruoloCurioso: 'Sono qui per curiosità',
+
+    stadioProgetto: 'A che punto è quello che stai costruendo',
+    stadioNessuno: 'Niente, per ora',
+    stadioIdea: 'Ho un’idea',
+    stadioProdotto: 'Sto costruendo il prodotto',
+    stadioUtenti: 'Ho già utenti o clienti',
+
+    progettoLink: 'Link al progetto',
+    progettoLinkHint: 'Se c’è qualcosa da vedere. Anche una pagina sola va bene.',
+
+    nPitch: 'Quante volte l’hai presentato a un pubblico',
+    nPitchMai: 'Mai',
+    nPitchUno: 'Una volta',
+    nPitchPiu: 'Più di una',
+
+    nEventi: 'A quanti eventi del settore sei stato',
+    nEventiZero: 'Nessuno',
+    nEventiUno: 'Uno',
+    nEventiPiu: 'Due o più',
+
+    eventiQuali: 'Quali',
+    eventiQualiHint: 'Anche solo i nomi, come te li ricordi.',
+
+    motivazione: 'Perché vuoi entrare',
+    motivazioneHint: 'Due righe bastano. {rimasti} caratteri rimasti.',
+
+    fonte: 'Come ci hai conosciuti',
+    fonteInstagram: 'Instagram',
+    fonteWhatsapp: 'WhatsApp',
+    fonteEvento: 'A un evento',
+    fontePassaparola: 'Passaparola',
+    fonteAltro: 'Altro',
+
+    consensi: 'Prima di mandare',
+    consensoPrivacy:
+      'Ho letto come trattate i miei dati e sono d’accordo.',
+    consensoWhatsapp:
+      'Potete scrivermi su WhatsApp per parlare della candidatura.',
+    consensoMancante: 'Servono tutti e due per mandare la candidatura.',
+
+    minorenne:
+      'Hai meno di 16 anni. Puoi mandarla lo stesso, ma prima di farti entrare dobbiamo parlare con chi è responsabile per te: ti scriviamo noi.',
+    fuoriFascia:
+      'Il club va dai 16 ai 23 anni e tu sei fuori da quella fascia. Mandala lo stesso se ti va: la leggiamo comunque.',
+
+    invia: 'Manda la candidatura',
+    inviata: 'Candidatura mandata',
+    inviataTesto:
+      'L’abbiamo ricevuta. Ti scriviamo noi, su WhatsApp o per email. Finché non ti rispondiamo il tuo profilo non è visibile a nessuno.',
+    modifica: 'Cambia una risposta',
+
+    /* Il dettaglio del punteggio, nel pannello. Lo legge solo chi organizza. */
+    criterio: {
+      pitch: 'Ha presentato più di una volta',
+      prodotto: 'Sta costruendo il prodotto o ha già utenti',
+      eventi: 'È stato ad almeno un evento',
+      ambizione: 'Vuole fare, o sta già facendo, impresa',
+    },
+
+    proposta: {
+      accettato: 'Da accettare',
+      valutare: 'Da valutare',
+      eventi: 'Solo eventi',
+    },
+
+    stato: {
+      nuovo: 'Nuova',
+      contattato: 'Contattata',
+      accettato: 'Accettata',
+      eventi: 'Solo eventi',
+      escluso: 'Esclusa',
+      minorenne: 'Minorenne, da sentire',
+    },
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',
