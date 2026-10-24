@@ -73,7 +73,11 @@ export default function SponsorAdmin() {
         {
           dataUrl: esito.dataUrl,
           contentType: esito.mime,
-          name: file.name,
+          /* Un'immagine presa dagli appunti spesso arriva senza nome, o
+             chiamata "image.png" da qualunque cosa l'abbia copiata. Il nome
+             finisce nel documento del media e serve solo a ritrovarla, quindi
+             meglio uno di ripiego che una stringa vuota. */
+          name: file.name || 'logo-incollato.png',
           width: esito.width,
           height: esito.height,
           bytes: esito.bytes,
@@ -90,6 +94,37 @@ export default function SponsorAdmin() {
     } finally {
       setFase(null)
       if (input) input.value = ''
+    }
+  }
+
+  /**
+   * Prende un'immagine dagli appunti e la tratta come un file scelto.
+   *
+   * Sta sul <form> intero e non su un riquadro dedicato: cosi' basta avere il
+   * cursore da qualche parte nel modulo e premere Ctrl+V, che e' il gesto che
+   * uno fa d'istinto dopo aver copiato un logo da una pagina o da uno
+   * screenshot. Incollare del TESTO in una casella continua a funzionare
+   * normalmente, perche' qui si guarda solo se negli appunti c'e' un file
+   * immagine: se non c'e', la funzione non fa niente e lascia passare.
+   */
+  async function incollaLogo(evento) {
+    if (fase) return
+    /* Array.from e non direttamente `for...of`: clipboardData.items e' una
+       DataTransferItemList, cioe' una collezione indicizzata che la specifica
+       NON dichiara iterabile. Su un browser che non ci ha messo di suo un
+       Symbol.iterator, il ciclo sarebbe esploso. */
+    const elementi = Array.from(evento.clipboardData?.items ?? [])
+    if (elementi.length === 0) return
+
+    for (const el of elementi) {
+      if (el.kind !== 'file' || !el.type.startsWith('image/')) continue
+      const file = el.getAsFile()
+      if (!file) continue
+      /* preventDefault solo QUI dentro, cioe' solo quando l'immagine c'e'
+         davvero: metterlo in cima bloccherebbe anche l'incolla del testo. */
+      evento.preventDefault()
+      await scegliLogo(file)
+      return
     }
   }
 
@@ -145,7 +180,7 @@ export default function SponsorAdmin() {
       <p className={s.intro}>{t('sponsorAdmin.intro')}</p>
 
       {/* --- nuovo ------------------------------------------------------- */}
-      <form className={s.form} onSubmit={salva}>
+      <form className={s.form} onSubmit={salva} onPaste={incollaLogo}>
         <div className={s.riga}>
           <label className={s.campo}>
             <span className={s.etichetta}>{t('sponsorAdmin.nome')}</span>
@@ -226,6 +261,13 @@ export default function SponsorAdmin() {
               />
               <span className={s.fileBottone}>{faseTesto || t('sponsorAdmin.caricaLogo')}</span>
             </label>
+          )}
+
+          {!logo && !fase && (
+            /* Detto a parole, perche' nessuno prova Ctrl+V se non sa che si
+               puo'. Fuori dal <label> del file: dentro, un clic qui aprirebbe
+               la finestra di scelta del file invece di non fare niente. */
+            <p className={s.incollaNota}>{t('sponsorAdmin.incollaLogo')}</p>
           )}
         </div>
 

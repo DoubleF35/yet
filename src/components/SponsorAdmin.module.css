@@ -300,3 +300,13 @@
 .vuoto {
   color: var(--muted);
 }
+
+/* La riga che dice che si puo' incollare.
+   Piccola e in grigio: e' un suggerimento, non un secondo bottone. Scritta
+   perche' nessuno prova Ctrl+V se non sa che funziona. */
+.incollaNota {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
