@@ -7,6 +7,7 @@ import HandsDivider from '../components/HandsDivider.jsx'
 import AttachmentEditor from '../components/AttachmentEditor.jsx'
 import GalleriaAdmin from '../components/GalleriaAdmin.jsx'
 import MembriAdmin from '../components/MembriAdmin.jsx'
+import OspitiAdmin from '../components/OspitiAdmin.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
 import SponsorAdmin from '../components/SponsorAdmin.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -370,6 +371,10 @@ export default function Admin() {
             Una richiesta in attesa blocca una persona, un profilo da
             sistemare no. */}
         {isFirebaseConfigured && <GalleriaAdmin />}
+
+        {/* Accanto alle foto delle serate perche' parla della stessa cosa:
+            chi c'era quella sera. */}
+        {isFirebaseConfigured && <OspitiAdmin />}
 
         {isFirebaseConfigured && <MembriAdmin />}
 

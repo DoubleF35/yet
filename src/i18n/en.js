@@ -72,7 +72,7 @@ export default {
     descrizioneBreve:
       'The club for young people building something. Even if you have nothing in your hands yet: what counts is the attitude, not a project that is already running.',
     descrizione:
-      'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. The first events will be in Turin, but the plan is to spread across Italy. No selection, no membership fee.',
+      'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. The first events will be in Turin, but the plan is to spread across Italy. No membership fee: just a few questions, so we get to know you.',
   },
 
   /* --- channels --------------------------------------------------------- */
@@ -478,6 +478,29 @@ export default {
       'I cannot save. If it says permissions are missing, the rules on the database need republishing.',
   },
 
+  /* ---------------------------------------------------------------------
+     WHO HOSTED US, EDITABLE FROM THE PANEL
+     --------------------------------------------------------------------- */
+  ospitiAdmin: {
+    titolo: 'Who hosted us',
+    intro:
+      'The strip that scrolls under "Where we have met", on the home page. The first one in the row is the first you see when the ribbon starts.',
+    nome: 'Name',
+    aggiungi: 'Add a name',
+    salva: 'Save the list',
+    salvo: 'Saving…',
+    fatto: 'Saved',
+    nessuno: 'The list is empty: the strip does not show.',
+    perToglierla: 'To remove the strip from the home page, delete every name and save.',
+    suAria: 'Move earlier',
+    giuAria: 'Move later',
+    togliAria: 'Remove this name',
+    erroreLettura:
+      'I cannot read the saved list: below are the names the site shows right now. If it says permissions are missing, the database rules need publishing again.',
+    erroreSalvataggio:
+      'I cannot save. If it says permissions are missing, the database rules need publishing again.',
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',
@@ -738,7 +761,7 @@ export default {
       comeSiEntra: {
         titolo: 'How to get in',
         testo:
-          'Sign in with Google and write a couple of lines about yourself. The request reaches the organisers and, as soon as it is approved, you show up among the members. There is no membership fee: the step only exists to keep fake accounts out.',
+          'Sign in with Google, write a couple of lines about yourself and answer a few questions about where you are: it takes three minutes. The request reaches the organisers and, as soon as it is approved, you show up among the members. There is no membership fee, and the answers to those questions never go on the showcase: only we read them.',
       },
       seNonHai: {
         titolo: 'If you have nothing yet',

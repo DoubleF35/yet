@@ -394,15 +394,19 @@ firebase deploy --only firestore:rules
 > scadere tutto smette di funzionare da solo. In entrambi i casi la risposta è
 > la stessa: pubblica le regole adesso, non "quando c'è tempo".
 
-### Le cinque collection, e cosa fanno le regole
+### Le collection, e cosa fanno le regole
 
 | Collection  | Cosa contiene                                    | Chi legge | Chi scrive |
 | ----------- | ------------------------------------------------ | --------- | ---------- |
-| `users`     | i profili dei membri                             | chiunque, ma **solo gli approvati** | ognuno il proprio; gli admin solo lo `status` |
+| `users`     | i profili dei membri                             | chiunque, ma **solo gli approvati** | ognuno il proprio; gli admin anche quello degli altri |
+| `candidature` | le risposte del modulo di selezione            | l'interessato e gli admin | l'interessato; gli admin solo lo `stato` |
 | `news`      | le notizie                                       | chiunque  | admin      |
 | `meetups`   | gli incontri con data e luogo                    | chiunque  | admin      |
 | `media`     | i file caricati, un documento per file           | chiunque  | admin      |
+| `gallerie`  | le foto di una serata caricate dal pannello      | chiunque  | admin      |
+| `ospiti`    | i nomi della striscia «Ci hanno ospitato»        | chiunque  | admin      |
 | `sponsors`  | chi sostiene la community                        | chiunque  | admin      |
+| `sponsorRiservato` | quanto ha dato ogni sponsor               | **solo** admin | admin |
 
 Campi principali:
 
@@ -414,6 +418,10 @@ news/{id}     title, body, attachments[], authorUid, authorName, createdAt, publ
 meetups/{id}  title, startsAt (Timestamp), place, body, url, published,
               authorUid, authorName, createdAt
 media/{id}    dataUrl, contentType, name, width, height, bytes, authorUid, createdAt
+gallerie/{id} foto[] (id dentro media), alt[] (una per foto), aggiornatoIl
+              la chiave e' l'ID DELL'INCONTRO, non lo slug del resoconto:
+              non tutte le serate hanno una pagina di racconto
+ospiti/elenco nomi[], aggiornatoIl     un documento solo, l'ordine e' quello
 sponsors/{id} nome, url, nota, logoMediaId, ordine
 ```
 
@@ -602,6 +610,41 @@ Tre dettagli che vengono da come la cosa verra' usata davvero:
 Se non ci sono incontri, il blocco **non renderizza niente**. Uno stato vuoto ha
 senso quando si cerca qualcosa che manca, non in cima a una pagina che ha
 comunque altro da mostrare.
+
+### «Dove ci siamo visti» legge due fonti
+
+Il blocco sulla home mette insieme due elenchi e li ordina per data, dalla
+serata piu' recente alla piu' vecchia:
+
+- i **resoconti** di `src/config/eventi.js`, che hanno una pagina loro;
+- gli **incontri passati** su Firestore, anche quelli che un resoconto non ce
+  l'hanno.
+
+Prima leggeva solo i primi, e una serata vera come «YET x Wave» non compariva
+perche' nessuno le aveva scritto una pagina. Il legame fra le due fonti e'
+`meetupId`: un incontro che ha gia' il suo resoconto non esce due volte. Se in
+un resoconto quel campo resta `null`, la serata puo' comparire doppia, una per
+fonte: e' il motivo per cui va compilato.
+
+Una serata senza resoconto **non diventa un link**, perche' non c'e' una pagina
+dove portare. La scheda si vede, con la sua foto se e' stata caricata dal
+pannello, e basta.
+
+### La striscia «Ci hanno ospitato»
+
+Sotto le schede, i nomi di chi ci ha ospitato scorrono in un giro continuo. I
+nomi si scrivono da **/admin**, sezione «Chi ci ha ospitato»: si aggiungono, si
+riordinano con le frecce, si tolgono. L'ordine dell'elenco e' l'ordine sulla
+striscia.
+
+Finche' nessuno salva niente, la striscia usa i nomi che stanno nel campo
+`ospiti` dei resoconti, che e' quello che mostrava prima. Salvare un elenco
+**vuoto** la fa sparire, ed e' l'unico modo per toglierla.
+
+Il giro e' ottenuto ripetendo l'elenco quante volte serve a riempire la riga e
+spostando il nastro della larghezza esatta di una copia: a fine corsa la copia
+successiva si trova dov'era la prima, quindi il ritorno a zero non si vede. Con
+«riduci animazioni» non parte proprio e i nomi vanno a capo.
 
 ---
 
