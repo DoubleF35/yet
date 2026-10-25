@@ -10,6 +10,13 @@
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-6);
+  /* Alta quanto il contenitore, ed e' la riga che tiene in riga le notizie.
+     Le tessere non stanno direttamente nella griglia: ognuna e' avvolta dal
+     <div> che fa comparire le cose allo scorrimento. La griglia tira
+     quell'involucro all'altezza della riga, ma la tessera dentro restava
+     alta quanto il suo testo, e tre notizie di lunghezza diversa davano tre
+     riquadri scalati. */
+  block-size: 100%;
   border: var(--border-soft);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-2);

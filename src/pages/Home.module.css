@@ -163,7 +163,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: var(--space-6);
-  align-items: start;
+  /* `stretch` e non `start`: con `start` ogni tessera resta alta quanto il
+     suo testo, e tre notizie di lunghezza diversa danno tre riquadri scalati.
+     Tirate tutte all'altezza della riga stanno allineate, e il testo che non
+     ci sta si taglia da solo mostrando "Leggi tutto".
+
+     Serve anche `block-size: 100%` sulla tessera (in NewsCard.module.css),
+     perche' fra la griglia e la tessera c'e' il <div> che fa comparire le
+     cose allo scorrimento: senza quella riga la griglia tira l'involucro e la
+     tessera dentro resta corta. Una delle due da sola non basta. */
+  align-items: stretch;
 }
 
 .card {
