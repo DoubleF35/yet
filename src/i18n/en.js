@@ -143,6 +143,7 @@ export default {
     audioSpegni: 'Mute',
     skip: 'Skip',
     entra: 'Enter',
+    guarda: 'Watch the intro',
     animazione: 'YET logo animation',
     logo: 'The YET logo',
   },
@@ -322,8 +323,8 @@ export default {
     dataNascitaErrore: 'Check the date, it does not add up.',
 
     whatsapp: 'WhatsApp number',
-    whatsappHint: 'With the country code. That is where things get organised between meetups.',
-    whatsappErrore: 'Write it with the country code, for example +39 333 1234567.',
+    whatsappHint: 'That is where things get organised between meetups. If the number is not Italian, add the country code.',
+    whatsappErrore: 'That number does not look right: check the digits, for example 333 1234567.',
 
     occupazione: 'What you do right now',
     occupazioneScuola: 'School',

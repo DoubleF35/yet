@@ -54,8 +54,11 @@ export default function Intro() {
   const [alreadySeen] = useState(hasSeenIntro)
   const [reduced] = useState(prefersReducedMotion)
 
-  /* 'video'  = sta suonando
-     'poster' = autoplay negato, video in errore, o reduced-motion: si entra a mano */
+  /* 'video'    = sta suonando
+     'bloccato' = il browser ha negato l'avvio automatico anche da muto: il
+                  video resta in pagina, fermo sul primo fotogramma, e un
+                  bottone lo fa partire
+     'poster'   = video in errore, o reduced-motion: si entra a mano */
   const [mode, setMode] = useState(reduced ? 'poster' : 'video')
   const [fading, setFading] = useState(false)
   /* Parte da false: finche' il browser non concede l'audio, il bottone deve
@@ -100,9 +103,11 @@ export default function Intro() {
      l'unico avvio automatico concesso, e si mostra il bottone per accendere
      l'audio: un tocco basta, perche' li' il gesto dell'utente c'e'.
 
-     SE FALLISCE ANCHE IL MUTO si passa al poster: succede su iOS in risparmio
-     energetico e con certe impostazioni desktop. Senza questo ramo chi lo
-     subisce resta davanti a un fotogramma fermo senza capire come proseguire.
+     SE FALLISCE ANCHE IL MUTO il video resta fermo e compare "Guarda
+     l'intro": succede su iOS in risparmio energetico, nei browser dentro le
+     app e con l'autoplay bloccato nelle impostazioni. Prima qui si passava al
+     poster con il solo "Entra", e chi capitava in quei casi l'animazione non
+     la vedeva mai, senza nemmeno sapere che c'era.
 
      `play()` va chiamata SEMPRE come Promise: in caso di rifiuto non lancia,
      rifiuta, e un catch mancante diventa un errore non gestito in console. */
@@ -110,6 +115,10 @@ export default function Intro() {
     if (mode !== 'video') return undefined
     const video = videoRef.current
     if (!video) return undefined
+    /* Gia' partito: e' il caso di "Guarda l'intro", che lo avvia da se' e poi
+       passa a 'video'. Riprovare qui l'avvio automatico rischierebbe un
+       secondo rifiuto e un ritorno a 'bloccato' con il video che suona. */
+    if (!video.paused) return undefined
 
     let cancelled = false
 
@@ -129,7 +138,7 @@ export default function Intro() {
         await video.play()
         if (!cancelled) setAudioAcceso(false)
       } catch {
-        if (!cancelled) setMode('poster')
+        if (!cancelled) setMode('bloccato')
       }
     }
 
@@ -139,6 +148,27 @@ export default function Intro() {
       cancelled = true
     }
   }, [mode])
+
+  /* L'avvio a mano, quando quello automatico e' stato negato. play() va
+     chiamata QUI DENTRO, nel gestore del tocco, e non in un effetto dopo il
+     cambio di stato: Safari su iPhone concede l'avvio solo se arriva dentro
+     il gesto, e un effetto gira dopo, quando il gesto e' gia' finito. Col
+     gesto c'e' anche il permesso per l'audio, quindi si parte non muti. */
+  function guarda() {
+    const video = videoRef.current
+    if (!video) return
+    video.muted = false
+    /* I comandi cambiano SUBITO e non quando la promessa si risolve: si
+       risolve solo quando i primi fotogrammi sono pronti, e su una rete lenta
+       il bottone resterebbe li' a sembrare rotto dopo il tocco. Se il browser
+       rifiuta lo stesso, si torna indietro. */
+    setAudioAcceso(true)
+    setMode('video')
+    video.play().catch(() => {
+      setAudioAcceso(false)
+      setMode('bloccato')
+    })
+  }
 
   /* L'interruttore dell'audio. Qui il gesto dell'utente c'e', quindi togliere
      il muto e' sempre concesso: non serve nessun ripiego. */
@@ -164,7 +194,7 @@ export default function Intro() {
           traslato: i numeri arrivano tutti dalle variabili --hero-* di
           theme.css, così si ritocca il taglio in un punto solo. */}
       <div className={s.frame}>
-        {mode === 'video' ? (
+        {mode !== 'poster' ? (
           <video
             ref={videoRef}
             className={s.video}
@@ -247,9 +277,20 @@ export default function Intro() {
             </button>
           </>
         ) : (
-          <button type="button" className={s.enter} onClick={() => goHome()}>
-            {t('intro.entra')}
-          </button>
+          <>
+            {mode === 'bloccato' && (
+              <button type="button" className={s.enter} onClick={guarda}>
+                {t('intro.guarda')}
+              </button>
+            )}
+            <button
+              type="button"
+              className={mode === 'bloccato' ? s.skip : s.enter}
+              onClick={() => goHome()}
+            >
+              {t('intro.entra')}
+            </button>
+          </>
         )}
       </div>
 

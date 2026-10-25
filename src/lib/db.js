@@ -1198,8 +1198,27 @@ const EVENTI_QUALI_MAX = 300
 const LINK_MAX = 200
 
 /* Un numero scritto in forma internazionale: piu', poi da 8 a 15 cifre.
-   Niente spazi e niente trattini, che li toglie chi scrive sopra. */
+   E' la forma che SALVIAMO, e la pretendono anche le regole del database:
+   serve al pannello per aprire la chat con wa.me, che senza il prefisso del
+   paese non sa a chi scrivere. */
 const WHATSAPP = /^\+[0-9]{8,15}$/
+
+/**
+ * Il numero come lo scrive una persona, ridotto alla forma da salvare.
+ *
+ * IL PREFISSO NON SI CHIEDE PIU'. Quasi tutti scrivono "333 1234567" e il
+ * campo li fermava con un errore per un +39 che possiamo mettere noi: il
+ * club e' italiano. Chi ha un numero straniero lo scrive col suo prefisso,
+ * con il + o con lo 00 davanti, e resta com'e'.
+ *
+ * Torna stringa vuota se quello che resta non e' un numero valido.
+ */
+export function normalizzaWhatsapp(grezzo) {
+  let numero = String(grezzo ?? '').replace(/[\s\-./()]/g, '')
+  if (numero.startsWith('00')) numero = `+${numero.slice(2)}`
+  if (!numero.startsWith('+')) numero = `+39${numero}`
+  return WHATSAPP.test(numero) ? numero : ''
+}
 
 function unaDi(valore, ammessi, campo) {
   if (!ammessi.includes(valore)) {
@@ -1223,9 +1242,9 @@ export async function saveCandidatura(uid, dati) {
   if (!isFirebaseConfigured) throw notConfigured()
   if (!uid) throw new Error('Manca l’identificativo dell’utente.')
 
-  const whatsapp = String(dati.whatsapp ?? '').replace(/[\s-]/g, '')
-  if (!WHATSAPP.test(whatsapp)) {
-    throw new Error('Il numero WhatsApp va scritto col prefisso, per esempio +39…')
+  const whatsapp = normalizzaWhatsapp(dati.whatsapp)
+  if (!whatsapp) {
+    throw new Error('Il numero WhatsApp non sembra valido.')
   }
 
   const dataNascita = String(dati.dataNascita ?? '').trim()

@@ -16,6 +16,7 @@ import {
   PROJECT_MAX,
   SKILLS_MAX,
   getCandidatura,
+  normalizzaWhatsapp,
   saveCandidatura,
   saveUserProfile,
 } from '../lib/db.js'
@@ -580,7 +581,7 @@ function ProfileForm({ firebaseMissing }) {
     if (anniCompiuti(form.dataNascita) === null) {
       erroriSelezione.dataNascita = t('candidatura.dataNascitaErrore')
     }
-    if (!/^\+[0-9]{8,15}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
+    if (!normalizzaWhatsapp(form.whatsapp)) {
       erroriSelezione.whatsapp = t('candidatura.whatsappErrore')
     }
     for (const campo of ['occupazione', 'ruolo', 'fonte', 'stadioProgetto', 'nPitch', 'nEventi']) {

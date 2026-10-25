@@ -173,7 +173,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            placeholder="+39 333 1234567"
+            placeholder="333 1234567"
             value={valori.whatsapp ?? ''}
             onChange={(e) => onCambia('whatsapp', e.target.value)}
             required={!facoltative}
