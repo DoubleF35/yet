@@ -10,6 +10,11 @@ import s from './Galleria.module.css'
  * I file li prepara `npm run foto` e li descrive src/data/gallerie.json: qui
  * dentro non si decide niente sulle immagini, si legge soltanto.
  *
+ * DUE TIPI DI SCATTO, e la differenza si vede da un campo solo. Uno scatto che
+ * ha `dataUrl` e' stato caricato dal pannello e sta tutto li' dentro; gli
+ * altri sono file nel repo, con piu' misure fra cui scegliere. Il resto della
+ * galleria (griglia, ingrandimento, frecce) non distingue i due casi.
+ *
  * TRE SCELTE CHE VALE LA PENA SPIEGARE
  *
  * Il riquadro ha il rapporto della foto VERA, preso dal manifesto, e lo tiene
@@ -142,7 +147,7 @@ export default function Galleria({ slug, scatti = [] }) {
           <div className={s.dialogoCorpo}>
             <img
               className={s.dialogoFoto}
-              src={urlFoto(slug, corrente, misuraPiuGrande(corrente))}
+              src={corrente.dataUrl ?? urlFoto(slug, corrente, misuraPiuGrande(corrente))}
               alt={corrente.alt || t('galleria.senzaDidascalia', { n: aperta + 1 })}
               width={corrente.w}
               height={corrente.h}
@@ -201,6 +206,25 @@ function misuraPiuGrande(scatto) {
  * Esportata perche' la copertina della pagina evento usa lo stesso meccanismo.
  */
 export function Foto({ slug, scatto, grande = false, priorita = false, classe = '' }) {
+  /* Una foto caricata dal pannello non ha file ne' misure: e' un'unica
+     immagine dentro il documento, gia' compressa al caricamento. Niente
+     srcset, perche' non c'e' una seconda misura da offrire: prometterne una
+     vorrebbe dire un 404 al posto dell'immagine. */
+  if (scatto.dataUrl) {
+    return (
+      <img
+        className={`${s.foto} ${classe}`.trim()}
+        src={scatto.dataUrl}
+        alt={scatto.alt || ''}
+        width={scatto.w}
+        height={scatto.h}
+        loading={priorita ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={priorita ? 'high' : 'auto'}
+      />
+    )
+  }
+
   const misure = scatto.misure ?? [800]
   const srcSet = misure.map((m) => `${urlFoto(slug, scatto, m)} ${m}w`).join(', ')
 

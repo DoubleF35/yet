@@ -384,6 +384,7 @@ function ProfileForm({ firebaseMissing }) {
   const [photoCheck, setPhotoCheck] = useState('idle') // idle | badUrl | checking | ok | error
 
   const nameRef = useRef(null)
+  const placeRef = useRef(null)
   const bioRef = useRef(null)
   const photoRef = useRef(null)
   const savedTimer = useRef(null)
@@ -537,6 +538,17 @@ function ProfileForm({ firebaseMissing }) {
     if (!displayName) {
       nextErrors.displayName = t('join.form.nomeErrore')
     }
+    /* Citta' e presentazione sono obbligatorie, e non e' burocrazia: una
+       tessera in vetrina senza un luogo e senza due righe non dice niente a
+       nessuno, e i filtri per citta' della vetrina non hanno niente da
+       filtrare. Restano facoltativi i tre campi di "Cosa fai": quelli
+       aggiungono, non reggono la tessera. */
+    if (!form.location.trim()) {
+      nextErrors.location = t('join.form.luogoErrore')
+    }
+    if (!form.bio.trim()) {
+      nextErrors.bio = t('join.form.bioObbligatoria')
+    }
     // Validiamo la lunghezza in JS anche se il textarea ha maxLength: maxLength
     // non tocca i valori impostati da programma, e un profilo salvato prima che
     // il limite esistesse può arrivare già più lungo di BIO_MAX.
@@ -583,6 +595,7 @@ function ProfileForm({ firebaseMissing }) {
          non sull'ultimo che il codice ha controllato. */
       const first =
         (nextErrors.displayName && nameRef.current) ||
+        (nextErrors.location && placeRef.current) ||
         (nextErrors.bio && bioRef.current) ||
         (nextErrors.photoURL && photoRef.current) ||
         (nextErrors.dataNascita && document.getElementById(`${fid}-nascita`)) ||
@@ -761,10 +774,15 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-place`}>
                 {t('join.form.luogo')}
+                <span className={s.req} aria-hidden="true">
+                  *
+                </span>
+                <span className="sr-only">{t('join.form.obbligatorio')}</span>
               </label>
               <input
-                className={s.input}
+                className={cx(s.input, errors.location && s.inputInvalid)}
                 id={`${fid}-place`}
+                ref={placeRef}
                 type="text"
                 value={form.location}
                 onChange={update('location')}
@@ -774,16 +792,31 @@ function ProfileForm({ firebaseMissing }) {
                    casa di nessuno, solo la città. Il browser suggerisce la
                    cosa giusta e non compila un modulo di spedizione. */
                 autoComplete="address-level2"
-                aria-describedby={`${fid}-place-hint`}
+                required
+                aria-required="true"
+                aria-invalid={errors.location ? 'true' : undefined}
+                aria-describedby={describedBy(
+                  `${fid}-place-hint`,
+                  errors.location && `${fid}-place-err`,
+                )}
               />
               <p className={s.hint} id={`${fid}-place-hint`}>
                 {t('join.form.luogoHint')}
               </p>
+              {errors.location && (
+                <p className={s.fieldError} id={`${fid}-place-err`}>
+                  {errors.location}
+                </p>
+              )}
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-bio`}>
                 {t('join.form.bio')}
+                <span className={s.req} aria-hidden="true">
+                  *
+                </span>
+                <span className="sr-only">{t('join.form.obbligatorio')}</span>
               </label>
               <textarea
                 className={cx(s.input, s.textarea, (errors.bio || bioOver) && s.inputInvalid)}
@@ -793,6 +826,8 @@ function ProfileForm({ firebaseMissing }) {
                 value={form.bio}
                 onChange={update('bio')}
                 maxLength={BIO_MAX}
+                required
+                aria-required="true"
                 aria-invalid={errors.bio || bioOver ? 'true' : undefined}
                 aria-describedby={describedBy(
                   `${fid}-bio-hint`,

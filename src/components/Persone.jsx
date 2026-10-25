@@ -44,8 +44,12 @@ const PAUSA_DOPO_TOCCO = 4000
  * CERCANDO le persone.
  *
  * @param {number} [totale] quante persone ci sono in tutto, per il link finale.
+ * @param {(elenco: object[]) => void} [onElenco] riceve i profili appena
+ *   arrivano. Serve alla home per contare le citta' senza chiedere i profili
+ *   una seconda volta: sono 733 kB di fotografie, e leggerli due volte
+ *   raddoppierebbe il peso della pagina per un numero di due cifre.
  */
-export default function Persone({ totale = null }) {
+export default function Persone({ totale = null, onElenco = null }) {
   const { t } = useI18n()
   const [persone, setPersone] = useState([])
   const [puo, setPuo] = useState({ indietro: false, avanti: false })
@@ -104,6 +108,7 @@ export default function Persone({ totale = null }) {
         if (!vivo) return
         setPersone(ordinaPersone(elenco).tutti)
         setChiesto(true)
+        onElenco?.(elenco)
       })
       .catch((e) => {
         /* In silenzio, ed e' voluto: se i profili non arrivano la home deve

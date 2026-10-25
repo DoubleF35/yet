@@ -17,7 +17,8 @@ import {
   safeUrl,
 } from '../lib/attachments.js'
 import { EVENTI } from '../config/eventi.js'
-import { countApprovedUsers, formatDate, getMedia, listenNews } from '../lib/db.js'
+import { contaCitta } from '../lib/citta.js'
+import { countApprovedUsers, formatDate, getMedia, listenMeetups, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { LOGO } from '../lib/marchio.js'
@@ -40,9 +41,12 @@ import { useCountUp, useReveal } from '../lib/motion.js'
 /* --------------------------------------------------------------------------
    La pagina
 -------------------------------------------------------------------------- */
-/* Ricavati una volta sola: la configurazione non cambia a runtime. */
-const quantiIncontri = EVENTI.length
-const quanteCitta = new Set(EVENTI.map((e) => e.citta)).size
+/* I due numeri di partenza, ricavati dai resoconti che stanno nel bundle.
+   Servono finche' Firestore non ha risposto: meglio un numero vero ma
+   incompleto che uno zero, e meglio uno zero che una riga vuota che appare e
+   scompare mentre la pagina si sistema. */
+const INCONTRI_NEL_REPO = EVENTI.length
+const CITTA_NEL_REPO = new Set(EVENTI.map((e) => e.citta)).size
 
 export default function Home() {
   const { t } = useI18n()
@@ -72,6 +76,11 @@ export default function Home() {
      perché una lettura sola serve a tutte: due notizie che allegano la stessa
      foto non devono scaricarla due volte. */
   const [media, setMedia] = useState({})
+
+  /* I due numeri veri, che arrivano dopo. `null` vuol dire "non ancora", non
+     "zero": finche' sta cosi' si mostrano quelli del repo. */
+  const [incontriFatti, setIncontriFatti] = useState(null)
+  const [cittaDeiMembri, setCittaDeiMembri] = useState(null)
 
   const logo = LOGO
 
@@ -111,6 +120,35 @@ export default function Home() {
     }
   }, [reloadKey])
 
+  /* Quanti incontri sono gia' stati fatti.
+     Dai documenti di Firestore e non dai resoconti nel repo: un resoconto lo
+     si scrive quando si ha tempo, mentre l'incontro esiste dal momento in cui
+     qualcuno lo pubblica dal pannello. Contare i resoconti voleva dire dire
+     "due" il giorno dopo la terza serata.
+
+     I documenti degli incontri sono piccoli, niente fotografie dentro: questa
+     lettura non pesa come quella dei profili. */
+  useEffect(() => {
+    if (!isFirebaseConfigured) return undefined
+    let vivo = true
+    const stop = listenMeetups(
+      { onlyPublished: true },
+      (d) => vivo && setIncontriFatti((d.passati ?? []).length),
+      (e) => console.warn('[YET] Non riesco a contare gli incontri.', e),
+    )
+    return () => {
+      vivo = false
+      stop?.()
+    }
+  }, [])
+
+  /* Le citta' arrivano dalla fila delle persone qui sotto, che i profili li
+     legge gia' per conto suo. Vedi il commento su `onElenco` in Persone.jsx:
+     una seconda lettura costerebbe 733 kB di fotografie per un numero. */
+  const contaDaiProfili = useCallback((elenco) => {
+    setCittaDeiMembri(contaCitta(elenco))
+  }, [])
+
   /* Il conteggio dei membri per la riga di apertura.
      Query di aggregazione: il server risponde con un numero, senza spedire i
      documenti. Se fallisce non si dice niente e non si mostra niente, un
@@ -142,6 +180,12 @@ export default function Home() {
   }, [news])
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
+
+  const quantiIncontri = incontriFatti ?? INCONTRI_NEL_REPO
+  /* Le citta' delle persone, non quelle delle serate: la domanda a cui questo
+     numero risponde e' "da quanti posti viene questa gente". Finche' i profili
+     non sono arrivati resta quello delle serate, che e' l'unico che si sa. */
+  const quanteCitta = cittaDeiMembri ?? CITTA_NEL_REPO
 
   return (
     <div>
@@ -215,7 +259,7 @@ export default function Home() {
       {/* Le persone subito dopo i numeri: il contatore dice quanti sono, qui
           si vedono in faccia. L'ordine e' quello delle domande che si fa chi
           arriva: chi siete, e cosa avete gia' fatto. */}
-      <Persone totale={membri} />
+      <Persone totale={membri} onElenco={contaDaiProfili} />
 
       <Serate />
 
