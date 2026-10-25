@@ -5,7 +5,7 @@ import Reveal, { stagger } from './Reveal.jsx'
 import { urlFoto } from './Galleria.jsx'
 import { eventoDiMeetup } from '../config/eventi.js'
 import gallerie from '../data/gallerie.json'
-import { formatMeetupDate, listenMeetups } from '../lib/db.js'
+import { formatMeetupDate, getGallerie, getMedia, listenMeetups } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 
@@ -22,6 +22,10 @@ import s from './MeetupList.module.css'
 export default function MeetupList() {
   const { t } = useI18n()
   const [dati, setDati] = useState({ prossimi: [], passati: [] })
+  /* Le foto caricate dal pannello, per serata. Sono un di piu' rispetto a
+     quelle nei file del repo: se ci sono vincono loro, perche' sono le piu'
+     recenti e le ha messe qualcuno apposta. */
+  const [caricate, setCaricate] = useState({})
   const [stato, setStato] = useState(isFirebaseConfigured ? 'caricamento' : 'spento')
 
   useEffect(() => {
@@ -45,6 +49,35 @@ export default function MeetupList() {
     return () => {
       vivo = false
       stop()
+    }
+  }, [])
+
+  /* Le gallerie caricate dal pannello. Lettura sola, in silenzio: se non
+     arrivano, le tessere mostrano quelle dei file e nessuno se ne accorge. */
+  useEffect(() => {
+    if (!isFirebaseConfigured) return undefined
+    let vivo = true
+    getGallerie()
+      .then(async (g) => {
+        if (!vivo) return
+        const primi = Object.entries(g)
+          .map(([id, x]) => [id, x.foto?.[0]])
+          .filter(([, m]) => m)
+        if (primi.length === 0) return
+        const media = await getMedia(primi.map(([, m]) => m))
+        if (!vivo) return
+        const perIncontro = {}
+        for (const [id, mediaId] of primi) {
+          const dato = media[mediaId]
+          if (dato?.dataUrl) perIncontro[id] = { dataUrl: dato.dataUrl, alt: g[id].alt?.[0] ?? '' }
+        }
+        setCaricate(perIncontro)
+      })
+      .catch(() => {
+        /* In silenzio: le foto dei file bastano. */
+      })
+    return () => {
+      vivo = false
     }
   }, [])
 
@@ -75,7 +108,7 @@ export default function MeetupList() {
           <ul className={`${s.lista} ${s.listaPassati}`}>
             {dati.passati.slice(0, 6).map((m, i) => (
               <Reveal as="li" key={m.id} delay={stagger(i)} className={s.voce}>
-                <Scheda incontro={m} passato />
+                <Scheda incontro={m} passato caricata={caricate[m.id]} />
               </Reveal>
             ))}
           </ul>
@@ -85,7 +118,7 @@ export default function MeetupList() {
   )
 }
 
-function Scheda({ incontro, passato = false }) {
+function Scheda({ incontro, passato = false, caricata = null }) {
   const { title, place, body, url } = incontro
   const { lang, t } = useI18n()
 
@@ -99,14 +132,25 @@ function Scheda({ incontro, passato = false }) {
      scaletta: una tessera alta il triplo dell'altra. La foto non e' decorazione,
      e' la cosa che rende quelle serate paragonabili fra loro. */
   const galleria = resoconto ? gallerie[resoconto.slug] : null
-  const copertina = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
+  const copertinaFile = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
+
+  /* DUE SORGENTI, e vince quella caricata dal pannello.
+     Le foto nei file del repo restano valide e sono piu' leggere; quelle
+     caricate sono per le serate nuove, dove nessuno ha lanciato `npm run
+     foto`. Se per una serata ci sono tutte e due, quella messa a mano e' la
+     piu' recente e la piu' voluta. */
+  const srcCopertina = caricata?.dataUrl
+    ? caricata.dataUrl
+    : copertinaFile
+      ? urlFoto(resoconto.slug, copertinaFile, 800)
+      : null
 
   return (
     <article className={`${s.scheda} ${passato ? s.schedaPassata : ''}`.trim()}>
-      {copertina && (
+      {srcCopertina && (
         <img
           className={s.copertina}
-          src={urlFoto(resoconto.slug, copertina, 800)}
+          src={srcCopertina}
           alt=""
           /* Vuoto e aria-hidden: il titolo della serata lo dice gia' il testo
              accanto, e farlo ripetere a un lettore di schermo e' rumore. La
@@ -114,8 +158,8 @@ function Scheda({ incontro, passato = false }) {
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          width={copertina.w}
-          height={copertina.h}
+          width={copertinaFile?.w || undefined}
+          height={copertinaFile?.h || undefined}
         />
       )}
 

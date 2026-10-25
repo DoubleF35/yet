@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import AttachmentEditor from '../components/AttachmentEditor.jsx'
+import GalleriaAdmin from '../components/GalleriaAdmin.jsx'
 import MembriAdmin from '../components/MembriAdmin.jsx'
 import PendingRequests from '../components/PendingRequests.jsx'
 import SponsorAdmin from '../components/SponsorAdmin.jsx'
@@ -368,6 +369,8 @@ export default function Admin() {
         {/* Dopo la coda e non prima: l'ordine della pagina segue l'urgenza.
             Una richiesta in attesa blocca una persona, un profilo da
             sistemare no. */}
+        {isFirebaseConfigured && <GalleriaAdmin />}
+
         {isFirebaseConfigured && <MembriAdmin />}
 
         <HandsDivider />

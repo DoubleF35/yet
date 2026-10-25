@@ -449,6 +449,35 @@ export default {
     soloRichieste: 'Open just the requests',
   },
 
+  galleriaAdmin: {
+    titolo: 'Photos from the nights',
+    intro:
+      'Once a meetup is over, this is where you upload the photos. The first one in the row is the cover: it shows on the meetup card and in \u201cWhere we have met\u201d.',
+    peso:
+      'These photos live in the database, not among the site files: whoever opens the night\u2019s page downloads all of them, every time. Ten photos are about one and a half megabytes. Nights already published with photos in the files are better left where they are.',
+    gestisci: 'Photos',
+    chiudi: 'Close',
+    quante: '{n} photos',
+    aggiungi: 'Add photos',
+    carico: 'Uploading…',
+    incolla: 'or copy an image and paste it here with Ctrl+V',
+    ancoraNiente: 'No photos for this night yet.',
+    copertina: 'Cover',
+    descrizione: 'What the photo shows',
+    suAria: 'Move earlier',
+    giuAria: 'Move later',
+    togliAria: 'Remove this photo',
+    salva: 'Save the photos',
+    salvo: 'Saving…',
+    annulla: 'Cancel',
+    formato: 'The photo has to be a JPEG, PNG, WebP or AVIF image.',
+    troppe: 'More than {max} photos for one night is too many: the page gets heavy.',
+    nessunaSerata: 'There are no past meetups yet.',
+    erroreLettura: 'I cannot read the meetups.',
+    erroreSalvataggio:
+      'I cannot save. If it says permissions are missing, the rules on the database need republishing.',
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',

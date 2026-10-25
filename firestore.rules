@@ -509,6 +509,41 @@ service cloud.firestore {
       allow delete: if isOwner(uid) || isSuperadmin();
     }
 
+    // =========================================================================
+    // LE GALLERIE DELLE SERATE
+    //
+    // Un documento per serata, con dentro gli IDENTIFICATIVI delle foto e non
+    // le foto: le immagini stanno in /media, che gia' esiste e che gia' sa
+    // tenerle. Qui c'e' solo l'ordine in cui vanno mostrate.
+    //
+    // La prima della lista fa da copertina. Un campo in piu' per dirlo
+    // sarebbe stato un secondo posto da tenere allineato con il primo, e
+    // "la copertina e' la prima" e' una regola che non si puo' sbagliare.
+    //
+    // Lettura aperta: queste foto stanno su una pagina pubblica.
+    // =========================================================================
+    match /gallerie/{slug} {
+
+      allow read: if true;
+
+      function galleriaOk() {
+        return incoming().keys().hasOnly(['foto', 'alt', 'aggiornatoIl'])
+            && incoming().foto is list
+            // Trenta per serata e' gia' tanto: ogni foto e' un documento in
+            // /media da qualche centinaio di kilobyte, e la pagina della
+            // serata le scarica tutte.
+            && incoming().foto.size() <= 30
+            && incoming().alt is list
+            // Le descrizioni sono una per foto, nello stesso ordine: se le
+            // due liste hanno lunghezze diverse, da qualche parte una foto
+            // si porterebbe dietro la descrizione di un'altra.
+            && incoming().alt.size() == incoming().foto.size();
+      }
+
+      allow write: if isAdmin() && galleriaOk();
+      allow delete: if isAdmin();
+    }
+
     match /news/{newsId} {
 
       allow read: if true;

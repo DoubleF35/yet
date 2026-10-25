@@ -490,6 +490,38 @@ export default {
     soloRichieste: 'Apri solo le richieste',
   },
 
+  /* ---------------------------------------------------------------------
+     LE FOTO DELLE SERATE, CARICATE DAL PANNELLO
+     --------------------------------------------------------------------- */
+  galleriaAdmin: {
+    titolo: 'Le foto delle serate',
+    intro:
+      'Dopo che un incontro è passato, qui ci carichi le foto. La prima della fila fa da copertina: è quella che si vede sulla tessera dell’incontro e in «Dove ci siamo visti».',
+    peso:
+      'Queste foto stanno nel database, non fra i file del sito: chi apre la pagina della serata le scarica tutte, ogni volta. Dieci foto fanno circa un megabyte e mezzo. Per le serate già pubblicate con le foto nei file conviene lasciarle dove sono.',
+    gestisci: 'Le foto',
+    chiudi: 'Chiudi',
+    quante: '{n} foto',
+    aggiungi: 'Aggiungi foto',
+    carico: 'Carico…',
+    incolla: 'oppure copia un’immagine e incollala qui con Ctrl+V',
+    ancoraNiente: 'Nessuna foto per questa serata.',
+    copertina: 'Copertina',
+    descrizione: 'Cosa si vede nella foto',
+    suAria: 'Sposta prima',
+    giuAria: 'Sposta dopo',
+    togliAria: 'Togli questa foto',
+    salva: 'Salva le foto',
+    salvo: 'Salvo…',
+    annulla: 'Annulla',
+    formato: 'La foto dev’essere un’immagine JPEG, PNG, WebP o AVIF.',
+    troppe: 'Più di {max} foto per una sola serata sono troppe: la pagina diventa pesante.',
+    nessunaSerata: 'Non c’è ancora nessun incontro passato.',
+    erroreLettura: 'Non riesco a leggere gli incontri.',
+    erroreSalvataggio:
+      'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database vanno ripubblicate.',
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',

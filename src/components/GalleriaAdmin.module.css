@@ -1,0 +1,232 @@
+/* =========================================================================
+   LE FOTO DELLE SERATE, DENTRO /admin
+   ========================================================================= */
+
+.sezione { margin-block-start: var(--space-10); }
+
+.titolo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-heading);
+}
+
+.intro {
+  margin: 0 0 var(--space-3);
+  max-inline-size: var(--measure);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+/* Quanto pesa, detto prima di caricare e non dopo. */
+.peso {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--coral);
+  border-radius: var(--radius);
+  background-color: var(--coral-soft);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  text-wrap: pretty;
+}
+
+.elenco, .griglia { list-style: none; margin: 0; padding: 0; }
+
+.elenco { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.voce {
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  overflow: hidden;
+}
+
+.riga {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.info { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-inline-size: 0; }
+.nome { font-size: var(--step-0); font-weight: var(--weight-semibold); }
+.meta { color: var(--muted); font-size: var(--step--1); }
+
+.pannello {
+  padding: var(--space-5);
+  border-block-start: var(--border-soft);
+  background-color: var(--surface-band);
+}
+
+.azioniAlto {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--space-5);
+}
+
+.fileLabel { display: inline-block; cursor: pointer; }
+
+.fileBottone {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.fileLabel:hover .fileBottone { border-color: var(--ink); }
+.fileLabel:focus-within .fileBottone {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.aiuto { color: var(--muted); font-size: var(--step--1); }
+
+/* Le miniature. Larghezza minima e non un numero fisso di colonne: con tre
+   fisse, su schermo stretto sarebbero francobolli. */
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-4);
+}
+
+.scatto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+}
+
+.anteprima {
+  inline-size: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-sunken);
+}
+
+/* Quale fa da copertina, detto sulla foto stessa: la regola e' "la prima",
+   e senza scriverlo bisognerebbe ricordarsela. */
+.copertinaTag {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-start: var(--space-4);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--coral);
+  color: var(--on-coral);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.altCampo { display: block; }
+
+.input {
+  inline-size: 100%;
+  min-block-size: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--ink);
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-color: var(--ink);
+}
+
+.comandi { display: flex; gap: var(--space-2); }
+
+.mini {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mini:hover:not(:disabled) { border-color: var(--ink); }
+.mini:disabled { opacity: 0.4; cursor: default; }
+
+.azioni {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-block-start: var(--space-5);
+}
+
+.primario {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-6);
+  border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.primario:hover:not(:disabled) { background-color: var(--ink); border-color: var(--ink); }
+.primario:disabled { opacity: 0.6; cursor: default; }
+
+.piccolo {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.piccolo:hover:not(:disabled) { border-color: var(--ink); }
+.piccolo:disabled { opacity: 0.6; cursor: default; }
+
+.primario:focus-visible, .piccolo:focus-visible, .mini:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.errore {
+  margin: var(--space-3) 0 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.vuoto {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-style: italic;
+}

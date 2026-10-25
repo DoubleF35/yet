@@ -86,6 +86,18 @@
   display: block;
   order: 1;
   margin-block-start: auto;
+  /* `none` e non il 100% che il foglio globale mette su tutte le immagini.
+     Quel tetto serve a impedire che una foto sfondi la colonna che la
+     contiene, ed e' giusto quasi sempre. Qui no: questa DEVE essere piu'
+     larga del suo contenitore, perche' deve uscire dal padding della tessera
+     e arrivare ai bordi. Col tetto al 100% la larghezza restava 272px invece
+     di 336, e la foto appariva rientrata su un lato: misurato, sbordava di
+     1px a sinistra e di 65 a destra.
+
+     Perche' si notava solo a destra: il margine negativo di sinistra la
+     spostava comunque fuori, ma non potendo crescere le mancavano i 64px
+     dall'altra parte. */
+  max-inline-size: none;
   inline-size: calc(100% + 2 * clamp(var(--space-5), 5vw, var(--space-6)));
   margin-inline: calc(-1 * clamp(var(--space-5), 5vw, var(--space-6)));
   margin-block-end: 0;
