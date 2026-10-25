@@ -76,6 +76,15 @@
   --line: #8a8177;
   --line-soft: #e8e3da;
 
+  /* I puntini della mappa della vetrina. Decorativi, quindi fuori dalla
+     regola del 3:1: quello che porta l'informazione sono i posti coral e la
+     didascalia sotto. Ma devono restare in due gradini ben distinti, perche'
+     "qui c'e' qualcuno" contro "qui ancora nessuno" e' tutto il disegno:
+     --mappa-vuota    1.6:1 su --bg, la penisola si vede ma sta dietro
+     --mappa-abitata  3.6:1 su --bg, la regione con qualcuno dentro */
+  --mappa-vuota: #d6cec3;
+  --mappa-abitata: #8f857a;
+
   /* Testo attenuato: 5.8:1 su --bg, quindi passa AA anche a 16px.
      Grigio CALDO, che tira al beige: un grigio neutro su questo foglio
      sembrerebbe sporco. */

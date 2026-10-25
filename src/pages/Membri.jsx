@@ -6,6 +6,7 @@ import Reveal, { stagger } from '../components/Reveal.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
+import MappaItalia from '../components/MappaItalia.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
@@ -15,11 +16,13 @@ import {
   filtriCitta,
   membroInCitta,
   ordinaPersone,
+  tutteLeCitta,
 } from '../lib/citta.js'
 import { listUsers } from '../lib/db.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
+import { prefersReducedMotion } from '../lib/motion.js'
 import s from './Membri.module.css'
 
 /* Quante card fantasma durante il caricamento. Sei riempiono la griglia a
@@ -273,6 +276,11 @@ export default function Membri() {
      qualcosa da disegnare. */
   const filtri = useMemo(() => filtriCitta(members), [members])
 
+  /* Tutte le città, anche quelle di una persona sola che nella riga dei
+     filtri non hanno un bottone: la mappa ne ha uno per ciascuna, e toccare
+     Gela deve mostrare chi c'è a Gela. */
+  const citta = useMemo(() => tutteLeCitta(members), [members])
+
   /* La città scelta vive nell'INDIRIZZO e non in uno useState, così
      /vetrina?citta=roma è un link che si può mandare a qualcuno. `replace`
      nella scrittura: senza, ogni tocco su un filtro aggiungerebbe una voce
@@ -283,8 +291,17 @@ export default function Membri() {
      altro parametro sulla stessa pagina non deve sparire perché qualcuno ha
      toccato un filtro. */
   const [searchParams, setSearchParams] = useSearchParams()
-  const cittaScelta = cittaValida(searchParams.get('citta'), filtri)
-  const etichettaScelta = filtri.find((f) => f.chiave === cittaScelta)?.etichetta ?? ''
+  const cittaScelta = cittaValida(searchParams.get('citta'), citta)
+  const etichettaScelta = citta.find((f) => f.chiave === cittaScelta)?.etichetta ?? ''
+
+  /* La città scelta dalla mappa che nella riga dei filtri non c'è, perché ha
+     meno gente della soglia. Compare in fondo alla riga, già premuta: senza,
+     la griglia si restringerebbe con nessun bottone acceso, e niente
+     direbbe né perché né come tornare a "Tutti". */
+  const cittaFuoriRiga =
+    cittaScelta && !filtri.some((f) => f.chiave === cittaScelta)
+      ? citta.find((f) => f.chiave === cittaScelta)
+      : null
 
   const scegliCitta = useCallback(
     (chiave) => {
@@ -294,6 +311,22 @@ export default function Membri() {
       setSearchParams(params, { replace: true })
     },
     [searchParams, setSearchParams],
+  )
+
+  /* Dalla mappa si filtra E si scende alle tessere: la mappa sta in cima e
+     le tessere molto più sotto, e un filtro che cambia qualcosa fuori dallo
+     schermo sembra un tocco andato a vuoto. Tornando a "Tutti" invece si
+     resta dove si è: lì la cosa da guardare è la mappa stessa. */
+  const scegliDallaMappa = useCallback(
+    (chiave) => {
+      scegliCitta(chiave)
+      if (!chiave) return
+      document.getElementById('persone')?.scrollIntoView({
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+        block: 'start',
+      })
+    },
+    [scegliCitta],
   )
 
   /* Il filtro vale per ENTRAMBI i gruppi, non solo per i membri.
@@ -328,34 +361,55 @@ export default function Membri() {
   return (
     <>
       <section className={s.hero}>
-        <div className="container">
-          <p className={s.eyebrow}>{t('vetrina.eyebrow')}</p>
-          <h1 className={s.title}>{t('vetrina.titolo')}</h1>
-          {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
-              cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
-              sembrava attaccata alla parte sbagliata. Separare le due idee
-              risolve il problema alla radice, invece di sperare in un
-              text-wrap che dipende dalla larghezza dello schermo. */}
-          <p className={s.lead}>{t('vetrina.lead')}</p>
-          <p className={s.leadSecond}>{t('vetrina.leadSecond')}</p>
+        {/* Due colonne su schermo largo: il testo a sinistra, la mappa a
+            destra. La mappa sta QUI e non sopra le tessere perché risponde
+            alla stessa domanda dell'apertura, "chi c'è in YET", con il pezzo
+            che il testo può solo accennare ("da Torino e dal resto
+            d'Italia"); e prima occupava una colonna vuota. Su telefono
+            scende sotto il contatore. */}
+        <div className={`container ${s.heroGrid}`}>
+          <div className={s.heroTesto}>
+            <p className={s.eyebrow}>{t('vetrina.eyebrow')}</p>
+            <h1 className={s.title}>{t('vetrina.titolo')}</h1>
+            {/* Due paragrafi e non uno solo: in una frase unica il ritorno a capo
+                cadeva dopo "d'Italia" e la coda ("e trovare i suoi contatti")
+                sembrava attaccata alla parte sbagliata. Separare le due idee
+                risolve il problema alla radice, invece di sperare in un
+                text-wrap che dipende dalla larghezza dello schermo. */}
+            <p className={s.lead}>{t('vetrina.lead')}</p>
+            <p className={s.leadSecond}>{t('vetrina.leadSecond')}</p>
 
-          {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
-              carica direbbe una cosa falsa, e su un club appena nato la
-              differenza fra "zero membri" e "sto caricando" è tutta. */}
-          {status === 'ready' && count > 0 && (
-            <p className={s.tally}>
-              <span className={s.tallyNumber}>{count}</span>
-              <span className={s.tallyLabel}>
-                {count === 1 ? t('vetrina.contatoreUno') : t('vetrina.contatoreTanti')}
-              </span>
-            </p>
+            {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
+                carica direbbe una cosa falsa, e su un club appena nato la
+                differenza fra "zero membri" e "sto caricando" è tutta. */}
+            {status === 'ready' && count > 0 && (
+              <p className={s.tally}>
+                <span className={s.tallyNumber}>{count}</span>
+                <span className={s.tallyLabel}>
+                  {count === 1 ? t('vetrina.contatoreUno') : t('vetrina.contatoreTanti')}
+                </span>
+              </p>
+            )}
+          </div>
+
+          {/* Senza Firebase non c'è nessuno da mettere sulla mappa, e
+              l'Italia vuota sopra all'avviso "elenco non disponibile"
+              direbbe che YET non ha membri, che è falso. */}
+          {status !== 'unconfigured' && (
+            <MappaItalia
+              membri={members}
+              pronto={status === 'ready'}
+              citta={citta}
+              cittaScelta={cittaScelta}
+              onScegli={scegliDallaMappa}
+            />
           )}
         </div>
       </section>
 
       <HandsDivider />
 
-      <section className={s.body} aria-busy={status === 'loading'}>
+      <section className={s.body} id="persone" aria-busy={status === 'loading'}>
         <div className="container">
           {/* Regione di stato sempre presente nel DOM: se comparisse solo a
               caricamento finito, molti screen reader non annuncerebbero nulla,
@@ -437,7 +491,7 @@ export default function Membri() {
                   l'indirizzo cambi lo stesso è un effetto voluto (il link a
                   una città si può mandare a qualcuno), non il modo in cui si
                   naviga. */}
-              {filtri.length > 0 && (
+              {(filtri.length > 0 || cittaFuoriRiga) && (
                 <div className={s.filtri} role="group" aria-label={t('vetrina.filtroTitolo')}>
                   <button
                     type="button"
@@ -462,6 +516,18 @@ export default function Membri() {
                       <span className={s.filtroN}>{filtro.conteggio}</span>
                     </button>
                   ))}
+                  {cittaFuoriRiga && (
+                    <button
+                      type="button"
+                      className={s.filtro}
+                      aria-pressed="true"
+                      aria-label={etichettaFiltro(cittaFuoriRiga.etichetta, cittaFuoriRiga.conteggio, t)}
+                      onClick={() => scegliCitta('')}
+                    >
+                      {cittaFuoriRiga.etichetta}
+                      <span className={s.filtroN}>{cittaFuoriRiga.conteggio}</span>
+                    </button>
+                  )}
                 </div>
               )}
 

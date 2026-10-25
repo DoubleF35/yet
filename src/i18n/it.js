@@ -545,6 +545,26 @@ export default {
       'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database vanno ripubblicate.',
   },
 
+  /* --- la mappa della vetrina ------------------------------------------- */
+  mappa: {
+    titolo: 'Da dove veniamo',
+    personaUna: '{n} persona',
+    personeTante: '{n} persone',
+    ancoraNessuno: 'ancora nessuno, per ora',
+    cittaUna: '{n} città,',
+    cittaTante: '{n} città,',
+    regioni: '{n} regioni su {totale}',
+    /* Non "dall'estero": fra chi la mappa non sa mettere c'e' anche chi ha
+       scritto il nome della citta' in un modo che il dizionario non conosce,
+       e dire estero sarebbe inventare. */
+    fuori: '(+{n} fuori mappa)',
+    postoAria: '{citta}, {persone}. Mostra i profili',
+    postoAriaScelto: '{citta}, {persone}. Torna a tutti i profili',
+    legendaPosto: 'Qui c’è qualcuno di YET',
+    legendaRegione: 'Regione con membri',
+    legendaVuota: 'Ancora nessuno',
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',

@@ -6,6 +6,28 @@
   padding-block: var(--space-10) var(--space-8);
 }
 
+/* Testo e mappa. Una colonna sola fino ai 56rem, e la mappa scende sotto il
+   contatore; da lì in su stanno affiancati, centrati in altezza fra loro.
+   La mappa ha un tetto di larghezza perché è più alta che larga: senza, su
+   un monitor largo diventerebbe alta quanto due schermate. */
+.heroGrid {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.heroGrid > figure {
+  inline-size: 100%;
+  max-inline-size: 26rem;
+}
+
+@media (min-width: 56rem) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    align-items: center;
+    gap: var(--space-9);
+  }
+}
+
 .eyebrow {
   font-size: var(--step--1);
   font-weight: var(--weight-semibold);

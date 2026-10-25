@@ -501,6 +501,23 @@ export default {
       'I cannot save. If it says permissions are missing, the database rules need publishing again.',
   },
 
+  /* --- la mappa della vetrina ------------------------------------------- */
+  mappa: {
+    titolo: 'Where we come from',
+    personaUna: '{n} person',
+    personeTante: '{n} people',
+    ancoraNessuno: 'nobody yet',
+    cittaUna: '{n} town,',
+    cittaTante: '{n} towns,',
+    regioni: '{n} of {totale} regions',
+    fuori: '(+{n} off the map)',
+    postoAria: '{citta}, {persone}. Show the profiles',
+    postoAriaScelto: '{citta}, {persone}. Back to all profiles',
+    legendaPosto: 'Someone from YET is here',
+    legendaRegione: 'Region with members',
+    legendaVuota: 'Nobody yet',
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',
