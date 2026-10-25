@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import Galleria, { Foto } from '../components/Galleria.jsx'
@@ -36,7 +36,7 @@ export default function Evento() {
 
   const evento = eventoDiSlug(slug)
   const galleria = gallerie[slug] ?? null
-  const caricate = useFotoCaricate(evento?.meetupId)
+  const { scatti: caricate, stato: statoCaricate, riprova } = useFotoCaricate(evento?.meetupId)
 
   useEffect(() => {
     if (!evento) return undefined
@@ -159,6 +159,21 @@ export default function Evento() {
               </p>
             )}
           </>
+        ) : statoCaricate === 'attesa' ? (
+          /* Finche' la lettura e' in corso non si dice "non ci sono": per una
+             serata con le sole foto caricate dal pannello, come Roma, sarebbe
+             falso per un secondo, e falso per sempre a chi la rete la perde
+             proprio li'. */
+          <p className={s.senzaFoto} role="status">
+            {t('evento.caricoFoto')}
+          </p>
+        ) : statoCaricate === 'errore' ? (
+          <div className={s.senzaFoto} role="alert">
+            <p>{t('evento.erroreFoto')}</p>
+            <button type="button" className={s.riprova} onClick={riprova}>
+              {t('evento.riprova')}
+            </button>
+          </div>
         ) : (
           <p className={s.senzaFoto}>{t('evento.senzaFoto')}</p>
         )}
@@ -182,20 +197,31 @@ export default function Evento() {
  */
 function useFotoCaricate(meetupId) {
   const [scatti, setScatti] = useState([])
+  /* 'attesa' | 'pronto' | 'errore'. Serve solo alle serate che nel repo non
+     hanno foto: per loro "la lettura non e' finita" e "non e' riuscita" non
+     possono diventare "non ci sono foto". */
+  const [stato, setStato] = useState(isFirebaseConfigured && meetupId ? 'attesa' : 'pronto')
+  const [tentativo, setTentativo] = useState(0)
+  const riprova = useCallback(() => setTentativo((n) => n + 1), [])
 
   useEffect(() => {
     if (!isFirebaseConfigured || !meetupId) {
       /* Cambiando serata l'elenco va svuotato, o per un istante la nuova
          pagina mostrerebbe le foto della precedente. */
       setScatti([])
+      setStato('pronto')
       return undefined
     }
     let vivo = true
+    setStato('attesa')
 
     getGalleriaEvento(meetupId)
       .then(async (g) => {
         if (!vivo || !g || g.foto.length === 0) {
-          if (vivo) setScatti([])
+          if (vivo) {
+            setScatti([])
+            setStato('pronto')
+          }
           return
         }
         const media = await getMedia(g.foto)
@@ -211,15 +237,19 @@ function useFotoCaricate(meetupId) {
                riquadro rotto in mezzo alla griglia. */
             .filter(Boolean),
         )
+        setStato('pronto')
       })
-      .catch((e) => console.warn('[YET] Non riesco a leggere le foto caricate.', e))
+      .catch((e) => {
+        console.warn('[YET] Non riesco a leggere le foto caricate.', e)
+        if (vivo) setStato('errore')
+      })
 
     return () => {
       vivo = false
     }
-  }, [meetupId])
+  }, [meetupId, tentativo])
 
-  return scatti
+  return { scatti, stato, riprova }
 }
 
 function Fatto({ etichetta, valore, secondaria = null }) {

@@ -224,6 +224,28 @@
   font-size: var(--step-0);
 }
 
+.riprova {
+  margin-top: var(--space-4);
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  background: none;
+  border: var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.riprova:hover {
+  border-color: var(--ink);
+}
+
+.riprova:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
 /* -------------------------------------------------------------------------
    4. SLUG SCONOSCIUTO
 ------------------------------------------------------------------------- */

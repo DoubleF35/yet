@@ -263,6 +263,9 @@ export default {
     dove: 'Where',
     ospiti: 'Speakers',
     senzaFoto: 'The photos from this night are not up yet.',
+    caricoFoto: 'Loading the photos from the night…',
+    erroreFoto: 'The photos from the night would not load. It is usually the connection, or something blocking it in the browser.',
+    riprova: 'Try again',
     fotoDi: 'Photos by {chi}',
     mancanteTitolo: 'This meetup does not exist',
     mancanteTesto:
