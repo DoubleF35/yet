@@ -544,6 +544,47 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // =========================================================================
+    // CHI CI HA OSPITATO
+    //
+    // Un documento solo, `ospiti/elenco`, con dentro la lista dei nomi
+    // nell'ordine in cui vanno mostrati. Prima stava nel codice e per
+    // aggiungere un nome serviva un deploy.
+    //
+    // Lettura aperta: questa striscia sta sulla home, sotto "Dove ci siamo
+    // visti". Scrittura ai soli admin, come per tutto il resto del pannello.
+    //
+    // I limiti qui sotto non sono decorazione: senza, una scrittura ammessa
+    // potrebbe infilare in un documento pubblico una lista da un megabyte,
+    // che poi la home scarica a ogni visita.
+    // =========================================================================
+    match /ospiti/{id} {
+
+      allow read: if true;
+
+      function ospitiOk() {
+        return incoming().keys().hasOnly(['nomi', 'aggiornatoIl'])
+            && incoming().nomi is list
+            && incoming().nomi.size() <= 40
+            && nomiCorti();
+      }
+
+      // Qui non c'e' un ciclo con cui misurare un nome alla volta: CEL non ce
+      // l'ha. Si attaccano tutti i nomi in una stringa sola e si guarda
+      // quella. Quaranta nomi da sessanta caratteri fanno 2400 caratteri.
+      //
+      // join() vuole una lista di stringhe: se dentro ci finisce un numero o
+      // un oggetto, l'espressione fallisce e la scrittura viene rifiutata.
+      // Che e' esattamente quello che deve succedere, e per questo non serve
+      // un controllo a parte sul tipo delle voci.
+      function nomiCorti() {
+        return incoming().nomi.join('|').size() <= 3000;
+      }
+
+      allow write: if isAdmin() && ospitiOk();
+      allow delete: if isAdmin();
+    }
+
     match /news/{newsId} {
 
       allow read: if true;

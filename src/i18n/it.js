@@ -73,7 +73,7 @@ export default {
     descrizioneBreve:
       'Il club dei giovani che costruiscono qualcosa. Anche se non hai ancora niente fra le mani: conta l’attitudine, non il progetto già avviato.',
     descrizione:
-      'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota.',
+      'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna quota di iscrizione: solo qualche domanda, per conoscerti.',
   },
 
   /* --- i canali --------------------------------------------------------- */
@@ -522,6 +522,29 @@ export default {
       'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database vanno ripubblicate.',
   },
 
+  /* ---------------------------------------------------------------------
+     CHI CI HA OSPITATO, MODIFICABILE DAL PANNELLO
+     --------------------------------------------------------------------- */
+  ospitiAdmin: {
+    titolo: 'Chi ci ha ospitato',
+    intro:
+      'La striscia che scorre sotto «Dove ci siamo visti», sulla home. Il primo della fila è quello che si vede per primo quando il nastro parte.',
+    nome: 'Nome',
+    aggiungi: 'Aggiungi un nome',
+    salva: 'Salva l’elenco',
+    salvo: 'Salvo…',
+    fatto: 'Salvato',
+    nessuno: 'L’elenco è vuoto: la striscia non si vede.',
+    perToglierla: 'Per far sparire la striscia dalla home, togli tutti i nomi e salva.',
+    suAria: 'Sposta prima',
+    giuAria: 'Sposta dopo',
+    togliAria: 'Togli questo nome',
+    erroreLettura:
+      'Non riesco a leggere l’elenco salvato: qui sotto ci sono i nomi che il sito mostra adesso. Se dice che mancano i permessi, le regole sul database vanno ripubblicate.',
+    erroreSalvataggio:
+      'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database vanno ripubblicate.',
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',
@@ -787,7 +810,7 @@ export default {
       comeSiEntra: {
         titolo: 'Come si entra',
         testo:
-          'Accedi con Google e scrivi due righe su di te. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione: il passaggio serve solo a tenere fuori gli account finti.',
+          'Accedi con Google, scrivi due righe su di te e rispondi a qualche domanda su dove sei arrivato: ci vogliono tre minuti. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione, e le risposte alle domande non finiscono in vetrina: le leggiamo solo noi.',
       },
       seNonHai: {
         titolo: 'Se non hai ancora niente',

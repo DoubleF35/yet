@@ -108,7 +108,11 @@
     box-shadow var(--transition);
 }
 
-.scheda:hover {
+/* L'ingrandimento al passaggio del mouse vale SOLO per le schede che sono
+   davvero un link: `a.scheda` e non `.scheda`. Una serata senza pagina di
+   resoconto usa la stessa veste ma e' un div, e una scheda che si solleva
+   sotto il dito promettendo un clic che non c'e' e' peggio che ferma. */
+a.scheda:hover {
   transform: translateY(-2px);
   border-color: var(--line);
   box-shadow: var(--shadow-3);
@@ -189,56 +193,12 @@
   font-weight: var(--weight-bold);
 }
 
-.scheda:hover .vai {
+a.scheda:hover .vai {
   text-decoration: underline;
 }
 
-/* ---- chi ci ha ospitato ------------------------------------------------ */
-
-.ospiti {
-  margin-block-start: var(--space-10);
-  border-block: var(--border-soft);
-  background-color: var(--surface);
-}
-
-.ospitiRiga {
-  display: flex;
-  align-items: center;
-  gap: var(--space-7);
-  flex-wrap: wrap;
-  padding-block: var(--space-6);
-}
-
-.ospitiEtichetta {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--step--1);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--ls-wide);
-  text-transform: uppercase;
-}
-
-.ospitiElenco {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-7);
-}
-
-/* Scritti nel carattere del sito e non come loghi: non abbiamo i loro file, e
-   un logo rifatto a mano e' peggio del nome scritto bene. */
-.ospite {
-  font-size: var(--step-2);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--ls-heading);
-  color: var(--ink);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .scheda:hover {
+  a.scheda:hover {
     transform: none;
   }
 }

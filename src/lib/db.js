@@ -1438,3 +1438,86 @@ export async function setGalleriaEvento(slug, { foto, alt }) {
     aggiornatoIl: serverTimestamp(),
   })
 }
+
+/* =========================================================================
+   CHI CI HA OSPITATO, MODIFICABILE DAL PANNELLO
+
+   La striscia sotto "Dove ci siamo visti" nasceva dal campo `ospiti` dei
+   resoconti in config/eventi.js: per aggiungere un nome serviva una riga di
+   codice e un deploy. Adesso l'elenco sta qui, e lo scrivono gli admin.
+
+   UN DOCUMENTO SOLO, con dentro la lista in ordine. Non una collection con un
+   documento per nome: l'ordine e' la cosa che si cambia piu' spesso (chi sta
+   davanti conta), e tenerlo in una lista vuol dire riscriverla e basta,
+   invece di aggiornare un campo "posizione" su cinque documenti sperando che
+   nessuno si disallinei.
+
+   SOLO NOMI, niente loghi: i file non li abbiamo, e un logo rifatto a mano e'
+   peggio del nome scritto bene. Se un giorno servissero, si aggiunge un campo
+   accanto senza buttare via niente.
+
+   Finche' nessuno salva niente, il documento non esiste e il sito usa i nomi
+   dei resoconti: e' il motivo per cui qui si torna null e non una lista
+   vuota. Una lista vuota SALVATA invece e' una scelta, e fa sparire la
+   striscia.
+   ========================================================================= */
+
+const OSPITI = 'ospiti'
+
+/* Il documento e' uno e si chiama cosi'. Il nome sta scritto qui una volta
+   sola, perche' sbagliarlo vorrebbe dire scrivere in un posto e leggere da un
+   altro, senza nessun errore a dirlo. */
+const OSPITI_DOC = 'elenco'
+
+/* Un nome di persona o di realta' sta in sessanta caratteri. Il limite c'e'
+   anche nelle regole: li' impedisce, qui taglia prima di provarci. */
+export const OSPITE_MAX = 60
+
+/* Quanti nomi. Oltre, la striscia che scorre diventa un giro cosi' lungo che
+   nessuno vede la fine. */
+export const OSPITI_MAX = 40
+
+/**
+ * I nomi salvati dal pannello, oppure null se non e' mai stato salvato niente.
+ *
+ * Il null e la lista vuota vogliono dire due cose diverse e chi chiama deve
+ * poterle distinguere: null e' "non l'ha ancora scritto nessuno, usa quelli
+ * dei resoconti", [] e' "qualcuno ha deciso che la striscia non si vede".
+ */
+export async function getOspiti() {
+  if (!isFirebaseConfigured) return null
+  const snap = await getDoc(doc(db, OSPITI, OSPITI_DOC))
+  if (!snap.exists()) return null
+  const nomi = snap.data()?.nomi
+  return Array.isArray(nomi) ? nomi.map((x) => String(x)) : null
+}
+
+/**
+ * Riscrive l'elenco.
+ *
+ * setDoc e non updateDoc: togliere un nome vuol dire mandare una lista piu'
+ * corta, e una fusione non accorcia niente.
+ *
+ * Qui si fa anche la pulizia che il pannello non deve rifare: via gli spazi,
+ * via i vuoti, via i doppioni (lo stesso nome due volte nella striscia e' un
+ * errore che si nota subito), e il taglio alla lunghezza.
+ */
+export async function setOspiti(nomi) {
+  if (!isFirebaseConfigured) throw notConfigured()
+
+  const puliti = []
+  for (const grezzo of Array.isArray(nomi) ? nomi : []) {
+    const nome = String(grezzo ?? '').trim().slice(0, OSPITE_MAX)
+    if (!nome) continue
+    if (puliti.some((x) => x.toLowerCase() === nome.toLowerCase())) continue
+    puliti.push(nome)
+    if (puliti.length >= OSPITI_MAX) break
+  }
+
+  await setDoc(doc(db, OSPITI, OSPITI_DOC), {
+    nomi: puliti,
+    aggiornatoIl: serverTimestamp(),
+  })
+
+  return puliti
+}

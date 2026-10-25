@@ -1,0 +1,193 @@
+/* =========================================================================
+   CHI CI HA OSPITATO, DENTRO /admin
+
+   Una riga per nome, con la casella larga e i tre comandi a destra. L'ordine
+   dell'elenco e' l'ordine sulla home, quindi le frecce non sono un di piu':
+   sono il modo di decidere chi si vede per primo.
+   ========================================================================= */
+
+.sezione {
+  margin-block-start: var(--space-10);
+}
+
+.titolo {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-heading);
+}
+
+.intro {
+  margin: 0 0 var(--space-5);
+  max-inline-size: var(--measure);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.elenco {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-inline-size: 34rem;
+}
+
+.voce {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.campo {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.input {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--ink);
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-color: var(--ink);
+}
+
+.comandi {
+  display: flex;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+.mini {
+  inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step-0);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mini:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.mini:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- i bottoni --------------------------------------------------------- */
+
+.azioni {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.primario {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-6);
+  border: 2px solid var(--coral-dark);
+  border-radius: var(--radius);
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.primario:hover:not(:disabled) {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+.primario:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.piccolo {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.piccolo:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.piccolo:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.primario:focus-visible,
+.piccolo:focus-visible,
+.mini:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.fatto {
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.aiuto {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.vuoto {
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-style: italic;
+}
+
+.errore {
+  margin: var(--space-3) 0 0;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+/* Un avviso, non un errore: l'elenco si puo' comunque scrivere e salvare, e
+   quello che si vede nel modulo e' quello che il sito mostra adesso. */
+.avviso {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface-sunken);
+  color: var(--muted);
+  font-size: var(--step--1);
+  max-inline-size: var(--measure);
+}

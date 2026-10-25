@@ -1,0 +1,152 @@
+/* =========================================================================
+   CHI CI HA OSPITATO
+
+   Una banda a tutta larghezza su superficie, che chiude il blocco delle
+   serate: serve a staccarla dalle schede, perche' e' informazione di un altro
+   tipo (loro, non noi).
+
+   I nomi scorrono in un giro continuo. La parte CSS e' solo il movimento: di
+   quanto spostarsi e quanto metterci lo decide il componente, che misura
+   l'elenco e passa --passo e --durata.
+   ========================================================================= */
+
+.fascia {
+  margin-block-start: var(--space-10);
+  border-block: var(--border-soft);
+  background-color: var(--surface);
+}
+
+.riga {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+  padding-block: var(--space-6);
+}
+
+.etichetta {
+  margin: 0;
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+/* Sul telefono l'etichetta va sopra: in riga lascerebbe ai nomi tre
+   centimetri scarsi, e un nastro largo tre centimetri non si legge. */
+@media (max-width: 47.99rem) {
+  .riga {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .etichetta {
+    align-self: flex-start;
+  }
+}
+
+/* ---- il nastro --------------------------------------------------------- */
+
+.pista {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+/* In colonna un elemento flessibile si allarga quanto il suo contenuto, e il
+   contenuto qui e' un nastro largo tre volte lo schermo: senza questa riga la
+   banda spingeva fuori tutta la pagina, e sul telefono si vedeva come una
+   barra di scorrimento orizzontale. Misurato: 637px di troppo. */
+@media (max-width: 47.99rem) {
+  .pista {
+    inline-size: 100%;
+  }
+}
+
+.scorre {
+  overflow: hidden;
+  /* Sfumatura ai due lati: i nomi entrano ed escono invece di essere tagliati
+     di netto contro il bordo. Due centimetri bastano, di piu' mangerebbe il
+     nome intero sugli schermi stretti. */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 2rem,
+    #000 calc(100% - 2rem),
+    transparent 100%
+  );
+}
+
+.nastro {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+  inline-size: max-content;
+}
+
+.scorre .nastro {
+  /* Il nastro si sposta della larghezza esatta di una copia e ricomincia: la
+     copia successiva si trova dov'era la prima, quindi il ritorno a zero non
+     si vede. Per questo --passo deve comprendere anche lo stacco dopo
+     l'ultimo nome. */
+  animation: scorriOspiti var(--durata, 20s) linear infinite;
+  /* Sul suo piano: senza, il browser ridisegna la banda a ogni fotogramma. */
+  will-change: transform;
+}
+
+/* Si ferma mentre stai leggendo, o mentre stai per usare la tastiera. */
+.scorre:hover .nastro,
+.scorre:focus-within .nastro {
+  animation-play-state: paused;
+}
+
+@keyframes scorriOspiti {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--passo)));
+  }
+}
+
+/* Senza movimento i nomi tornano a essere una lista che va a capo, come era
+   prima che questa striscia scorresse. */
+.fermo .nastro {
+  flex-wrap: wrap;
+  inline-size: auto;
+  animation: none;
+}
+
+.gruppo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+  /* Non si restringe e non si allarga: la sua larghezza e' la misura su cui
+     e' calcolato il passo dell'animazione. */
+  flex: 0 0 auto;
+}
+
+.fermo .gruppo {
+  flex-wrap: wrap;
+}
+
+/* Scritti nel carattere del sito e non come loghi: non abbiamo i loro file, e
+   un logo rifatto a mano e' peggio del nome scritto bene. */
+.ospite {
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nastro {
+    animation: none;
+  }
+}
