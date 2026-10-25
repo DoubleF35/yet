@@ -50,11 +50,14 @@
   border-color: var(--coral);
 }
 
-/* I passati: bordo leggero e testo attenuato. Restano leggibili, ma dicono a
-   colpo d'occhio che sono archivio e non programma. */
+/* I passati: bordo leggero, e basta.
+   C'era anche `opacity: 0.72`, per dire a colpo d'occhio "questo e' archivio".
+   Su del testo funzionava. Da quando c'e' la foto di copertina no: smorta la
+   fotografia, che e' la cosa migliore che quelle tessere hanno da mostrare, e
+   fa sembrare spento tutto il blocco. Che siano passate lo dicono gia' la
+   data, il titolo della sezione e il bordo leggero: tre segnali bastano. */
 .schedaPassata {
   border: var(--border);
-  opacity: 0.72;
 }
 
 .schedaPassata:hover {
@@ -66,11 +69,26 @@
    dentro un riquadro gia' incorniciato sembra un francobollo. I margini
    negativi sono l'unico modo di farlo senza spostare il padding su ogni
    singolo figlio. */
+/* IN FONDO, sopra il bottone, e non in cima.
+   Solo una serata su tre ha una foto: mettendola in cima, la data e il titolo
+   di quella partivano molto piu' in basso delle altre due, e la riga sembrava
+   storta. Cosi' le tre tessere cominciano tutte allo stesso punto.
+
+   `order` e non un cambio nel markup perche' nel documento la foto deve
+   restare vicino al titolo della serata a cui appartiene: e' quello che
+   sente chi usa un lettore di schermo, e li' l'ordine visivo non conta.
+
+   margin-block-start: auto la spinge in fondo. Al primo tentativo avevo messo
+   l'auto sul bottone e la foto restava attaccata al testo con un vuoto sotto:
+   due margini automatici nella stessa colonna si dividono lo spazio, e lo
+   spazio deve stare tutto in UN posto solo. */
 .copertina {
   display: block;
+  order: 1;
+  margin-block-start: auto;
   inline-size: calc(100% + 2 * clamp(var(--space-5), 5vw, var(--space-6)));
-  margin: calc(-1 * clamp(var(--space-5), 5vw, var(--space-6)));
-  margin-block-end: var(--space-5);
+  margin-inline: calc(-1 * clamp(var(--space-5), 5vw, var(--space-6)));
+  margin-block-end: 0;
   /* Rapporto fisso: le foto hanno proporzioni diverse fra loro, e senza
      questo la riga di tessere tornerebbe disallineata proprio per colpa
      della cosa che doveva allinearla. */
@@ -135,6 +153,7 @@
 }
 
 .cta {
+  order: 2;
   display: inline-flex;
   align-items: center;
   min-block-size: 48px;
@@ -177,4 +196,11 @@
    prossimi incontri, che invece devono restare i protagonisti. */
 .listaPassati {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+}
+
+/* Quando sopra c'e' la copertina, il bottone NON deve prendersi altro spazio:
+   lo ha gia' assorbito la foto. Senza questa riga i due margini automatici se
+   lo dividevano, e restava un vuoto fra il testo e la fotografia. */
+.copertina ~ .cta {
+  margin-block-start: var(--space-5);
 }
