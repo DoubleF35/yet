@@ -82,6 +82,28 @@ export const EVENTI = [
     ],
   },
   {
+    slug: 'torino-yet-x-wave',
+    meetupId: 'iPos7ZoZlAd39Vms1wfF',
+    titolo: 'YET x Wave',
+    citta: 'Torino',
+    data: '2026-10-10T15:00:00+02:00',
+    luogo: 'Feat House',
+    /* L'indirizzo non lo sappiamo: sulla scheda dell'incontro c'era solo
+       "Feat House, Torino". Vuoto e non inventato, il riquadro si accorcia. */
+    indirizzo: '',
+    /* Chi e' salito a parlare. Vuoto finche' non ci sono i nomi scritti bene:
+       quelli che si leggono sulle slide nelle foto sono mezzi coperti, e un
+       nome storpiato addosso a una persona vera e' peggio di nessun nome. */
+    ospiti: [],
+    presenti: null,
+    /* Gli scatti arrivano dal gruppo, non da un fotografo: nessuno da citare. */
+    fotografo: null,
+    racconto: [
+      'Il 10 ottobre YET e\u2019 entrato dentro Wave by Vento, i tre giorni in cui Torino diventa il centro del mondo tech. Da Feat House il palco e\u2019 stato tutto nostro: un pomeriggio riservato agli Yets, dentro l\u2019energia di una delle conferenze tech piu\u2019 importanti d\u2019Europa.',
+      'Si e\u2019 partiti col networking, poi tre speaker sul palco e confronto diretto con la sala: domande vere da chi sta costruendo qualcosa, non discorsi da palco distante. Si e\u2019 chiuso con l\u2019aperitivo e le interviste davanti al fondale YET.',
+    ],
+  },
+  {
     slug: 'roma-connect-vol1-1',
     meetupId: 'KjT7cFL8pytDugHYAnyJ',
     titolo: 'YET Connect Vol.1.1',

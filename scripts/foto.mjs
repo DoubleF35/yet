@@ -182,20 +182,38 @@ async function preparaScatto(slug, nomeFile, indice, copertina) {
   }
 }
 
-/** Il testo alternativo non si puo' inventare: resta vuoto finche' non lo scrivi. */
-function vocePerManifesto(scatto, slug) {
+/**
+ * Il testo alternativo non si puo' inventare: resta vuoto finche' non lo
+ * scrivi. Ma se era GIA' scritto, si tiene.
+ *
+ * Prima no, e questo script riscriveva il manifesto da zero a ogni giro: chi
+ * aggiungeva le foto di una serata nuova si portava via, senza accorgersene,
+ * le descrizioni di tutte le altre. Dieci righe scritte a mano, perse per una
+ * cartella in piu'.
+ */
+function vocePerManifesto(scatto, slug, precedente) {
+  const vecchia = precedente?.[slug]?.scatti?.find((x) => x.base === scatto.base)
   return {
     id: `${slug}/${scatto.base}`,
     base: scatto.base,
     w: scatto.larghezza,
     h: scatto.altezza,
     misure: scatto.misure,
-    alt: '',
+    alt: vecchia?.alt ?? '',
   }
 }
 
 async function main() {
   const slugs = await cartelle(ORIGINALI)
+
+  /* Il manifesto di prima, se c'e'. Serve a due cose: tenere i testi
+     alternativi gia' scritti, e accorgersi delle gallerie sparite. */
+  let precedente = {}
+  try {
+    precedente = JSON.parse(await readFile(MANIFESTO, 'utf8'))
+  } catch {
+    /* non esisteva, o non si legge: si riparte da zero */
+  }
 
   if (slugs.length === 0) {
     console.log('Nessuna cartella in foto-originali/.')
@@ -246,7 +264,7 @@ async function main() {
          e di voci non coincidono piu' e la copertina finirebbe sulla foto
          sbagliata. */
       if (eCopertina) baseCopertina = scatto.base
-      voci.push(vocePerManifesto(scatto, slug))
+      voci.push(vocePerManifesto(scatto, slug, precedente))
     }
 
     if (voci.length === 0) {
@@ -259,6 +277,20 @@ async function main() {
       scatti: voci,
     }
     totale += voci.length
+  }
+
+  /* Una galleria che c'era e adesso non c'e' piu' sparisce dal manifesto, e
+     con lei spariscono le foto dal sito. Puo' essere voluto, ma quasi sempre
+     vuol dire che la cartella degli originali non e' piu' su questo computer:
+     foto-originali/ e' in .gitignore, quindi basta cambiare macchina. Detto
+     ad alta voce, perche' il danno si vedrebbe solo dopo il deploy. */
+  for (const vecchio of Object.keys(precedente)) {
+    if (!gallerie[vecchio]) {
+      console.warn('')
+      console.warn(`ATTENZIONE: ${vecchio} era nel manifesto e adesso non c'e' piu'.`)
+      console.warn(`  Manca foto-originali/${vecchio}/. Se non e' voluto, fermati`)
+      console.warn('  e recupera gli originali prima di committare.')
+    }
   }
 
   /* Il manifesto VA committato: il sito lo importa al build, e la CI non ha

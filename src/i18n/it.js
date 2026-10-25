@@ -194,6 +194,8 @@ export default {
      che nei testi, ed e' il motivo per cui vale la pena rinominarle invece di
      cambiare solo le stringhe. */
   notizie: {
+    mostraAltre: 'Mostra altre {n} notizie',
+    mostraUnAltra: 'Mostra l’ultima notizia',
     titolo: 'Notizie',
     liveCaricamento: 'Caricamento delle notizie in corso.',
     liveCaricati: '{n} notizie caricate.',
