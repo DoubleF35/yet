@@ -355,6 +355,14 @@ function ProfileForm({ firebaseMissing }) {
   const [errors, setErrors] = useState({})
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved | error
   const [saveError, setSaveError] = useState(null)
+  /* Quanti campi mancano all'ultimo tentativo di salvataggio.
+     Esiste per un guaio vero: premendo "Crea il mio profilo" con qualcosa di
+     incompleto, la pagina portava il fuoco sul primo campo sbagliato e li'
+     finiva. Se quel campo era gia' a schermo non si muoveva niente di
+     visibile, e sotto al bottone restava il vuoto: chi lo premeva si
+     convinceva di aver mandato la richiesta, e nel pannello non arrivava
+     niente. Adesso sotto al bottone c'e' scritto cosa manca. */
+  const [mancanti, setMancanti] = useState(0)
   const [savedNow, setSavedNow] = useState(false)
   const [avatarBusy, setAvatarBusy] = useState(false)
   const [avatarError, setAvatarError] = useState(null)
@@ -632,16 +640,19 @@ function ProfileForm({ firebaseMissing }) {
           .map((c) => document.querySelector(`input[name="${c}"]`))
           .find(Boolean) ||
         (nextErrors.motivazione && document.getElementById(`${fid}-motivazione`)) ||
+        (nextErrors.consensi && document.getElementById(`${fid}-consenso-privacy`)) ||
         null
       if (first) {
         first.focus()
         first.scrollIntoView({ block: 'center', behavior: 'smooth' })
       }
+      setMancanti(Object.keys(nextErrors).length)
       setSaveState('idle')
       return
     }
 
     clearTimeout(savedTimer.current)
+    setMancanti(0)
     setSaveState('saving')
     setSaveError(null)
 
@@ -732,7 +743,11 @@ function ProfileForm({ firebaseMissing }) {
         ? t(statoSalvatoKey)
         : saveState === 'error'
           ? t('join.form.statoErrore', { dettaglio: saveErrorText(t, saveError) })
-          : ''
+          : mancanti > 0
+            ? t(mancanti === 1 ? 'join.form.statoMancaUno' : 'join.form.statoMancano', {
+                n: mancanti,
+              })
+            : ''
 
   const photoMessage =
     photoCheck === 'badUrl'
@@ -1181,6 +1196,7 @@ function ProfileForm({ firebaseMissing }) {
               s.status,
               saveState === 'saved' && s.statusOk,
               saveState === 'error' && s.statusError,
+              saveState === 'idle' && mancanti > 0 && s.statusError,
             )}
             role="status"
           >

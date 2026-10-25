@@ -336,6 +336,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
         <label className={s.consenso}>
           <input
             className={s.checkbox}
+            /* Un id, perche' quando i due consensi sono l'unica cosa che
+               manca la pagina Join deve poter portare il fuoco qui: sono in
+               fondo a un modulo lungo, e un errore fuori schermo non lo vede
+               nessuno. */
+            id={`${fid}-consenso-privacy`}
             type="checkbox"
             checked={valori.consensoPrivacy === true}
             onChange={(e) => onCambia('consensoPrivacy', e.target.checked)}
