@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Foto } from './Galleria.jsx'
 import Reveal, { stagger } from './Reveal.jsx'
 import { eventiRecenti } from '../config/eventi.js'
 import gallerie from '../data/gallerie.json'
+import { getGallerie, getMedia } from '../lib/db.js'
+import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Serate.module.css'
@@ -27,6 +30,7 @@ import s from './Serate.module.css'
 export default function Serate() {
   const { t } = useI18n()
   const eventi = eventiRecenti()
+  const copertine = useCopertineCaricate(eventi)
 
   if (eventi.length === 0) return null
 
@@ -53,7 +57,7 @@ export default function Serate() {
       <ul className={`${s.lista} container`}>
         {eventi.map((evento, i) => (
           <Reveal as="li" className={s.voce} key={evento.slug} delay={stagger(i)}>
-            <Scheda evento={evento} />
+            <Scheda evento={evento} caricata={copertine[evento.slug]} />
           </Reveal>
         ))}
       </ul>
@@ -76,10 +80,65 @@ export default function Serate() {
   )
 }
 
-function Scheda({ evento }) {
+/**
+ * Le copertine caricate dal pannello, indicizzate per SLUG della serata.
+ *
+ * Le gallerie caricate stanno sotto l'id dell'incontro, mentre qui le serate
+ * si conoscono per slug: il ponte fra i due lo fa `meetupId` dentro
+ * config/eventi.js, che e' gia' il campo con cui un resoconto sa a quale
+ * incontro appartiene.
+ *
+ * Se la lettura non riesce non succede niente: restano le foto nei file, che
+ * e' quello che si vedeva prima. Questa sezione deve poter comparire anche
+ * col database irraggiungibile.
+ */
+function useCopertineCaricate(eventi) {
+  const [perSlug, setPerSlug] = useState({})
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return undefined
+    let vivo = true
+
+    getGallerie()
+      .then(async (g) => {
+        if (!vivo) return
+        const coppie = eventi
+          .map((e) => [e.slug, g[e.meetupId]?.foto?.[0], g[e.meetupId]?.alt?.[0] ?? ''])
+          .filter(([, mediaId]) => mediaId)
+        if (coppie.length === 0) return
+
+        const media = await getMedia(coppie.map(([, mediaId]) => mediaId))
+        if (!vivo) return
+
+        const out = {}
+        for (const [slug, mediaId, alt] of coppie) {
+          const dato = media[mediaId]
+          if (dato?.dataUrl) out[slug] = { dataUrl: dato.dataUrl, alt }
+        }
+        setPerSlug(out)
+      })
+      .catch(() => {
+        /* In silenzio: restano le foto nei file. */
+      })
+
+    return () => {
+      vivo = false
+    }
+    /* La lista di serate viene da una costante, non cambia fra un render e
+       l'altro: niente nelle dipendenze o si rileggerebbe a ogni giro. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return perSlug
+}
+
+function Scheda({ evento, caricata = null }) {
   const { t } = useI18n()
   const galleria = gallerie[evento.slug] ?? null
-  const copertina = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
+  const copertinaFile = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
+  /* Vince quella caricata dal pannello: e' la piu' recente e l'ha messa
+     qualcuno apposta. */
+  const copertina = caricata ?? copertinaFile
 
   return (
     <Link className={s.scheda} to={`/eventi/${evento.slug}`}>
@@ -87,7 +146,17 @@ function Scheda({ evento }) {
           copertina, o non ha proprio quello spazio. */}
       {copertina && (
         <div className={s.copertina}>
-          <Foto slug={evento.slug} scatto={copertina} classe={s.copertinaImg} />
+          {caricata ? (
+            <img
+              className={s.copertinaImg}
+              src={caricata.dataUrl}
+              alt={caricata.alt || ''}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <Foto slug={evento.slug} scatto={copertinaFile} classe={s.copertinaImg} />
+          )}
         </div>
       )}
 
