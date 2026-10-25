@@ -523,6 +523,14 @@ function ProfileForm({ firebaseMissing }) {
 
   const saving = saveState === 'saving'
 
+  /* Chi ha gia' un profilo lo sta MODIFICANDO, non si sta candidando. In quel
+     caso l'unico campo obbligatorio e' il nome: chi torna qui per cambiare
+     una foto o un link non deve dover ricompilare citta', presentazione e
+     tutte le domande di selezione, compresa la data di nascita e il numero
+     di telefono. L'obbligo vale per la PRIMA volta, quando la tessera nasce
+     e quelle risposte servono a decidere se approvarla. */
+  const modifica = profile != null
+
   // Il link ai membri compare dopo il primo salvataggio, ma anche a chi ha già
   // un profilo salvato: è già in quella lista, non ha senso nascondergli la via.
   const canSeeMembers = savedNow || profile != null
@@ -543,10 +551,10 @@ function ProfileForm({ firebaseMissing }) {
        nessuno, e i filtri per citta' della vetrina non hanno niente da
        filtrare. Restano facoltativi i tre campi di "Cosa fai": quelli
        aggiungono, non reggono la tessera. */
-    if (!form.location.trim()) {
+    if (!modifica && !form.location.trim()) {
       nextErrors.location = t('join.form.luogoErrore')
     }
-    if (!form.bio.trim()) {
+    if (!modifica && !form.bio.trim()) {
       nextErrors.bio = t('join.form.bioObbligatoria')
     }
     // Validiamo la lunghezza in JS anche se il textarea ha maxLength: maxLength
@@ -568,20 +576,38 @@ function ProfileForm({ firebaseMissing }) {
        La data si controlla con anniCompiuti e non con una regex: una regex
        accetta allegramente il 30 febbraio, e un campo <input type="date">
        su un browser vecchio o compilato a mano puo' mandare qualunque cosa. */
+    const erroriSelezione = {}
     if (anniCompiuti(form.dataNascita) === null) {
-      nextErrors.dataNascita = t('candidatura.dataNascitaErrore')
+      erroriSelezione.dataNascita = t('candidatura.dataNascitaErrore')
     }
     if (!/^\+[0-9]{8,15}$/.test(form.whatsapp.replace(/[\s-]/g, ''))) {
-      nextErrors.whatsapp = t('candidatura.whatsappErrore')
+      erroriSelezione.whatsapp = t('candidatura.whatsappErrore')
     }
     for (const campo of ['occupazione', 'ruolo', 'fonte', 'stadioProgetto', 'nPitch', 'nEventi']) {
-      if (!form[campo]) nextErrors[campo] = t('join.form.obbligatorio')
+      if (!form[campo]) erroriSelezione[campo] = t('join.form.obbligatorio')
     }
     if (!form.motivazione.trim()) {
-      nextErrors.motivazione = t('join.form.obbligatorio')
+      erroriSelezione.motivazione = t('join.form.obbligatorio')
     }
     if (form.consensoPrivacy !== true || form.consensoWhatsapp !== true) {
-      nextErrors.consensi = t('candidatura.consensoMancante')
+      erroriSelezione.consensi = t('candidatura.consensoMancante')
+    }
+
+    /* In modifica le domande di selezione non bloccano il salvataggio: si
+       salva il profilo, e le risposte solo se sono complete (vedi sotto).
+       Resta bloccante solo un valore SCRITTO MALE, una data impossibile o un
+       numero senza prefisso: lì la persona ha voluto cambiare qualcosa, e
+       buttare via la sua modifica in silenzio sarebbe peggio di dirglielo. */
+    const candidaturaCompleta = Object.keys(erroriSelezione).length === 0
+    if (!modifica) {
+      Object.assign(nextErrors, erroriSelezione)
+    } else {
+      if (form.dataNascita && erroriSelezione.dataNascita) {
+        nextErrors.dataNascita = erroriSelezione.dataNascita
+      }
+      if (form.whatsapp.trim() && erroriSelezione.whatsapp) {
+        nextErrors.whatsapp = erroriSelezione.whatsapp
+      }
     }
 
     setErrors(nextErrors)
@@ -641,8 +667,13 @@ function ProfileForm({ firebaseMissing }) {
          ha scritto il suo numero di telefono e non compare da nessuna parte.
 
          Non passa di qui nessun punteggio: lo calcola il pannello quando
-         guarda la scheda. Vedi src/lib/punteggio.js. */
-      await saveCandidatura(user.uid, {
+         guarda la scheda. Vedi src/lib/punteggio.js.
+
+         In modifica si scrive solo se e' completa: la funzione, e le regole
+         dietro, pretendono data, numero e consensi, e chi ha un profilo nato
+         prima delle domande di selezione non li ha mai dati. Saltarla lascia
+         la candidatura salvata com'era. */
+      if (!modifica || candidaturaCompleta) await saveCandidatura(user.uid, {
         dataNascita: form.dataNascita,
         whatsapp: form.whatsapp,
         occupazione: form.occupazione,
@@ -774,10 +805,14 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-place`}>
                 {t('join.form.luogo')}
-                <span className={s.req} aria-hidden="true">
-                  *
-                </span>
-                <span className="sr-only">{t('join.form.obbligatorio')}</span>
+                {!modifica && (
+                  <>
+                    <span className={s.req} aria-hidden="true">
+                      *
+                    </span>
+                    <span className="sr-only">{t('join.form.obbligatorio')}</span>
+                  </>
+                )}
               </label>
               <input
                 className={cx(s.input, errors.location && s.inputInvalid)}
@@ -792,8 +827,8 @@ function ProfileForm({ firebaseMissing }) {
                    casa di nessuno, solo la città. Il browser suggerisce la
                    cosa giusta e non compila un modulo di spedizione. */
                 autoComplete="address-level2"
-                required
-                aria-required="true"
+                required={!modifica}
+                aria-required={modifica ? undefined : 'true'}
                 aria-invalid={errors.location ? 'true' : undefined}
                 aria-describedby={describedBy(
                   `${fid}-place-hint`,
@@ -813,10 +848,14 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-bio`}>
                 {t('join.form.bio')}
-                <span className={s.req} aria-hidden="true">
-                  *
-                </span>
-                <span className="sr-only">{t('join.form.obbligatorio')}</span>
+                {!modifica && (
+                  <>
+                    <span className={s.req} aria-hidden="true">
+                      *
+                    </span>
+                    <span className="sr-only">{t('join.form.obbligatorio')}</span>
+                  </>
+                )}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, (errors.bio || bioOver) && s.inputInvalid)}
@@ -826,8 +865,8 @@ function ProfileForm({ firebaseMissing }) {
                 value={form.bio}
                 onChange={update('bio')}
                 maxLength={BIO_MAX}
-                required
-                aria-required="true"
+                required={!modifica}
+                aria-required={modifica ? undefined : 'true'}
                 aria-invalid={errors.bio || bioOver ? 'true' : undefined}
                 aria-describedby={describedBy(
                   `${fid}-bio-hint`,
@@ -1101,6 +1140,7 @@ function ProfileForm({ firebaseMissing }) {
             valori={form}
             onCambia={scrivi}
             errori={errors}
+            facoltative={modifica}
           />
 
           <div className={s.actions}>

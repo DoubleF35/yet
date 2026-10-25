@@ -104,7 +104,12 @@ function Scelta({
   )
 }
 
-export default function DomandeSelezione({ fid, valori, onCambia, errori = {} }) {
+/**
+ * @param facoltative  true quando chi compila ha gia' un profilo e lo sta
+ *                     modificando: niente asterischi e niente `required`,
+ *                     perche' in quel caso la pagina Join non le pretende.
+ */
+export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, facoltative = false }) {
   const { t } = useI18n()
 
   const anni = anniCompiuti(valori.dataNascita)
@@ -125,9 +130,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
         <div className={s.campo}>
           <label className={s.etichetta} htmlFor={`${fid}-nascita`}>
             {t('candidatura.dataNascita')}
-            <span className={s.req} aria-hidden="true">
-              {' *'}
-            </span>
+            {!facoltative && (
+              <span className={s.req} aria-hidden="true">
+                {' *'}
+              </span>
+            )}
           </label>
           <input
             className={s.input}
@@ -135,8 +142,8 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
             type="date"
             value={valori.dataNascita ?? ''}
             onChange={(e) => onCambia('dataNascita', e.target.value)}
-            required
-            aria-required="true"
+            required={!facoltative}
+            aria-required={facoltative ? undefined : 'true'}
             aria-describedby={`${fid}-nascita-hint`}
           />
           <p className={s.aiuto} id={`${fid}-nascita-hint`}>
@@ -154,9 +161,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
         <div className={s.campo}>
           <label className={s.etichetta} htmlFor={`${fid}-whatsapp`}>
             {t('candidatura.whatsapp')}
-            <span className={s.req} aria-hidden="true">
-              {' *'}
-            </span>
+            {!facoltative && (
+              <span className={s.req} aria-hidden="true">
+                {' *'}
+              </span>
+            )}
           </label>
           <input
             className={s.input}
@@ -167,8 +176,8 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
             placeholder="+39 333 1234567"
             value={valori.whatsapp ?? ''}
             onChange={(e) => onCambia('whatsapp', e.target.value)}
-            required
-            aria-required="true"
+            required={!facoltative}
+            aria-required={facoltative ? undefined : 'true'}
             aria-describedby={`${fid}-whatsapp-hint`}
           />
           <p className={s.aiuto} id={`${fid}-whatsapp-hint`}>
@@ -183,6 +192,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={OCCUPAZIONI}
           valore={valori.occupazione}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.occupazione}
         />
 
@@ -192,6 +202,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={RUOLI}
           valore={valori.ruolo}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.ruolo}
         />
       </fieldset>
@@ -206,6 +217,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={STADI_PROGETTO}
           valore={valori.stadioProgetto}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.stadioProgetto}
         />
 
@@ -240,6 +252,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={N_PITCH}
           valore={valori.nPitch}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.nPitch}
         />
 
@@ -249,6 +262,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={N_EVENTI}
           valore={valori.nEventi}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.nEventi}
         />
 
@@ -279,9 +293,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
         <div className={s.campo}>
           <label className={s.etichetta} htmlFor={`${fid}-motivazione`}>
             {t('candidatura.motivazione')}
-            <span className={s.req} aria-hidden="true">
-              {' *'}
-            </span>
+            {!facoltative && (
+              <span className={s.req} aria-hidden="true">
+                {' *'}
+              </span>
+            )}
           </label>
           <textarea
             className={s.textarea}
@@ -290,8 +306,8 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
             maxLength={200}
             value={valori.motivazione ?? ''}
             onChange={(e) => onCambia('motivazione', e.target.value)}
-            required
-            aria-required="true"
+            required={!facoltative}
+            aria-required={facoltative ? undefined : 'true'}
             aria-describedby={`${fid}-motivazione-hint`}
           />
           {/* Il contatore e' dentro l'aiuto e non in un elemento a parte:
@@ -309,6 +325,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {} })
           opzioni={FONTI}
           valore={valori.fonte}
           onCambia={onCambia}
+          obbligatoria={!facoltative}
           errore={errori.fonte}
         />
       </fieldset>
