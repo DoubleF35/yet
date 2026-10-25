@@ -51,6 +51,17 @@ const PER_UID = new Map(REFERENTI.map((r) => [r.uid, r.citta]))
    scritta i membri, che è testo libero. */
 const ETICHETTE = new Map(REFERENTI.map((r) => [normalizza(r.citta), r.citta]))
 
+/**
+ * Quante citta' hanno un referente.
+ *
+ * E' il numero di ripiego della home, quello che si mostra finche' i profili
+ * non sono arrivati (o se Firestore e' irraggiungibile). Sta qui perche' viene
+ * dal config dei referenti, che e' nel bundle: e' sempre disponibile, e dice
+ * una cosa vera sulla stessa domanda, cioe' in quante citta' ci sono YET.
+ * Per difetto, perche' i membri senza referente non li conta, ma mai sbagliato.
+ */
+export const CITTA_CON_REFERENTE = ETICHETTE.size
+
 /** La città di cui questo membro è referente, come va scritta. Null se non lo è. */
 export function cittaDelReferente(membro) {
   return PER_UID.get(membro?.uid) ?? null
