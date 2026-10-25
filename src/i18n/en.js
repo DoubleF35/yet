@@ -438,6 +438,17 @@ export default {
       'I cannot save. If it says permissions are missing, the rules on the database are still the old ones and need republishing.',
   },
 
+  richiestePagina: {
+    titolo: 'Who asked to join',
+    intro:
+      'Pending requests, with the selection answers and the score. Until you approve someone, nobody can see their profile.',
+    nota:
+      'No email arrives here. The old site sent them because it had a server; this one is made of static files, and a mail key put inside it could be read by anyone who opens the code. While that is the case, this page is the notification: you open it and you see.',
+    spento: 'Firebase is not configured, so there is nothing to read.',
+    tornaAlPannello: 'Back to the panel',
+    soloRichieste: 'Open just the requests',
+  },
+
   vetrina: {
     eyebrow: 'The community',
     titolo: 'Members',

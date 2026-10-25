@@ -13,6 +13,7 @@ import Evento from './pages/Evento.jsx'
 import Brand from './pages/Brand.jsx'
 import Sponsor from './pages/Sponsor.jsx'
 import Join from './pages/Join.jsx'
+import Richieste from './pages/Richieste.jsx'
 import Contatti from './pages/Contatti.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Cookie from './pages/Cookie.jsx'
@@ -59,6 +60,16 @@ export default function App() {
             element={
               <RequireAdmin>
                 <Admin />
+              </RequireAdmin>
+            }
+          />
+          {/* Le sole richieste, su un indirizzo loro. Stesso componente del
+              pannello e stessa protezione: una pagina che fa una cosa sola. */}
+          <Route
+            path="/admin/richieste"
+            element={
+              <RequireAdmin>
+                <Richieste />
               </RequireAdmin>
             }
           />

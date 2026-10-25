@@ -501,3 +501,25 @@
     justify-content: flex-start;
   }
 }
+
+/* Il rimando alla pagina delle sole richieste. Una riga sotto la coda, non un
+   bottone: e' una scorciatoia per chi la vuole, non l'azione principale. */
+.scorciatoia {
+  margin: var(--space-3) 0 0;
+}
+
+.scorciatoiaLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.scorciatoiaLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

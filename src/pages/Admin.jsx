@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
@@ -350,7 +351,19 @@ export default function Admin() {
             Prima delle notizie di proposito: è l'unica cosa in questa pagina
             in cui qualcuno sta aspettando una risposta. Una notizia può
             attendere domani, una persona in coda no. */}
-        {isFirebaseConfigured && <PendingRequests />}
+        {isFirebaseConfigured && (
+          <>
+            <PendingRequests />
+            {/* La stessa cosa su una pagina sua, per chi vuole solo questa:
+                il pannello fa cinque mestieri e le richieste ci stanno in
+                mezzo. */}
+            <p className={s.scorciatoia}>
+              <Link className={s.scorciatoiaLink} to="/admin/richieste">
+                {t('richiestePagina.soloRichieste')}
+              </Link>
+            </p>
+          </>
+        )}
 
         {/* Dopo la coda e non prima: l'ordine della pagina segue l'urgenza.
             Una richiesta in attesa blocca una persona, un profilo da
