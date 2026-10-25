@@ -116,7 +116,7 @@
     ]
   },
   "torino-yet-x-wave": {
-    "copertina": "08-copertina-foto-di-gruppo",
+    "copertina": "01-networking",
     "scatti": [
       {
         "id": "torino-yet-x-wave/01-networking",
@@ -185,8 +185,8 @@
         "alt": "Sullo schermo la pagina di From Zero to Startup, il percorso gratuito per i 16-19 anni di Blue Factory by ESCP. Sul palco si spiega come funziona, la sala ascolta."
       },
       {
-        "id": "torino-yet-x-wave/08-copertina-foto-di-gruppo",
-        "base": "08-copertina-foto-di-gruppo",
+        "id": "torino-yet-x-wave/08-foto-di-gruppo",
+        "base": "08-foto-di-gruppo",
         "w": 2000,
         "h": 1500,
         "misure": [
