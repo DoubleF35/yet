@@ -178,6 +178,8 @@ export default {
      NEWS, while the real events are `incontri`, the ones with a date and a
      place. */
   notizie: {
+    mostraAltre: 'Show {n} more news',
+    mostraUnAltra: 'Show the last one',
     titolo: 'News',
     liveCaricamento: 'Loading the news.',
     liveCaricati: '{n} stories loaded.',

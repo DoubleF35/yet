@@ -217,3 +217,38 @@
     font-size: var(--step-2);
   }
 }
+
+/* ---- il bottone "mostra altre" ----------------------------------------- */
+
+/* Fuori dalla griglia e centrato: dentro, sarebbe una cella e si
+   allineerebbe a una colonna, come se fosse una tessera anche lui. */
+.altreRiga {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--space-6);
+}
+
+.altre {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-7);
+  border: var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.altre:hover {
+  border-color: var(--ink);
+}
+
+.altre:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

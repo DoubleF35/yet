@@ -33,7 +33,12 @@ const CLAMP_OVER = 420
 /* --------------------------------------------------------------------------
    Una notizia
 -------------------------------------------------------------------------- */
-import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
+import {
+  AltreNotizie,
+  NewsCard,
+  NewsSkeleton,
+  useNotizieVisibili,
+} from '../components/NewsCard.jsx'
 import Reveal, { stagger } from '../components/Reveal.jsx'
 import { useCountUp, useReveal } from '../lib/motion.js'
 
@@ -187,6 +192,9 @@ export default function Home() {
   }, [news])
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
+
+  /* Quattro subito, le altre premendo il bottone. Vedi useNotizieVisibili. */
+  const { visibili, restanti, mostraAltre } = useNotizieVisibili(news)
 
   const quantiIncontri = incontriFatti ?? INCONTRI_NEL_REPO
   /* Le citta' delle persone, non quelle delle serate: la domanda a cui questo
@@ -362,16 +370,20 @@ export default function Home() {
         )}
 
         {status === 'ready' && (
-          <div className={s.grid}>
-            {news.map((item, index) => (
-              <NewsCard
-                key={item.id}
-                item={item}
-                media={media}
-                featured={index === 0 && news.length > 1}
-              />
-            ))}
-          </div>
+          <>
+            <div className={s.grid}>
+              {visibili.map((item, index) => (
+                <NewsCard
+                  key={item.id}
+                  item={item}
+                  media={media}
+                  featured={index === 0 && news.length > 1}
+                />
+              ))}
+            </div>
+
+            <AltreNotizie restanti={restanti} onClick={mostraAltre} />
+          </>
         )}
       </Reveal>
 

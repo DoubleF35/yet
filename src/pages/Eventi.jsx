@@ -3,7 +3,12 @@ import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
-import { NewsCard, NewsSkeleton } from '../components/NewsCard.jsx'
+import {
+  AltreNotizie,
+  NewsCard,
+  NewsSkeleton,
+  useNotizieVisibili,
+} from '../components/NewsCard.jsx'
 import Reveal, { stagger } from '../components/Reveal.jsx'
 import MeetupAdmin from '../components/MeetupAdmin.jsx'
 import MeetupList from '../components/MeetupList.jsx'
@@ -91,6 +96,9 @@ export default function Eventi() {
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), [])
 
+  /* Quattro subito, le altre premendo il bottone. Vedi useNotizieVisibili. */
+  const { visibili, restanti, mostraAltre } = useNotizieVisibili(news)
+
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
@@ -174,7 +182,7 @@ export default function Eventi() {
               {news.length} {news.length === 1 ? t('notizie.unaNotizia') : t('notizie.tanteNotizie')}
             </p>
             <div className={s.grid}>
-              {news.map((item, index) => (
+              {visibili.map((item, index) => (
                 /* Lo scaglionamento e' 70ms per card e si ferma alla sesta:
                    oltre, l'ultima di una lista lunga aspetterebbe piu' di un
                    secondo e la cascata diventerebbe attesa. */
@@ -198,6 +206,8 @@ export default function Eventi() {
                 </Reveal>
               ))}
             </div>
+
+            <AltreNotizie restanti={restanti} onClick={mostraAltre} />
           </>
         )}
       </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   mediaIdsOf,
@@ -17,6 +17,61 @@ import s from './NewsCard.module.css'
    "Leggi tutto" sotto. Il testo resta tutto nel DOM: si nasconde, non si
    tronca, così la ricerca del browser lo trova comunque. */
 const CLAMP_OVER = 420
+
+/* -------------------------------------------------------------------------
+   QUANTE NOTIZIE SI VEDONO SUBITO
+
+   Quattro: quella in evidenza, larga tutta la riga, e le tre sotto. E' una
+   riga piena di tessere, e si capisce al volo che ce ne sono altre invece di
+   trovarsi davanti un muro di dieci.
+
+   Le altre arrivano a gruppi, premendo il bottone. Non e' un caricamento: le
+   notizie ci sono gia' tutte, sono gia' state scaricate, e nasconderle costa
+   zero richieste. E' solo quanto se ne vede.
+   ------------------------------------------------------------------------- */
+const NOTIZIE_PRIME = 4
+const NOTIZIE_PASSO = 6
+
+/**
+ * Lo stato di "quante se ne vedono", condiviso fra la home e la pagina
+ * Eventi.
+ *
+ * Sta qui e non in ognuna delle due pagine perche' le due liste devono
+ * comportarsi allo stesso modo: scritto due volte, prima o poi uno dei due
+ * numeri cambia e l'altro no.
+ */
+export function useNotizieVisibili(news = []) {
+  const [quante, setQuante] = useState(NOTIZIE_PRIME)
+
+  /* Se l'elenco si accorcia (una notizia tolta dal pannello, un cambio di
+     filtro) si riparte dal principio: tenere "ne vedo 16" su una lista che
+     adesso ne ha 5 vorrebbe dire lasciare a schermo un bottone che non fa
+     niente. */
+  useEffect(() => {
+    setQuante((n) => (n > news.length ? NOTIZIE_PRIME : n))
+  }, [news.length])
+
+  const mostraAltre = useCallback(() => setQuante((n) => n + NOTIZIE_PASSO), [])
+
+  const visibili = news.slice(0, quante)
+  return { visibili, restanti: news.length - visibili.length, mostraAltre }
+}
+
+/** Il bottone sotto la griglia. Compare solo se c'e' davvero altro. */
+export function AltreNotizie({ restanti, onClick }) {
+  const { t } = useI18n()
+  if (restanti <= 0) return null
+
+  return (
+    <div className={s.altreRiga}>
+      <button type="button" className={s.altre} onClick={onClick}>
+        {t(restanti === 1 ? 'notizie.mostraUnAltra' : 'notizie.mostraAltre', {
+          n: Math.min(NOTIZIE_PASSO, restanti),
+        })}
+      </button>
+    </div>
+  )
+}
 
 /* =========================================================================
    La card di un evento.

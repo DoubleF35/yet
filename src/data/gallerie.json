@@ -114,5 +114,87 @@
         "alt": "Cinque persone davanti al fondale YET, prima di salutarsi."
       }
     ]
+  },
+  "torino-yet-x-wave": {
+    "copertina": "01-networking",
+    "scatti": [
+      {
+        "id": "torino-yet-x-wave/01-networking",
+        "base": "01-networking",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Il networking di apertura al bancone di Feat House: ragazzi in piedi a gruppetti, qualcuno con un bicchiere in mano, le luci lunghe del soffitto sopra la parete dei distillati."
+      },
+      {
+        "id": "torino-yet-x-wave/02-apertura",
+        "base": "02-apertura",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "La sala seduta davanti allo schermo con il logo YET e la scritta Build Ambition. Build YET., 10 ottobre 2026. Una ragazza presenta in piedi davanti al palco."
+      },
+      {
+        "id": "torino-yet-x-wave/03-sala",
+        "base": "03-sala",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "La sala a luci spente durante un intervento sul palco: due persone sedute davanti allo schermo acceso, il pubblico di spalle sulle sedie."
+      },
+      {
+        "id": "torino-yet-x-wave/04-speaker",
+        "base": "04-speaker",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Gli speaker seduti sul palco mentre uno parla al microfono. Dietro, lo schermo con le loro foto e i nomi, e il fondale bianco con i loghi YET."
+      },
+      {
+        "id": "torino-yet-x-wave/05-palco",
+        "base": "05-palco",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Quattro persone sedute sul palco durante il confronto con la sala. Alle spalle il fondale YET e lo schermo con le facce degli ospiti."
+      },
+      {
+        "id": "torino-yet-x-wave/06-escp",
+        "base": "06-escp",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Il palco con lo schermo blu e il logo di ESCP Business School. Chi conduce parla al microfono, accanto agli altri tre ospiti."
+      },
+      {
+        "id": "torino-yet-x-wave/07-from-zero-to-startup",
+        "base": "07-from-zero-to-startup",
+        "w": 1200,
+        "h": 1600,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "Sullo schermo la pagina di From Zero to Startup, il percorso gratuito per i 16-19 anni di Blue Factory by ESCP. Sul palco si spiega come funziona, la sala ascolta."
+      }
+    ]
   }
 }
