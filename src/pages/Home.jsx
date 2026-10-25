@@ -17,7 +17,7 @@ import {
   safeUrl,
 } from '../lib/attachments.js'
 import { EVENTI } from '../config/eventi.js'
-import { contaCitta } from '../lib/citta.js'
+import { CITTA_CON_REFERENTE, contaCitta } from '../lib/citta.js'
 import { countApprovedUsers, formatDate, getMedia, listenMeetups, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -46,7 +46,14 @@ import { useCountUp, useReveal } from '../lib/motion.js'
    incompleto che uno zero, e meglio uno zero che una riga vuota che appare e
    scompare mentre la pagina si sistema. */
 const INCONTRI_NEL_REPO = EVENTI.length
-const CITTA_NEL_REPO = new Set(EVENTI.map((e) => e.citta)).size
+/* Il ripiego per le citta' tiene il piu' alto fra due numeri veri: quelle in
+   cui si e' fatta una serata e quelle che hanno un referente. Nessuno dei due
+   e' la risposta esatta alla domanda "da quante citta' arrivano gli YET", ma
+   sono due limiti inferiori, e un limite inferiore non dice mai una bugia. */
+const CITTA_NEL_REPO = Math.max(
+  new Set(EVENTI.map((e) => e.citta)).size,
+  CITTA_CON_REFERENTE,
+)
 
 export default function Home() {
   const { t } = useI18n()
