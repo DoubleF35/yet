@@ -280,6 +280,9 @@ export default {
     dove: 'Dove',
     ospiti: 'Sono intervenuti',
     senzaFoto: 'Le foto di questa serata non ci sono ancora.',
+    caricoFoto: 'Sto caricando le foto della serata…',
+    erroreFoto: 'Non riesco a caricare le foto della serata. Di solito è la connessione, o un blocco nel browser.',
+    riprova: 'Riprova',
     /* Il credito al fotografo. {chi} arriva da config/eventi.js, dove sta
        scritto come vuole essere citato lui. */
     fotoDi: 'Foto di {chi}',
