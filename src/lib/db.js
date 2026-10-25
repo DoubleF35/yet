@@ -1369,3 +1369,72 @@ export async function adminSaveUserProfile(uid, data) {
   await setDoc(ref, payload, { merge: true })
   return payload
 }
+
+/* =========================================================================
+   LE GALLERIE DELLE SERATE, CARICATE DAL PANNELLO
+
+   Fino a ieri le foto degli eventi erano file nel repo, generati da
+   `npm run foto` e committati. Restano validi: questa e' la strada per
+   caricarle dal browser senza passare dal computer di chi mantiene il sito.
+
+   DOVE STANNO LE IMMAGINI: in /media, la collection che il sito usa gia' per
+   i loghi degli sponsor e per gli allegati delle notizie. Qui dentro ci
+   finiscono solo gli identificativi, nell'ordine in cui vanno mostrate.
+
+   QUANTO COSTA, detto perche' si sappia: ogni foto e' un documento che il
+   browser scarica per intero, senza la cache dei file statici. Una galleria
+   da dieci foto pesa circa un megabyte e mezzo, e quel peso arriva ogni volta
+   che qualcuno apre la pagina della serata. Per le serate gia' pubblicate coi
+   file statici conviene lasciarle li'.
+   ========================================================================= */
+
+const GALLERIE = 'gallerie'
+
+/** La galleria caricata per una serata, o null se non ne ha una. */
+export async function getGalleriaEvento(slug) {
+  if (!isFirebaseConfigured || !slug) return null
+  const snap = await getDoc(doc(db, GALLERIE, slug))
+  if (!snap.exists()) return null
+  const d = snap.data()
+  return { foto: d.foto ?? [], alt: d.alt ?? [] }
+}
+
+/** Tutte le gallerie caricate, indicizzate per slug. Per il pannello. */
+export async function getGallerie() {
+  if (!isFirebaseConfigured) return {}
+  const snap = esigiRisposta(await getDocs(collection(db, GALLERIE)))
+  const out = {}
+  for (const d of snap.docs) {
+    const dato = d.data()
+    out[d.id] = { foto: dato.foto ?? [], alt: dato.alt ?? [] }
+  }
+  return out
+}
+
+/**
+ * Riscrive la galleria di una serata.
+ *
+ * setDoc e non updateDoc: togliere una foto vuol dire mandare una lista piu'
+ * corta, e una fusione non accorcia niente. Qui la lista che arriva e' la
+ * verita', punto.
+ *
+ * Le due liste devono avere la stessa lunghezza, e lo pretendono anche le
+ * regole: se si disallineano, una foto si porta dietro la descrizione di
+ * un'altra, che per chi usa un lettore di schermo e' peggio di nessuna
+ * descrizione.
+ */
+export async function setGalleriaEvento(slug, { foto, alt }) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!slug) throw new Error('Manca l’identificativo della serata.')
+
+  const ids = (Array.isArray(foto) ? foto : []).map((x) => String(x)).slice(0, 30)
+  const descrizioni = ids.map((_, i) =>
+    String((Array.isArray(alt) ? alt[i] : '') ?? '').trim().slice(0, 300),
+  )
+
+  await setDoc(doc(db, GALLERIE, slug), {
+    foto: ids,
+    alt: descrizioni,
+    aggiornatoIl: serverTimestamp(),
+  })
+}
