@@ -25,7 +25,6 @@ import {
 
 import { auth, isFirebaseConfigured } from './firebase.js'
 import {
-  createUserProfileFromGoogle,
   deleteUserProfile,
   getUserProfile,
   reconcileUserRole,
@@ -220,13 +219,20 @@ export function AuthProvider({ children }) {
     try {
       let data = await getUserProfile(uid)
 
-      /* Primo accesso: il documento non c'è, lo creiamo con quel che Google ci
-         ha dato. Così il membro compare in /membri anche se non passa mai da
-         /join, e la pagina Join trova già i campi pieni. */
-      if (!data) {
-        await createUserProfileFromGoogle(currentUser)
-        data = await getUserProfile(uid)
-      }
+      /* QUI PRIMA SI CREAVA IL PROFILO DA SOLO, e il commento diceva perche':
+         "cosi' il membro compare in /membri anche se non passa mai da /join".
+
+         Aveva senso quando entrare voleva dire accedere con Google. Adesso
+         non ce l'ha piu': per entrare si compila un form di selezione e
+         qualcuno deve accettarti. Creare il documento al primo accesso
+         significava che chiunque facesse login si ritrovava in coda senza
+         aver chiesto niente, e un admin addirittura gia' pubblicato in
+         vetrina, con la foto di Google e la biografia vuota.
+
+         Adesso il profilo nasce quando si manda il form (vedi
+         saveUserProfile, che crea il documento se non c'e'). Fino a quel
+         momento `profile` resta null, e tutte le pagine lo gestiscono gia'
+         perche' era il caso "sto ancora caricando". */
 
       /* Se la allowlist è cambiata da quando questa persona si è iscritta, il
          suo `role` è vecchio: lo correggiamo qui, una volta, in silenzio.

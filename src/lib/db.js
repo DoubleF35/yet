@@ -638,31 +638,6 @@ export async function deleteUserProfile(uid) {
  * Google ci dà e lascia il resto vuoto, così il profilo compare fra i membri
  * anche prima che l'utente passi dalla pagina Join.
  */
-export async function createUserProfileFromGoogle(user) {
-  if (!isFirebaseConfigured) throw notConfigured()
-  if (!user?.uid) throw new Error('Utente non valido.')
-
-  const payload = {
-    displayName: (user.displayName || user.email?.split('@')[0] || 'Membro YET').slice(0, 80),
-    location: '',
-    bio: '',
-    /* I tre campi del profilo esteso NON si scrivono qui, e nemmeno vuoti.
-       Questa è la creazione al primo accesso: mandare tre chiavi che le regole
-       pubblicate sul database potrebbero non conoscere ancora farebbe fallire
-       la creazione del profilo, cioè il primo login di una persona nuova, per
-       tre stringhe vuote che non aggiungono niente. Le pagine leggono già quei
-       campi con un ripiego a stringa vuota, e le regole li ammettono assenti:
-       nascono al primo salvataggio, quando hanno un contenuto. */
-    photoURL: normalizeUrlScheme(user.photoURL).slice(0, 500),
-    socials: { linkedin: '', instagram: '', other: '' },
-    role: currentRole(),
-    status: currentRole() === 'admin' ? 'approved' : 'pending',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  }
-  await setDoc(doc(db, USERS, user.uid), payload, { merge: true })
-  return payload
-}
 
 /**
  * Riallinea `role` se la allowlist è cambiata dopo l'iscrizione.
@@ -678,6 +653,15 @@ export async function createUserProfileFromGoogle(user) {
  */
 export async function reconcileUserRole(uid, existing) {
   if (!isFirebaseConfigured || !uid) return null
+
+  /* Nessun profilo, niente da allineare.
+     Da quando il documento non nasce piu' da solo al primo accesso, qui
+     `existing` puo' essere null: chi ha fatto login ma non ha ancora mandato
+     il form non ha nessun documento. Senza questa riga si finiva a chiamare
+     updateDoc su un documento inesistente, che fallisce con not-found. Non
+     rompeva l'accesso, perche' chi chiama cattura, ma scriveva un avviso
+     preoccupante a ogni accesso per una cosa del tutto normale. */
+  if (!existing) return null
 
   const expected = currentRole()
   const roleOutdated = existing?.role !== expected
