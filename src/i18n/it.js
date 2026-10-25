@@ -146,6 +146,7 @@ export default {
     audioSpegni: 'Muto',
     skip: 'Skip',
     entra: 'Entra',
+    guarda: 'Guarda l’intro',
     animazione: 'Animazione del logo YET',
     logo: 'Il logo YET',
   },
@@ -354,8 +355,8 @@ export default {
     dataNascitaErrore: 'Controlla la data: così non torna.',
 
     whatsapp: 'Numero WhatsApp',
-    whatsappHint: 'Col prefisso. È lì che ci si organizza fra un incontro e l’altro.',
-    whatsappErrore: 'Scrivilo col prefisso, per esempio +39 333 1234567.',
+    whatsappHint: 'È lì che ci si organizza fra un incontro e l’altro. Se il numero non è italiano, scrivilo col prefisso.',
+    whatsappErrore: 'Il numero non sembra giusto: controlla le cifre, per esempio 333 1234567.',
 
     occupazione: 'Cosa fai adesso',
     occupazioneScuola: 'Scuola',
