@@ -321,12 +321,22 @@ export default function MembriAdmin() {
                         />
                       </label>
 
+                      {/* I tre link sono `text` e non `url`, come nella pagina Join.
+                          Con `url` il browser rifiutava il salvataggio davanti a
+                          "linkedin.com/in/qualcuno" senza https davanti, che e' come
+                          la gente li scrive. Il sito sa gia' trasformare in un link
+                          vero sia l'indirizzo senza schema sia il nome utente da
+                          solo (vedi memberLinks in lib/members.jsx). `inputMode`
+                          lascia sul telefono la tastiera con il punto e la barra. */}
                       <div className={s.treCampi}>
                         <label className={s.campo}>
                           <span className={s.etichetta}>LinkedIn</span>
                           <input
                             className={s.input}
-                            type="url"
+                            type="text"
+                            inputMode="url"
+                            autoCapitalize="none"
+                            spellCheck={false}
                             value={form.linkedin}
                             onChange={scrivi('linkedin')}
                           />
@@ -335,7 +345,10 @@ export default function MembriAdmin() {
                           <span className={s.etichetta}>Instagram</span>
                           <input
                             className={s.input}
-                            type="url"
+                            type="text"
+                            inputMode="url"
+                            autoCapitalize="none"
+                            spellCheck={false}
                             value={form.instagram}
                             onChange={scrivi('instagram')}
                           />
@@ -344,7 +357,10 @@ export default function MembriAdmin() {
                           <span className={s.etichetta}>{t('membriAdmin.sito')}</span>
                           <input
                             className={s.input}
-                            type="url"
+                            type="text"
+                            inputMode="url"
+                            autoCapitalize="none"
+                            spellCheck={false}
                             value={form.other}
                             onChange={scrivi('other')}
                           />

@@ -933,6 +933,8 @@ export default {
       crea: 'Crea il mio profilo',
       inCorso: 'Salvataggio…',
       vediComeTiVedono: 'Vedi come ti vedono',
+      statoMancaUno: 'Manca una cosa: l’abbiamo segnata qui sopra. La richiesta non è ancora partita.',
+      statoMancano: 'Mancano {n} cose: le abbiamo segnate qui sopra. La richiesta non è ancora partita.',
       statoSalvando: 'Sto salvando il profilo…',
       statoSalvato: 'Profilo salvato. Ora compari fra i membri.',
       /* La conferma cambia con lo stato della richiesta: "ora compari fra i

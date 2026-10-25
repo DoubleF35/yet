@@ -874,6 +874,8 @@ export default {
       crea: 'Create my profile',
       inCorso: 'Saving…',
       vediComeTiVedono: 'See what they see',
+      statoMancaUno: 'One thing is missing: we marked it above. The request has not been sent yet.',
+      statoMancano: '{n} things are missing: we marked them above. The request has not been sent yet.',
       statoSalvando: 'Saving the profile…',
       statoSalvato: 'Profile saved. You now appear among the members.',
       statoSalvatoInAttesa:
