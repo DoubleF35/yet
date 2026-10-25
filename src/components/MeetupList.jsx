@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Reveal, { stagger } from './Reveal.jsx'
+import { urlFoto } from './Galleria.jsx'
 import { eventoDiMeetup } from '../config/eventi.js'
+import gallerie from '../data/gallerie.json'
 import { formatMeetupDate, listenMeetups } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -91,8 +93,32 @@ function Scheda({ incontro, passato = false }) {
      identificativo del documento, non per titolo: vedi src/config/eventi.js. */
   const resoconto = passato ? eventoDiMeetup(incontro.id) : null
 
+  /* La copertina del resoconto, se le foto ci sono.
+     Senza, la pagina Eventi mostrava una serata gia' fatta come due righe di
+     testo e un bottone, accanto a una senza resoconto che srotolava tutta la
+     scaletta: una tessera alta il triplo dell'altra. La foto non e' decorazione,
+     e' la cosa che rende quelle serate paragonabili fra loro. */
+  const galleria = resoconto ? gallerie[resoconto.slug] : null
+  const copertina = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
+
   return (
     <article className={`${s.scheda} ${passato ? s.schedaPassata : ''}`.trim()}>
+      {copertina && (
+        <img
+          className={s.copertina}
+          src={urlFoto(resoconto.slug, copertina, 800)}
+          alt=""
+          /* Vuoto e aria-hidden: il titolo della serata lo dice gia' il testo
+             accanto, e farlo ripetere a un lettore di schermo e' rumore. La
+             descrizione vera delle foto sta nella pagina del resoconto. */
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          width={copertina.w}
+          height={copertina.h}
+        />
+      )}
+
       {/* La data la formatta Intl nella lingua scelta; la frase di ripiego,
           quando la data non c'è, è testo di interfaccia e sta nel catalogo. */}
       <p className={s.quando}>

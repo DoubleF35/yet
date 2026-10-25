@@ -33,6 +33,11 @@
 
 .scheda {
   inline-size: 100%;
+  /* Colonna, cosi' la foto sta in cima a tutta larghezza e il bottone scende
+     in fondo anche quando il testo sopra e' corto: senza, due tessere nella
+     stessa riga avevano i bottoni ad altezze diverse. */
+  display: flex;
+  flex-direction: column;
   padding: clamp(var(--space-5), 5vw, var(--space-6));
   /* Bordo pieno sui prossimi: sono la cosa piu' importante della pagina e
      devono staccarsi da tutto il resto. */
@@ -54,6 +59,24 @@
 
 .schedaPassata:hover {
   border-color: var(--line);
+}
+
+/* La copertina del resoconto.
+   Esce dal padding della tessera e va a filo dei bordi: una foto incorniciata
+   dentro un riquadro gia' incorniciato sembra un francobollo. I margini
+   negativi sono l'unico modo di farlo senza spostare il padding su ogni
+   singolo figlio. */
+.copertina {
+  display: block;
+  inline-size: calc(100% + 2 * clamp(var(--space-5), 5vw, var(--space-6)));
+  margin: calc(-1 * clamp(var(--space-5), 5vw, var(--space-6)));
+  margin-block-end: var(--space-5);
+  /* Rapporto fisso: le foto hanno proporzioni diverse fra loro, e senza
+     questo la riga di tessere tornerebbe disallineata proprio per colpa
+     della cosa che doveva allinearla. */
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background-color: var(--surface-sunken);
 }
 
 .quando {
@@ -85,7 +108,16 @@
   overflow-wrap: anywhere;
 }
 
+/* Tre righe e poi taglia.
+   Il corpo di un incontro lo scrive chi lo pubblica e va da una riga a una
+   scaletta oraria intera: senza un limite, una tessera diventa alta il triplo
+   di quelle accanto. E' esattamente il difetto da cui siamo partiti. */
 .testo {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   max-inline-size: var(--measure);
   margin: var(--space-4) 0 0;
   line-height: var(--lh-relaxed);
@@ -106,7 +138,15 @@
   display: inline-flex;
   align-items: center;
   min-block-size: 48px;
-  margin-block-start: var(--space-5);
+  /* `auto` e non una misura fissa: spinge il bottone in fondo alla colonna,
+     cosi' tessere affiancate con testi di lunghezza diversa hanno comunque i
+     bottoni sulla stessa riga. Lo spazio sopra c'e' lo stesso, perche' le
+     tessere sono tirate tutte all'altezza della piu' alta e qualcosa avanza
+     sempre.
+     C'era gia' un margin-block-start qui sotto: due dichiarazioni della stessa
+     proprieta' e vinceva la seconda, che e' il motivo per cui al primo
+     tentativo non era cambiato niente. */
+  margin-block-start: auto;
   padding-inline: var(--space-6);
 
   font-size: var(--step-0);

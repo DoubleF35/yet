@@ -476,6 +476,20 @@ export default {
       'Non riesco a salvare. Se dice che mancano i permessi, le regole sul database sono ancora quelle vecchie e vanno ripubblicate.',
   },
 
+  /* ---------------------------------------------------------------------
+     LA PAGINA CON LE SOLE RICHIESTE
+     --------------------------------------------------------------------- */
+  richiestePagina: {
+    titolo: 'Chi ha chiesto di entrare',
+    intro:
+      'Le richieste in attesa, con le risposte di selezione e il punteggio. Finché non approvi qualcuno, il suo profilo non lo vede nessuno.',
+    nota:
+      'Qui non arriva nessuna mail. Il sito vecchio le mandava perché aveva un server; questo è fatto di file statici e una chiave di posta messa dentro la leggerebbe chiunque apra il codice. Finché resta così, questa pagina è la notifica: si apre e si vede.',
+    spento: 'Firebase non è configurato, quindi non c’è niente da leggere.',
+    tornaAlPannello: 'Torna al pannello',
+    soloRichieste: 'Apri solo le richieste',
+  },
+
   vetrina: {
     eyebrow: 'La community',
     titolo: 'Vetrina',
