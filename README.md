@@ -904,6 +904,23 @@ Chi si iscrive **non compare subito** fra i membri: il profilo nasce in stato
 `pending` e resta invisibile finché uno dei quattro amministratori non lo
 approva da `/admin` → «Richieste di iscrizione».
 
+### Cosa e' obbligatorio nel modulo
+
+Nome, **citta'** e **presentazione**, piu' tutte le domande di selezione (data
+di nascita, WhatsApp, le sei a scelta singola, il perche', i due consensi). La
+citta' e la bio sono diventate obbligatorie il 25 ottobre 2026: senza, una
+tessera in vetrina non dice niente a chi la apre, e i filtri per citta' non
+hanno niente da filtrare.
+
+Restano **facoltativi** i tre campi di «Cosa fai» (cosa stai costruendo, cosa
+cerchi, cosa sai fare), il link al progetto, l'elenco degli eventi, la foto e i
+contatti. Sono quelli che aggiungono, non quelli che reggono la tessera.
+
+Il controllo e' nel modulo, non nelle regole: una citta' vuota non e' un
+problema di sicurezza, e un profilo vecchio salvato quando il campo non era
+obbligatorio resta valido. Chi lo riapre, pero', deve compilarlo per poter
+salvare.
+
 ### Cosa lo rende una barriera vera e non una formalità
 
 Sono tre righe in `firestore.rules`, e vale la pena conoscerle perché ognuna

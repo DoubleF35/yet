@@ -121,3 +121,10 @@
   line-height: var(--lh-heading);
   letter-spacing: var(--ls-heading);
 }
+
+/* L'involucro della notizia in evidenza: e' lui il figlio della griglia, e
+   quindi e' lui a dover chiedere la riga intera. Vedi il commento in
+   Eventi.jsx. */
+.cellaLarga {
+  grid-column: 1 / -1;
+}

@@ -230,7 +230,7 @@ export default {
   prova: {
     numeroIncontri: 'meetups already held',
     numeroIncontro: 'meetup already held',
-    numeroCitta: 'cities, and we keep opening more',
+    numeroCitta: 'cities the YETs come from',
     numeroCittaUna: 'city, the first of many',
     serateOcchiello: 'Already happened',
     serateTitolo: 'Where we have met',
@@ -808,12 +808,14 @@ export default {
       nome: 'Name and surname',
       nomeHint: 'How you want to be called. Just a first name is fine.',
       nomeErrore: 'A name is needed: it is the one you appear with among the members.',
+      luogoErrore: 'The city is needed: it is what puts your card inside the showcase filters.',
       luogo: 'Where you are writing from',
       luogoHint:
-        'The city or the area, not the street address. It shows that YET is not only a Turin thing, and it helps people near you find you. You can leave it empty.',
+        'The city or the area, not the street address. It shows that YET is not only a Turin thing, and it helps people near you find you.',
       bio: 'Introduce yourself',
       bioHint:
         'Take your time: the members page shows the first two lines, the rest is read by opening your profile. Line breaks are kept.',
+      bioObbligatoria: 'Write a couple of lines about yourself: an empty card says nothing to whoever opens it.',
       bioErrore: 'The bio is over {max} characters: remove {troppi}.',
       bioConteggio: '{n} characters out of {max} available',
       foto: 'Profile photo (link)',

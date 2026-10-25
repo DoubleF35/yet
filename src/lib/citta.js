@@ -78,6 +78,27 @@ function chiaviDelMembro(membro) {
 }
 
 /** Se questo membro va mostrato quando è selezionata questa città. */
+/**
+ * In quante citta' diverse stanno le persone.
+ *
+ * E' il numero che la home mostra accanto a "citta'". Prima lo ricavava dai
+ * resoconti degli eventi, cioe' contava le citta' in cui si era fatta una
+ * serata: due. Ma la domanda a cui quel numero risponde, letto da chi arriva
+ * sul sito, e' un'altra: da quanti posti d'Italia viene questa gente.
+ *
+ * Conta le chiavi normalizzate, quindi "Torino", "torino" e "TORINO" sono una
+ * citta' sola. Chi non ha scritto da dove viene non conta: il campo e'
+ * obbligatorio da oggi, ma i profili vecchi sono stati scritti quando non lo
+ * era, e dare per scontato che siano tutti di Torino sarebbe inventare.
+ */
+export function contaCitta(membri = []) {
+  const chiavi = new Set()
+  for (const m of membri) {
+    for (const k of chiaviDelMembro(m)) chiavi.add(k)
+  }
+  return chiavi.size
+}
+
 export function membroInCitta(membro, chiave) {
   if (!chiave) return true
   return chiaviDelMembro(membro).has(chiave)

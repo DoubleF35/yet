@@ -1,9 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import Galleria, { Foto } from '../components/Galleria.jsx'
 import { eventoDiSlug } from '../config/eventi.js'
 import gallerie from '../data/gallerie.json'
+import { getGalleriaEvento, getMedia } from '../lib/db.js'
+import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 
 import s from './Evento.module.css'
@@ -11,8 +13,8 @@ import s from './Evento.module.css'
 /**
  * Il resoconto di una serata.
  *
- * NON TOCCA FIREBASE, ed e' voluto. Testo e foto stanno nel bundle e nel
- * repo, quindi questa pagina si vede:
+ * SI VEDE TUTTA SENZA FIREBASE, ed e' la regola che vale ancora. Testo e foto
+ * del repo stanno nel bundle, quindi questa pagina compare:
  *
  *   - subito, senza lo scheletro di caricamento;
  *   - anche se Firestore e' irraggiungibile o il browser lo blocca (succede,
@@ -22,6 +24,11 @@ import s from './Evento.module.css'
  *
  * E' la pagina che la gente condivide: e' l'ultima che puo' permettersi di
  * dipendere da una richiesta di rete che potrebbe non arrivare.
+ *
+ * LE FOTO CARICATE DAL PANNELLO ARRIVANO DOPO, e si AGGIUNGONO a quelle del
+ * repo invece di sostituirle. Caricarne due per una serata che ne ha gia'
+ * dieci nei file non deve far sparire le dieci. Se la lettura non riesce, la
+ * pagina resta esattamente quella di prima: e' un di piu', non una dipendenza.
  */
 export default function Evento() {
   const { slug } = useParams()
@@ -29,6 +36,7 @@ export default function Evento() {
 
   const evento = eventoDiSlug(slug)
   const galleria = gallerie[slug] ?? null
+  const caricate = useFotoCaricate(evento?.meetupId)
 
   useEffect(() => {
     if (!evento) return undefined
@@ -54,10 +62,18 @@ export default function Evento() {
   }
 
   /* La copertina e' uno scatto come gli altri: la differenza e' solo che ha
-     anche la misura da 2400 e che qui viene mostrata a tutta larghezza. */
-  const copertina = galleria?.scatti.find((x) => x.base === galleria.copertina) ?? null
-  /* Se c'e' una copertina, nella griglia sotto non si ripete. */
-  const resto = galleria ? galleria.scatti.filter((x) => x !== copertina) : []
+     anche la misura da 2400 e che qui viene mostrata a tutta larghezza.
+     Quando nel repo non c'e' niente, fa da copertina la prima caricata. */
+  const copertina =
+    galleria?.scatti.find((x) => x.base === galleria.copertina) ?? caricate[0] ?? null
+
+  /* Prima quelle del repo, poi quelle caricate. LA COPERTINA RESTA ANCHE QUI
+     dentro, e prima non ci stava: in cima alla pagina e' uno sfondo dietro al
+     titolo, con il velo sopra e tagliata alla forma della fascia, quindi chi
+     vuole guardarla davvero (o ingrandirla, o scorrere le foto dall'inizio)
+     nella griglia non la trovava. Era anche il motivo per cui i due conteggi
+     non combaciavano: "3 foto" in cima e "2 foto" sulla galleria. */
+  const tutte = [...(galleria?.scatti ?? []), ...caricate]
 
   return (
     <div className={s.page}>
@@ -89,8 +105,8 @@ export default function Evento() {
           {typeof evento.presenti === 'number' && (
             <Fatto etichetta={t('evento.presenti')} valore={String(evento.presenti)} />
           )}
-          {galleria && (
-            <Fatto etichetta={t('evento.foto')} valore={String(galleria.scatti.length)} />
+          {tutte.length > 0 && (
+            <Fatto etichetta={t('evento.foto')} valore={String(tutte.length)} />
           )}
           <Fatto
             etichetta={t('evento.dove')}
@@ -112,9 +128,9 @@ export default function Evento() {
           ))}
         </div>
 
-        {galleria ? (
+        {tutte.length > 0 ? (
           <>
-            <Galleria slug={slug} scatti={resto.length > 0 ? resto : galleria.scatti} />
+            <Galleria slug={slug} scatti={tutte} />
             {/* Il credito sta SOTTO le foto e non in cima fra i dati della
                 serata: chi si chiede chi le ha scattate se lo chiede dopo
                 averle guardate, non prima. Compare solo se c'e' qualcosa da
@@ -149,6 +165,61 @@ export default function Evento() {
       </div>
     </div>
   )
+}
+
+/**
+ * Le foto caricate dal pannello per questa serata.
+ *
+ * La chiave e' l'ID DELL'INCONTRO e non lo slug del resoconto: le gallerie
+ * sono salvate cosi' perche' non tutte le serate hanno una pagina di racconto.
+ * Il ponte fra i due lo fa `meetupId` in config/eventi.js, ed e' il motivo per
+ * cui quel campo va compilato: senza, questa pagina non sa quale galleria
+ * cercare e le foto caricate restano invisibili.
+ *
+ * Due letture e non una: prima la galleria, che contiene solo gli
+ * identificativi, poi le immagini vere da /media. In silenzio se qualcosa non
+ * arriva, perche' la pagina deve restare quella che era.
+ */
+function useFotoCaricate(meetupId) {
+  const [scatti, setScatti] = useState([])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !meetupId) {
+      /* Cambiando serata l'elenco va svuotato, o per un istante la nuova
+         pagina mostrerebbe le foto della precedente. */
+      setScatti([])
+      return undefined
+    }
+    let vivo = true
+
+    getGalleriaEvento(meetupId)
+      .then(async (g) => {
+        if (!vivo || !g || g.foto.length === 0) {
+          if (vivo) setScatti([])
+          return
+        }
+        const media = await getMedia(g.foto)
+        if (!vivo) return
+        setScatti(
+          g.foto
+            .map((id, i) => {
+              const m = media[id]
+              if (!m?.dataUrl) return null
+              return { id, dataUrl: m.dataUrl, alt: g.alt[i] ?? '', w: m.width, h: m.height }
+            })
+            /* Una foto che non arriva si salta: meglio nove su dieci di un
+               riquadro rotto in mezzo alla griglia. */
+            .filter(Boolean),
+        )
+      })
+      .catch((e) => console.warn('[YET] Non riesco a leggere le foto caricate.', e))
+
+    return () => {
+      vivo = false
+    }
+  }, [meetupId])
+
+  return scatti
 }
 
 function Fatto({ etichetta, valore, secondaria = null }) {

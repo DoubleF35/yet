@@ -178,7 +178,18 @@ export default function Eventi() {
                 /* Lo scaglionamento e' 70ms per card e si ferma alla sesta:
                    oltre, l'ultima di una lista lunga aspetterebbe piu' di un
                    secondo e la cascata diventerebbe attesa. */
-                <Reveal key={item.id} delay={stagger(index)}>
+                <Reveal
+                  key={item.id}
+                  delay={stagger(index)}
+                  /* La riga intera va chiesta QUI e non sulla tessera: fra la
+                     griglia e la tessera c'e' questo involucro, ed e' lui il
+                     figlio della griglia. Il `grid-column: 1 / -1` scritto
+                     sulla tessera non aveva nessun effetto, e la notizia in
+                     evidenza restava larga come le altre: sulla home invece
+                     si vedeva giusta, perche' li' le tessere stanno dentro la
+                     griglia senza involucro. */
+                  className={index === 0 && news.length > 1 ? s.cellaLarga : undefined}
+                >
                   <NewsCard
                     item={item}
                     media={media}

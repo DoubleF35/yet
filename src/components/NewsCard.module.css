@@ -55,6 +55,18 @@
 .featured .cardTitle {
   font-size: var(--step-3);
 }
+
+/* La notizia in evidenza e' larga il doppio delle altre, ma il testo andava a
+   capo alla stessa misura: due terzi di tessera scritti e un terzo bianco, che
+   da' l'impressione di una riga tagliata corta per sbaglio.
+
+   Qui la misura sale a 80 caratteri invece dei 65 di default. Non a tutta
+   larghezza: su questa tessera una riga piena sarebbe lunga centodieci
+   caratteri, e a quella lunghezza l'occhio sbaglia riga tornando a capo. 80 e'
+   il limite alto di quello che si legge ancora bene, e riempie la tessera. */
+.featured .body {
+  max-width: min(100%, 80ch);
+}
 .cardMeta {
   display: flex;
   flex-wrap: wrap;

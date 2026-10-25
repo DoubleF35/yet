@@ -245,7 +245,7 @@ export default {
   prova: {
     numeroIncontri: 'incontri gi\u00e0 fatti',
     numeroIncontro: 'incontro gi\u00e0 fatto',
-    numeroCitta: 'citt\u00e0, e continuiamo ad aprirne',
+    numeroCitta: 'citt\u00e0 da cui arrivano gli YET',
     numeroCittaUna: 'citt\u00e0, la prima di molte',
     serateOcchiello: 'Gi\u00e0 successo',
     serateTitolo: 'Dove ci siamo visti',
@@ -865,12 +865,14 @@ export default {
       nome: 'Nome e cognome',
       nomeHint: 'Come vuoi essere chiamato. Anche solo il nome va bene.',
       nomeErrore: 'Serve un nome: è quello con cui compari fra i membri.',
+      luogoErrore: 'Serve la città: è quella che fa comparire la tua tessera nei filtri della vetrina.',
       luogo: 'Da dove scrivi',
       luogoHint:
-        'La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese e a farti trovare da chi ti sta vicino. Puoi lasciarlo vuoto.',
+        'La città o la zona, non l’indirizzo. Serve a far vedere che YET non è solo torinese e a farti trovare da chi ti sta vicino.',
       bio: 'Presentati',
       bioHint:
         'Raccontati con calma: nella vetrina si vedono le prime due righe, il resto si legge aprendo il tuo profilo. I ritorni a capo restano.',
+      bioObbligatoria: 'Scrivi due righe su di te: una tessera vuota non dice niente a chi la apre.',
       bioErrore: 'La bio supera {max} caratteri: togline {troppi}.',
       bioConteggio: '{n} caratteri su {max} disponibili',
       foto: 'Foto del profilo (link)',

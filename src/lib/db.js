@@ -1390,10 +1390,16 @@ export async function adminSaveUserProfile(uid, data) {
 
 const GALLERIE = 'gallerie'
 
-/** La galleria caricata per una serata, o null se non ne ha una. */
-export async function getGalleriaEvento(slug) {
-  if (!isFirebaseConfigured || !slug) return null
-  const snap = await getDoc(doc(db, GALLERIE, slug))
+/**
+ * La galleria caricata per una serata, o null se non ne ha una.
+ *
+ * `id` e' l'IDENTIFICATIVO DELL'INCONTRO su Firestore, non lo slug del
+ * resoconto: non tutte le serate hanno una pagina di racconto, e una chiave
+ * che esiste solo per alcune non puo' indicizzarle tutte.
+ */
+export async function getGalleriaEvento(id) {
+  if (!isFirebaseConfigured || !id) return null
+  const snap = await getDoc(doc(db, GALLERIE, id))
   if (!snap.exists()) return null
   const d = snap.data()
   return { foto: d.foto ?? [], alt: d.alt ?? [] }
@@ -1423,16 +1429,16 @@ export async function getGallerie() {
  * un'altra, che per chi usa un lettore di schermo e' peggio di nessuna
  * descrizione.
  */
-export async function setGalleriaEvento(slug, { foto, alt }) {
+export async function setGalleriaEvento(id, { foto, alt }) {
   if (!isFirebaseConfigured) throw notConfigured()
-  if (!slug) throw new Error('Manca l’identificativo della serata.')
+  if (!id) throw new Error('Manca l’identificativo della serata.')
 
   const ids = (Array.isArray(foto) ? foto : []).map((x) => String(x)).slice(0, 30)
   const descrizioni = ids.map((_, i) =>
     String((Array.isArray(alt) ? alt[i] : '') ?? '').trim().slice(0, 300),
   )
 
-  await setDoc(doc(db, GALLERIE, slug), {
+  await setDoc(doc(db, GALLERIE, id), {
     foto: ids,
     alt: descrizioni,
     aggiornatoIl: serverTimestamp(),
