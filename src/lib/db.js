@@ -845,6 +845,38 @@ export async function deleteMedia(id) {
    proteggere, e la stessa compressione gia' collaudata.
 -------------------------------------------------------------------------- */
 
+/**
+ * I due tipi di chi sta nella pagina Partner.
+ *
+ *   sponsor  da' soldi o cose (una sala, il pranzo) e sta in fila per importo
+ *   partner  una collaborazione: un'altra associazione, un incubatore, una
+ *            scuola. Di norma non c'e' un importo, e allora sta in ordine
+ *            alfabetico
+ *
+ * Stanno nella STESSA collection con un campo che li distingue, e non in
+ * due collection: hanno la stessa forma (nome, sito, nota, logo), la stessa
+ * gestione dal pannello e le stesse regole, e una seconda collection vorrebbe
+ * dire un secondo blocco di regole da tenere allineato al primo.
+ *
+ * Un documento senza `tipo` e' uno SPONSOR: e' com'erano tutti prima che i
+ * partner esistessero, e non serve riscriverli.
+ */
+export const TIPI_SPONSOR = ['sponsor', 'partner']
+
+export function tipoSponsor(sp) {
+  return TIPI_SPONSOR.includes(sp?.tipo) ? sp.tipo : 'sponsor'
+}
+
+/* Un sito scritto senza https davanti ("blox.space") e' come lo scrive la
+   gente, e le regole pretendono http(s). Si aggiunge qui invece di rifiutare.
+   Uno schema diverso da http(s) resta com'e', e lo fermano le regole: e' il
+   caso del `javascript:` che non deve mai finire in un href. */
+function sitoSponsor(url) {
+  const pulito = String(url ?? '').trim().slice(0, 500)
+  if (!pulito || /^[a-z][a-z0-9+.-]*:/i.test(pulito)) return pulito
+  return `https://${pulito}`.slice(0, 500)
+}
+
 /** Gli sponsor, in ordine di priorita' e poi alfabetico. */
 export async function listSponsors() {
   if (!isFirebaseConfigured) throw notConfigured()
@@ -863,7 +895,7 @@ export async function listSponsors() {
     })
 }
 
-export async function createSponsor({ nome, url, nota, logoMediaId, ordine }) {
+export async function createSponsor({ nome, url, nota, logoMediaId, ordine, tipo }) {
   if (!isFirebaseConfigured) throw notConfigured()
 
   const pulito = String(nome ?? '').trim()
@@ -871,7 +903,8 @@ export async function createSponsor({ nome, url, nota, logoMediaId, ordine }) {
 
   const ref = await addDoc(collection(db, SPONSORS), {
     nome: pulito.slice(0, 80),
-    url: String(url ?? '').trim().slice(0, 500),
+    tipo: tipoSponsor({ tipo }),
+    url: sitoSponsor(url),
     nota: String(nota ?? '').trim().slice(0, 120),
     logoMediaId: String(logoMediaId ?? '').trim().slice(0, 64),
     ordine: Number.isFinite(Number(ordine)) ? Math.round(Number(ordine)) : 500,
@@ -1134,7 +1167,7 @@ export async function riordinaSponsorPerImporto() {
  * di prima, e con una fusione il campo arriva dal documento salvato senza che
  * lo si debba rimandare indietro (e senza il rischio di rimandarlo sbagliato).
  */
-export async function updateSponsor(id, { nome, url, nota, logoMediaId, ordine }) {
+export async function updateSponsor(id, { nome, url, nota, logoMediaId, ordine, tipo }) {
   if (!isFirebaseConfigured) throw notConfigured()
   if (!id) throw new Error('Manca l’identificativo dello sponsor.')
 
@@ -1143,7 +1176,8 @@ export async function updateSponsor(id, { nome, url, nota, logoMediaId, ordine }
 
   const cambi = {
     nome: pulito.slice(0, 80),
-    url: String(url ?? '').trim().slice(0, 500),
+    tipo: tipoSponsor({ tipo }),
+    url: sitoSponsor(url),
     nota: String(nota ?? '').trim().slice(0, 120),
     logoMediaId: String(logoMediaId ?? '').trim().slice(0, 64),
   }

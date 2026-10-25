@@ -113,12 +113,12 @@ const ROTTE = [
     ],
   },
   {
-    path: '/sponsor',
-    title: 'Sponsor · YET',
-    desc: 'Chi sostiene YET, e come diventare sostenitore della community dei giovani builder.',
-    h1: 'Chi sostiene YET',
+    path: '/partner',
+    title: 'Partner · YET',
+    desc: 'Gli sponsor e le partnership di YET, e come diventare partner della community dei giovani builder.',
+    h1: 'Sponsor e partnership di YET',
     testo: [
-      'Le realtà che sostengono la community e rendono possibili gli eventi.',
+      'Le realtà che sostengono la community e rendono possibili gli eventi, e quelle con cui collaboriamo.',
     ],
   },
   {

@@ -19,7 +19,7 @@ const LINKS = [
   { to: '/join', chiave: 'nav.join' },
   { to: '/contatti', chiave: 'nav.contatti' },
   { to: '/brand', chiave: 'nav.brand' },
-  { to: '/sponsor', chiave: 'nav.sponsor' },
+  { to: '/partner', chiave: 'nav.sponsor' },
 ]
 
 export default function Navbar() {

@@ -5,7 +5,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { CONTACT_EMAIL, COMMUNITY } from '../config/socials.js'
-import { getMedia, listSponsors } from '../lib/db.js'
+import { getMedia, listSponsors, TIPI_SPONSOR, tipoSponsor } from '../lib/db.js'
 import { safeImageSrc, safeUrl } from '../lib/attachments.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -72,6 +72,48 @@ export default function Sponsor() {
 
   const retry = useCallback(() => setAttempt((n) => n + 1), [])
 
+  function cella(sp) {
+    const logo = sp.logoMediaId ? safeImageSrc(media[sp.logoMediaId]?.dataUrl) : null
+    const sito = safeUrl(sp.url)
+    const Contenuto = (
+      <>
+        {logo ? (
+          /* `alt` VUOTO e non il nome: il nome e' scritto qui sotto come
+             testo vero, e ripeterlo nell'alt lo farebbe leggere due volte di
+             fila a chi ascolta la pagina. Un logo affiancato dal proprio nome
+             e' decorativo per definizione. */
+          <img className={s.logo} src={logo} alt="" loading="lazy" />
+        ) : null}
+
+        {/* Il nome c'e' SEMPRE, anche con il logo: un marchio si riconosce a
+            colpo d'occhio solo se lo si conosce gia', e questi sono sponsor
+            locali. Senza logo diventa lui l'elemento grafico, scritto piu'
+            grande. */}
+        <span className={logo ? s.nome : s.nomeGrande}>{sp.nome}</span>
+
+        {sp.nota && <span className={s.nota}>{sp.nota}</span>}
+      </>
+    )
+
+    return (
+      <li className={s.cella} key={sp.id}>
+        {sito ? (
+          <a
+            className={s.link}
+            href={sito}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            aria-label={t('sponsor.apreSito', { nome: sp.nome })}
+          >
+            {Contenuto}
+          </a>
+        ) : (
+          <div className={s.link}>{Contenuto}</div>
+        )}
+      </li>
+    )
+  }
+
   return (
     <div className={s.page}>
       <header className={`${s.head} container`}>
@@ -116,52 +158,21 @@ export default function Sponsor() {
             <EmptyState title={t('sponsor.vuotoTitolo')}>{t('sponsor.vuotoTesto')}</EmptyState>
           )}
 
-          {status === 'ready' && (
-            <ul className={s.griglia}>
-              {sponsor.map((sp) => {
-                const logo = sp.logoMediaId ? safeImageSrc(media[sp.logoMediaId]?.dataUrl) : null
-                const sito = safeUrl(sp.url)
-                const Contenuto = (
-                  <>
-                    {logo ? (
-                      /* `alt` VUOTO e non il nome: il nome e' scritto qui
-                         sotto come testo vero, e ripeterlo nell'alt lo
-                         farebbe leggere due volte di fila a chi ascolta la
-                         pagina. Un logo affiancato dal proprio nome e'
-                         decorativo per definizione. */
-                      <img className={s.logo} src={logo} alt="" loading="lazy" />
-                    ) : null}
-
-                    {/* Il nome c'e' SEMPRE, anche con il logo: un marchio si
-                       riconosce a colpo d'occhio solo se lo si conosce gia',
-                       e questi sono sponsor locali. Senza logo diventa lui
-                       l'elemento grafico, scritto piu' grande. */}
-                    <span className={logo ? s.nome : s.nomeGrande}>{sp.nome}</span>
-
-                    {sp.nota && <span className={s.nota}>{sp.nota}</span>}
-                  </>
-                )
-
-                return (
-                  <li className={s.cella} key={sp.id}>
-                    {sito ? (
-                      <a
-                        className={s.link}
-                        href={sito}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        aria-label={t('sponsor.apreSito', { nome: sp.nome })}
-                      >
-                        {Contenuto}
-                      </a>
-                    ) : (
-                      <div className={s.link}>{Contenuto}</div>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          )}
+          {status === 'ready' &&
+            /* Due gruppi, sponsor e partnership, ciascuno col suo titolo e
+               solo se ha qualcuno dentro: un titolo sopra una griglia vuota
+               direbbe "qui manca qualcosa". Dentro ogni gruppo resta l'ordine
+               che arriva da listSponsors(), cioe' la fila per importo. */
+            TIPI_SPONSOR.map((tipo) => {
+              const gruppo = sponsor.filter((sp) => tipoSponsor(sp) === tipo)
+              if (gruppo.length === 0) return null
+              return (
+                <div className={s.gruppo} key={tipo}>
+                  <h3 className={s.h3}>{t(`sponsor.gruppi.${tipo}`)}</h3>
+                  <ul className={s.griglia}>{gruppo.map((sp) => cella(sp))}</ul>
+                </div>
+              )
+            })}
         </section>
 
         {/* --- perché conviene ------------------------------------------- */}
@@ -189,7 +200,7 @@ export default function Sponsor() {
           </h2>
           <p className={s.nota2}>{t('sponsor.parliamoneTesto')}</p>
           <div className={s.azioni}>
-            <a className={s.primario} href={`mailto:${CONTACT_EMAIL}?subject=Sponsor%20YET`}>
+            <a className={s.primario} href={`mailto:${CONTACT_EMAIL}?subject=Partner%20YET`}>
               {t('sponsor.scriviciA', { email: CONTACT_EMAIL })}
             </a>
             <Link className={s.secondario} to="/contatti">

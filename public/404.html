@@ -28,6 +28,13 @@
     -->
     <script>
       (function () {
+        /* La pagina Sponsor adesso si chiama Partner. Il vecchio indirizzo
+           e' gia' stato condiviso, e un rimando non e' un "soft 404": la
+           pagina esiste davvero, ha solo cambiato nome. */
+        if (/^\/sponsor\/?$/.test(window.location.pathname)) {
+          window.location.replace('/partner')
+          return
+        }
         var m = window.location.pathname.match(/^\/vetrina\/([^/]+)\/?$/)
         if (m && m[1]) {
           window.location.replace('/vetrina/?p=' + encodeURIComponent(m[1]))

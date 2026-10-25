@@ -35,7 +35,7 @@ export default {
     join: 'Join',
     contatti: 'Contact',
     brand: 'Brand',
-    sponsor: 'Sponsor',
+    sponsor: 'Partners',
     admin: 'Admin',
     principale: 'Main navigation',
     vaiAllaHome: 'YET, go to the home page',
@@ -608,7 +608,7 @@ export default {
     eventi: 'Events · YET',
     contatti: 'Contact · YET',
     brand: 'Brand · YET',
-    sponsor: 'Sponsor · YET',
+    sponsor: 'Partners · YET',
     privacy: 'Privacy · YET',
     cookie: 'Cookies · YET',
     notFound: 'Page not found · YET',
@@ -720,17 +720,21 @@ export default {
 
   /* --- sponsor ----------------------------------------------------------- */
   sponsor: {
-    eyebrow: 'Sponsor',
-    titolo: 'Who supports us',
+    eyebrow: 'Partners',
+    titolo: 'Who walks with us',
     lead:
-      '{nome} has no membership fee: joining costs nothing. What it takes to run an event (a room, lunch, materials) comes from the people who decide to give us a hand.',
+      '{nome} has no membership fee: joining costs nothing. What it takes to run an event (a room, lunch, materials) comes from the people who decide to give us a hand, and a lot of what we do is built together with other organisations.',
     chiCe: 'Who is here',
-    liveCaricamento: 'Loading the sponsors.',
-    liveCaricati: '{n} sponsors loaded.',
-    erroreTitolo: 'We cannot load the sponsors',
+    gruppi: {
+      sponsor: 'Sponsors',
+      partner: 'Partnerships',
+    },
+    liveCaricamento: 'Loading the partners.',
+    liveCaricati: '{n} partners loaded.',
+    erroreTitolo: 'We cannot load the partners',
     errorePermessi:
       'The server refused the read: the published Firestore rules are older than the site.',
-    vuotoTitolo: 'No sponsors yet',
+    vuotoTitolo: 'No partners yet',
     vuotoTesto:
       'We are just starting. If you want to be the first, the spot is free and it shows.',
     apreSito: '{nome}, opens the website in a new tab',
@@ -1028,9 +1032,14 @@ export default {
 
   /* --- managing sponsors (inside /admin) ---------------------------------- */
   sponsorAdmin: {
-    titolo: 'Sponsors',
+    titolo: 'Sponsors and partnerships',
     intro:
-      'They show up on the Sponsor page. The amount decides the order: whoever gave more sits at the top, ties go alphabetically. Only you admins see the amount, it never appears on the site.',
+      'They show up on the Partners page, in two groups: Sponsors and Partnerships. Within each group the amount decides the order: whoever gave more sits at the top, ties go alphabetically. Leave it empty for a partnership with no amount. Only you admins see the amount, it never appears on the site.',
+    tipo: 'Type',
+    tipi: {
+      sponsor: 'Sponsor',
+      partner: 'Partnership',
+    },
     nome: 'Name',
     sito: 'Website',
     facoltativo: '(optional)',
@@ -1050,9 +1059,9 @@ export default {
     caricaLogo: 'Upload the logo',
     preparoLogo: 'Preparing the logo…',
     salvo: 'Saving…',
-    aggiungi: 'Add sponsor',
-    vuoto: 'No sponsors yet.',
-    eliminaAria: 'Delete the sponsor {nome}',
+    aggiungi: 'Add',
+    vuoto: 'No sponsors and no partnerships yet.',
+    eliminaAria: 'Delete {nome}',
     elimina: 'Delete',
     sicuroSi: 'Sure? Yes',
     no: 'No',

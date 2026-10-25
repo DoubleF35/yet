@@ -18,7 +18,7 @@ const PAGINE = [
   { to: '/join', chiave: 'nav.join' },
   { to: '/contatti', chiave: 'nav.contatti' },
   { to: '/brand', chiave: 'footer.brandIdentity' },
-  { to: '/sponsor', chiave: 'nav.sponsor' },
+  { to: '/partner', chiave: 'nav.sponsor' },
 ]
 
 export default function Footer() {

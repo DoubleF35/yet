@@ -45,6 +45,22 @@
   letter-spacing: var(--ls-heading);
 }
 
+/* Sponsor e partnership, uno sotto l'altro. Il titolo del gruppo e' piu'
+   piccolo di quello della sezione e in maiuscoletto, come un'etichetta: sono
+   due scaffali dello stesso mobile, non due sezioni della pagina. */
+.gruppo + .gruppo {
+  margin-top: var(--space-8);
+}
+
+.h3 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* --- la griglia dei loghi ------------------------------------------------ */
 
 .griglia {
