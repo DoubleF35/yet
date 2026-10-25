@@ -705,7 +705,11 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // sponsors/{id}, chi sostiene la community
+    // sponsors/{id}, chi sostiene la community: sponsor E partner
+    //
+    // Il campo `tipo` dice quale dei due: 'sponsor' o 'partner'. E'
+    // facoltativo, e un documento che non lo ha e' uno sponsor: e' com'erano
+    // tutti prima che i partner esistessero, e cosi' non vanno riscritti.
     //
     // Lettura pubblica: la pagina /sponsor deve funzionare per chiunque, ed e'
     // esattamente contenuto fatto per essere visto.
@@ -721,8 +725,9 @@ service cloud.firestore {
 
       function sponsorShapeOk() {
         return incoming().keys().hasOnly(
-          ['nome', 'url', 'nota', 'logoMediaId', 'ordine', 'createdAt']
+          ['nome', 'tipo', 'url', 'nota', 'logoMediaId', 'ordine', 'createdAt']
         )
+            && (!('tipo' in incoming()) || incoming().tipo in ['sponsor', 'partner'])
             && incoming().nome is string
             && incoming().nome.size() >= 1
             && incoming().nome.size() <= 80

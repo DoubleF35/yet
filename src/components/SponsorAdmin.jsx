@@ -10,6 +10,8 @@ import {
   listSponsors,
   riordinaSponsorPerImporto,
   setSponsorRiservato,
+  TIPI_SPONSOR,
+  tipoSponsor,
   updateSponsor,
 } from '../lib/db.js'
 import { safeImageSrc } from '../lib/attachments.js'
@@ -22,7 +24,7 @@ import s from './SponsorAdmin.module.css'
    calcola il sito. L'importo NON finisce sullo sponsor pubblico, che lo legge
    chiunque: va in sponsorRiservato, e in pubblico resta solo la posizione.
    Vedi riordinaSponsorPerImporto() in lib/db.js. */
-const VUOTO = { nome: '', url: '', nota: '', importo: '' }
+const VUOTO = { tipo: 'sponsor', nome: '', url: '', nota: '', importo: '' }
 
 /**
  * Gestione degli sponsor, dentro /admin.
@@ -152,12 +154,13 @@ export default function SponsorAdmin() {
     }
   }
 
-  /** Porta uno sponsor gia' salvato dentro il modulo in cima. */
+  /** Porta uno sponsor (o un partner) gia' salvato dentro il modulo in cima. */
   function modifica(sp) {
     setErrore(null)
     setConferma(null)
     setInModifica(sp.id)
     setForm({
+      tipo: tipoSponsor(sp),
       nome: sp.nome ?? '',
       url: sp.url ?? '',
       nota: sp.nota ?? '',
@@ -195,6 +198,7 @@ export default function SponsorAdmin() {
     setFase('salvo')
     try {
       const campi = {
+        tipo: form.tipo,
         nome: form.nome,
         url: form.url,
         nota: form.nota,
@@ -256,6 +260,29 @@ export default function SponsorAdmin() {
 
       {/* --- nuovo ------------------------------------------------------- */}
       <form className={s.form} onSubmit={salva} onPaste={incollaLogo} ref={formRef}>
+        {/* Due bottoni radio e non una tendina: le scelte sono due, si vedono
+            entrambe senza aprire niente, e quella attiva si riconosce dal
+            riempimento, non solo dal colore. */}
+        <fieldset className={s.tipi}>
+          <legend className={s.etichetta}>{t('sponsorAdmin.tipo')}</legend>
+          {TIPI_SPONSOR.map((tipo) => (
+            <label
+              key={tipo}
+              className={form.tipo === tipo ? `${s.tipo} ${s.tipoScelto}` : s.tipo}
+            >
+              <input
+                className={s.tipoRadio}
+                type="radio"
+                name="tipo"
+                value={tipo}
+                checked={form.tipo === tipo}
+                onChange={aggiorna('tipo')}
+              />
+              {t(`sponsorAdmin.tipi.${tipo}`)}
+            </label>
+          ))}
+        </fieldset>
+
         <div className={s.riga}>
           <label className={s.campo}>
             <span className={s.etichetta}>{t('sponsorAdmin.nome')}</span>
@@ -273,11 +300,16 @@ export default function SponsorAdmin() {
               {t('sponsorAdmin.sito')}{' '}
               <span className={s.opzionale}>{t('sponsorAdmin.facoltativo')}</span>
             </span>
+            {/* `text` e non `url`: il browser rifiuterebbe "blox.space" senza
+                https davanti, che e' come la gente scrive un sito. Lo
+                aggiunge lib/db.js al salvataggio. */}
             <input
               className={s.input}
-              type="url"
+              type="text"
               inputMode="url"
-              placeholder="https://…"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="sito.it"
               value={form.url}
               onChange={aggiorna('url')}
               maxLength={500}
@@ -402,6 +434,8 @@ export default function SponsorAdmin() {
                 <span className={s.voceInfo}>
                   <span className={s.voceNome}>{sp.nome}</span>
                   <span className={s.voceMeta}>
+                    {t(`sponsorAdmin.tipi.${tipoSponsor(sp)}`)}
+                    {' · '}
                     {riservati[sp.id]?.importo != null
                       ? t('sponsorAdmin.importoVoce', { n: riservati[sp.id].importo })
                       : t('sponsorAdmin.senzaImporto')}

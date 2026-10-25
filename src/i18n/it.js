@@ -34,7 +34,7 @@ export default {
     join: 'Join',
     contatti: 'Contatti',
     brand: 'Brand',
-    sponsor: 'Sponsor',
+    sponsor: 'Partner',
     admin: 'Admin',
     principale: 'Navigazione principale',
     vaiAllaHome: 'YET, vai alla home',
@@ -661,7 +661,7 @@ export default {
     eventi: 'Eventi · YET',
     contatti: 'Contatti · YET',
     brand: 'Brand · YET',
-    sponsor: 'Sponsor · YET',
+    sponsor: 'Partner · YET',
     privacy: 'Privacy · YET',
     cookie: 'Cookie · YET',
     notFound: 'Pagina non trovata · YET',
@@ -773,17 +773,22 @@ export default {
 
   /* --- sponsor ----------------------------------------------------------- */
   sponsor: {
-    eyebrow: 'Sponsor',
-    titolo: 'Chi ci sostiene',
+    eyebrow: 'Partner',
+    titolo: 'Chi cammina con noi',
     lead:
-      '{nome} non ha quote di iscrizione: chi entra non paga niente. Quello che serve per organizzare un evento (una sala, il pranzo, il materiale) arriva da chi decide di darci una mano.',
+      '{nome} non ha quote di iscrizione: chi entra non paga niente. Quello che serve per organizzare un evento (una sala, il pranzo, il materiale) arriva da chi decide di darci una mano, e molto di quello che facciamo nasce insieme ad altre realtà.',
     chiCe: 'Chi c’è',
-    liveCaricamento: 'Caricamento degli sponsor in corso.',
-    liveCaricati: '{n} sponsor caricati.',
-    erroreTitolo: 'Non riusciamo a caricare gli sponsor',
+    /* I due gruppi della pagina. Sono anche le due scelte del pannello. */
+    gruppi: {
+      sponsor: 'Sponsor',
+      partner: 'Partnership',
+    },
+    liveCaricamento: 'Caricamento dei partner in corso.',
+    liveCaricati: '{n} partner caricati.',
+    erroreTitolo: 'Non riusciamo a caricare i partner',
     errorePermessi:
       'Il server ha rifiutato la lettura: le regole Firestore pubblicate sono più vecchie del sito.',
-    vuotoTitolo: 'Nessuno sponsor, per ora',
+    vuotoTitolo: 'Nessun partner, per ora',
     vuotoTesto: 'Stiamo partendo adesso. Se volete essere i primi, il posto è libero e si vede.',
     apreSito: '{nome}, apre il sito in una nuova scheda',
     cosaOffriamo: 'Cosa offriamo',
@@ -1096,9 +1101,14 @@ export default {
 
   /* --- gestione sponsor (dentro /admin) ----------------------------------- */
   sponsorAdmin: {
-    titolo: 'Sponsor',
+    titolo: 'Sponsor e partnership',
     intro:
-      'Compaiono nella pagina Sponsor. L’ordine lo decide l’importo: chi ha dato di più sta in cima, a parità va in ordine alfabetico. L’importo lo vedete solo voi admin, sul sito non compare.',
+      'Compaiono nella pagina Partner, in due gruppi: Sponsor e Partnership. Dentro ogni gruppo l’ordine lo decide l’importo: chi ha dato di più sta in cima, a parità va in ordine alfabetico. Per una partnership senza importo si lascia vuoto. L’importo lo vedete solo voi admin, sul sito non compare.',
+    tipo: 'Tipo',
+    tipi: {
+      sponsor: 'Sponsor',
+      partner: 'Partnership',
+    },
     nome: 'Nome',
     sito: 'Sito',
     facoltativo: '(facoltativo)',
@@ -1120,9 +1130,9 @@ export default {
     caricaLogo: 'Carica il logo',
     preparoLogo: 'Preparo il logo…',
     salvo: 'Salvo…',
-    aggiungi: 'Aggiungi sponsor',
-    vuoto: 'Nessuno sponsor, per ora.',
-    eliminaAria: 'Elimina lo sponsor {nome}',
+    aggiungi: 'Aggiungi',
+    vuoto: 'Nessuno sponsor e nessuna partnership, per ora.',
+    eliminaAria: 'Elimina {nome}',
     elimina: 'Elimina',
     sicuroSi: 'Sicuro? Sì',
     no: 'No',

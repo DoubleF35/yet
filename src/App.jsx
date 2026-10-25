@@ -44,7 +44,12 @@ export default function App() {
               devono restare uguali: vedi src/config/eventi.js. */}
           <Route path="/eventi/:slug" element={<Evento />} />
           <Route path="/brand" element={<Brand />} />
-          <Route path="/sponsor" element={<Sponsor />} />
+          {/* La pagina si chiamava Sponsor; da quando ci sono anche le
+              partnership si chiama Partner. Il vecchio indirizzo resta e
+              rimanda qui, perche' e' gia' stato condiviso. Chi arriva da fuori
+              su /sponsor lo recupera public/404.html. */}
+          <Route path="/partner" element={<Sponsor />} />
+          <Route path="/sponsor" element={<Navigate to="/partner" replace />} />
 
           {/* La sezione si chiamava "Membri" e i link condivisi in giro
               puntano ancora li'. `replace` per non lasciare il vecchio
