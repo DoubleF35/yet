@@ -116,7 +116,7 @@
     ]
   },
   "torino-yet-x-wave": {
-    "copertina": "01-networking",
+    "copertina": "08-copertina-foto-di-gruppo",
     "scatti": [
       {
         "id": "torino-yet-x-wave/01-networking",
@@ -152,17 +152,6 @@
         "alt": "La sala a luci spente durante un intervento sul palco: due persone sedute davanti allo schermo acceso, il pubblico di spalle sulle sedie."
       },
       {
-        "id": "torino-yet-x-wave/04-speaker",
-        "base": "04-speaker",
-        "w": 1200,
-        "h": 1600,
-        "misure": [
-          800,
-          1600
-        ],
-        "alt": "Gli speaker seduti sul palco mentre uno parla al microfono. Dietro, lo schermo con le loro foto e i nomi, e il fondale bianco con i loghi YET."
-      },
-      {
         "id": "torino-yet-x-wave/05-palco",
         "base": "05-palco",
         "w": 1200,
@@ -194,6 +183,17 @@
           1600
         ],
         "alt": "Sullo schermo la pagina di From Zero to Startup, il percorso gratuito per i 16-19 anni di Blue Factory by ESCP. Sul palco si spiega come funziona, la sala ascolta."
+      },
+      {
+        "id": "torino-yet-x-wave/08-copertina-foto-di-gruppo",
+        "base": "08-copertina-foto-di-gruppo",
+        "w": 2000,
+        "h": 1500,
+        "misure": [
+          800,
+          1600
+        ],
+        "alt": "La foto di gruppo a fine serata: quattro ragazzi in primo piano davanti alla sala, e dietro di loro tutti gli altri seduti sulle sedie, girati verso l’obiettivo."
       }
     ]
   }
