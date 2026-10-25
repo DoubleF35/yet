@@ -1,0 +1,219 @@
+/* =========================================================================
+   LA MAPPA DELLA VETRINA
+
+   Una griglia di puntini e, sopra, i posti da cui viene la gente. Il
+   disegno e' un SVG senza dimensioni proprie: prende la larghezza del
+   contenitore e l'altezza la decide l'aspect-ratio scritto inline dal
+   componente, che e' quello della griglia generata.
+   ====================================================================== */
+
+.mappa {
+  margin: 0;
+  inline-size: 100%;
+}
+
+.tela {
+  position: relative;
+  inline-size: 100%;
+}
+
+.puntini {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+/* Come l'eyebrow dell'apertura, di cui fa da gemello sull'altra colonna. */
+.titolo {
+  margin-bottom: var(--space-4);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- le regioni ---------------------------------------------------------- */
+
+.regione {
+  fill: var(--mappa-vuota);
+  transition: fill var(--transition);
+}
+
+.abitata {
+  fill: var(--mappa-abitata);
+}
+
+/* Sotto il puntatore, o la regione della citta' filtrata. L'inchiostro e non
+   il coral: il coral e' dei posti, e una regione intera di coral coprirebbe
+   proprio i puntini che si vogliono far vedere. */
+.accesa {
+  fill: var(--ink);
+}
+
+/* --- i posti ------------------------------------------------------------- */
+
+.posto {
+  /* La misura cresce con la RADICE delle persone, non con il numero: cosi'
+     la superficie del cerchio e' proporzionale alla gente, che e' come
+     l'occhio legge un cerchio. Con la crescita lineare Torino coprirebbe
+     mezzo Piemonte. Una persona sola e' un puntino poco piu' grande di quelli
+     della griglia: si vede, ma non grida. */
+  --taglia: calc(0.7rem + (sqrt(var(--persone)) - 1) * 0.42rem);
+
+  position: absolute;
+  inline-size: var(--taglia);
+  block-size: var(--taglia);
+  translate: -50% -50%;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  font: inherit;
+  font-size: max(0.625rem, calc(var(--taglia) * 0.42));
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--on-coral);
+
+  background-color: var(--coral);
+  border: 2px solid var(--bg);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  transition:
+    scale var(--transition),
+    background-color var(--transition);
+}
+
+/* L'area di tocco: i posti piccoli sono 11px, troppo poco per un pollice.
+   Uno pseudo-elemento trasparente la allarga a 28px senza cambiare il
+   disegno. Non 44: Milano e Pavia stanno a due celle, e due aree da 44px
+   si sovrapporrebbero al punto che toccare l'una aprirebbe l'altra. */
+.posto::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  inline-size: max(100%, 1.75rem);
+  block-size: max(100%, 1.75rem);
+  translate: -50% -50%;
+  border-radius: var(--radius-pill);
+}
+
+.posto:hover,
+.posto:focus-visible {
+  scale: 1.25;
+  z-index: 1;
+}
+
+.posto:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Il posto filtrato adesso: pieno d'inchiostro e con un anello coral, cosi'
+   si distingue anche senza distinguere i colori, perche' cambia la forma
+   (l'anello) e non solo la tinta. */
+.posto[aria-pressed='true'] {
+  background-color: var(--ink);
+  box-shadow: 0 0 0 3px var(--coral);
+  z-index: 2;
+}
+
+/* L'alone che pulsa intorno al posto scelto. Uno solo, e solo su quello: se
+   pulsassero tutti la mappa sembrerebbe un allarme. */
+.posto[aria-pressed='true']::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 0 var(--coral);
+  animation: alone 1.8s ease-out infinite;
+}
+
+@keyframes alone {
+  from {
+    box-shadow: 0 0 0 0 var(--coral);
+    opacity: 0.7;
+  }
+  to {
+    box-shadow: 0 0 0 0.9rem var(--coral);
+    opacity: 0;
+  }
+}
+
+/* --- la didascalia ------------------------------------------------------- */
+
+.didascalia {
+  margin-top: var(--space-4);
+}
+
+.riga {
+  /* Una riga sola e sempre alta uguale: il testo cambia passando sopra le
+     regioni, e se cambiasse anche l'altezza tutto quello che sta sotto
+     salterebbe a ogni movimento del mouse. */
+  min-block-size: 1lh;
+  font-size: var(--step-0);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.riga strong {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.legenda {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.segno {
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: var(--radius-pill);
+}
+
+.segnoPosto {
+  background-color: var(--coral);
+}
+
+.segnoAbitata {
+  background-color: var(--mappa-abitata);
+}
+
+.segnoVuota {
+  background-color: var(--mappa-vuota);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .regione,
+  .posto {
+    transition: none;
+  }
+
+  .posto:hover,
+  .posto:focus-visible {
+    scale: none;
+  }
+
+  .posto[aria-pressed='true']::before {
+    animation: none;
+  }
+}

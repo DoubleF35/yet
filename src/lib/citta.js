@@ -76,7 +76,7 @@ export function cittaDelReferente(membro) {
  * per una regola di precedenza che nessuno si ricorda. Normalmente ne
  * contiene una, o nessuna per chi la città non l'ha scritta.
  */
-function chiaviDelMembro(membro) {
+export function chiaviDelMembro(membro) {
   const chiavi = new Set()
 
   const scritta = normalizza(membro?.location)
@@ -88,7 +88,6 @@ function chiaviDelMembro(membro) {
   return chiavi
 }
 
-/** Se questo membro va mostrato quando è selezionata questa città. */
 /**
  * In quante citta' diverse stanno le persone.
  *
@@ -110,6 +109,7 @@ export function contaCitta(membri = []) {
   return chiavi.size
 }
 
+/** Se questo membro va mostrato quando è selezionata questa città. */
 export function membroInCitta(membro, chiave) {
   if (!chiave) return true
   return chiaviDelMembro(membro).has(chiave)
@@ -150,16 +150,13 @@ function etichettaDi(chiave, scritture) {
 }
 
 /**
- * I filtri da mostrare, senza "Tutti", che lo aggiunge chi disegna la riga.
+ * Tutte le città in cui sta almeno una persona, con l'etichetta e il numero.
  *
- * Torna [] quando non ce ne sono abbastanza: così la pagina non deve
- * conoscere la soglia, le basta guardare se l'elenco è vuoto.
- *
- * Ordinati per numero di profili e non alfabeticamente: la riga racconta
- * dov'è arrivata YET, e la città con più gente è la prima cosa vera da
- * dire. A pari numero decide l'alfabeto.
+ * Nessuna soglia: è l'elenco da cui escono i filtri, e anche quello che usa
+ * la mappa della vetrina, dove ogni città conta, anche quella di una persona
+ * sola. Ordinate per numero di profili e a pari numero per alfabeto.
  */
-export function filtriCitta(membri) {
+export function tutteLeCitta(membri) {
   const gruppi = new Map()
 
   for (const membro of Array.isArray(membri) ? membri : []) {
@@ -181,8 +178,7 @@ export function filtriCitta(membri) {
     }
   }
 
-  const filtri = [...gruppi.values()]
-    .filter((g) => g.conteggio >= MINIMO_PER_FILTRO || ETICHETTE.has(g.chiave))
+  return [...gruppi.values()]
     .map((g) => ({
       chiave: g.chiave,
       etichetta: etichettaDi(g.chiave, g.scritture),
@@ -192,7 +188,22 @@ export function filtriCitta(membri) {
       if (b.conteggio !== a.conteggio) return b.conteggio - a.conteggio
       return a.etichetta.localeCompare(b.etichetta, 'it')
     })
+}
 
+/**
+ * I filtri da mostrare, senza "Tutti", che lo aggiunge chi disegna la riga.
+ *
+ * Torna [] quando non ce ne sono abbastanza: così la pagina non deve
+ * conoscere la soglia, le basta guardare se l'elenco è vuoto.
+ *
+ * Ordinati per numero di profili e non alfabeticamente: la riga racconta
+ * dov'è arrivata YET, e la città con più gente è la prima cosa vera da
+ * dire. A pari numero decide l'alfabeto.
+ */
+export function filtriCitta(membri) {
+  const filtri = tutteLeCitta(membri).filter(
+    (c) => c.conteggio >= MINIMO_PER_FILTRO || ETICHETTE.has(c.chiave),
+  )
   return filtri.length >= MINIMO_FILTRI ? filtri : []
 }
 
