@@ -14,6 +14,8 @@ import Brand from './pages/Brand.jsx'
 import Sponsor from './pages/Sponsor.jsx'
 import Join from './pages/Join.jsx'
 import Richieste from './pages/Richieste.jsx'
+import Candidature from './pages/Candidature.jsx'
+import Candidatura from './pages/Candidatura.jsx'
 import Contatti from './pages/Contatti.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Cookie from './pages/Cookie.jsx'
@@ -75,6 +77,30 @@ export default function App() {
             element={
               <RequireAdmin>
                 <Richieste />
+              </RequireAdmin>
+            }
+          />
+          {/* Le candidature gia' mandate, che e' una domanda diversa da
+              "chi devo approvare adesso": qui si guarda a chi si e' gia'
+              scritto, chi manca e come e' finita. Stessa protezione delle
+              richieste, perche' qui dentro ci sono numeri di telefono e date
+              di nascita. */}
+          <Route
+            path="/admin/candidature"
+            element={
+              <RequireAdmin>
+                <Candidature />
+              </RequireAdmin>
+            }
+          />
+          {/* La scheda di una, con il suo indirizzo: si manda a un altro
+              admin e si riapre dov'eri rimasto. Annidata sotto l'elenco per
+              la stessa ragione per cui il profilo sta sotto /vetrina. */}
+          <Route
+            path="/admin/candidature/:uid"
+            element={
+              <RequireAdmin>
+                <Candidatura />
               </RequireAdmin>
             }
           />

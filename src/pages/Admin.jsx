@@ -364,6 +364,21 @@ export default function Admin() {
                 {t('richiestePagina.soloRichieste')}
               </Link>
             </p>
+
+            {/* LE CANDIDATURE GIA' MANDATE, che e' una domanda diversa da
+                quella qui sopra. La coda risponde a "chi devo approvare
+                adesso" e si svuota; l'elenco delle candidature resta, e
+                risponde a "a chi ho gia' scritto, chi mi manca, come e'
+                finita".
+
+                Un bottone e non un altro link sottolineato: la coda si
+                svuota e sparisce dagli occhi, quella pagina invece e' il
+                posto in cui si torna ogni volta, e deve farsi trovare. */}
+            <p className={s.scorciatoia}>
+              <Link className={s.bottoneCandidature} to="/admin/candidature">
+                {t('candidaturePagina.apriPannello')}
+              </Link>
+            </p>
           </>
         )}
 

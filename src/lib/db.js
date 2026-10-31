@@ -14,6 +14,7 @@ import {
   collection,
   getCountFromServer,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -704,6 +705,30 @@ export async function listPendingUsers() {
 }
 
 /**
+ * TUTTI i profili, in qualunque stato. Solo per il pannello.
+ *
+ * listUsers() filtra su `status == 'approved'` e DEVE farlo: le regole aprono
+ * la lettura pubblica ai soli profili approvati, e Firestore non filtra una
+ * query che chiede piu' di quanto la regola conceda, la rifiuta in blocco.
+ *
+ * Qui il where non c'e', e non e' una svista. La regola e'
+ * `status == 'approved' || isOwner(uid) || isAdmin()`: il terzo pezzo non
+ * guarda il documento, guarda chi chiede. Per un admin e' vero sempre, quindi
+ * la query senza filtri soddisfa la regola per forza ed e' ammessa. Per
+ * chiunque altro questa chiamata torna permission-denied, che e' esattamente
+ * quello che deve fare.
+ *
+ * Serve alla pagina delle candidature: li' una persona va vista anche quando
+ * il suo profilo e' in attesa o rifiutato, perche' e' il momento in cui si
+ * sta decidendo cosa farne.
+ */
+export async function adminListUsers() {
+  if (!isFirebaseConfigured) throw notConfigured()
+  const snapshot = esigiRisposta(await getDocs(collection(db, USERS)))
+  return snapshot.docs.map((d) => ({ uid: d.id, ...d.data() }))
+}
+
+/**
  * Approva o rifiuta una richiesta.
  *
  * Scrive solo `status` e `updatedAt`: le regole rifiutano qualsiasi altra
@@ -1345,6 +1370,79 @@ export async function setStatoCandidatura(uid, stato) {
   if (!uid) throw new Error('Manca l’identificativo dell’utente.')
   unaDi(stato, STATI, 'stato')
   await updateDoc(doc(db, CANDIDATURE, uid), { stato, updatedAt: serverTimestamp() })
+}
+
+/**
+ * Quanto puo' essere lunga una nota del pannello.
+ *
+ * Lo stesso numero sta nelle rules: qui ferma chi scrive prima che prema
+ * Salva, li' impedisce davvero. Se ne cambi uno, cambiali tutti e due.
+ */
+export const NOTA_CANDIDATURA_MAX = 1000
+
+/**
+ * I TRE CAMPI CHE SCRIVE CHI VALUTA, e che la persona non vede mai.
+ *
+ * Stanno dentro `candidature/{uid}` e non in una collection a parte perche'
+ * parlano della stessa candidatura e si leggono insieme a lei: una seconda
+ * collection vorrebbe dire una seconda lettura per riga dell'elenco, e due
+ * documenti che possono restare scollegati.
+ *
+ *   note          gli appunti dopo la telefonata
+ *   daScrivere    "a questa persona devo ancora scrivere su WhatsApp"
+ *   contattatoIl  quando le si e' scritto davvero
+ *
+ * LE REGOLE LI PROTEGGONO IN DUE VERSI: solo un admin li scrive, e
+ * l'interessato non li puo' toccare nemmeno risalvando il proprio form.
+ * Leggerli, pero', li legge: `candidature/{uid}` e' leggibile dal proprietario
+ * (vedi firestore.rules). Quindi qui dentro non va scritto niente che non si
+ * possa dire in faccia alla persona di cui parla, ed e' detto anche a schermo,
+ * sotto il campo delle note, perche' nessuno legge i commenti del codice
+ * mentre prende appunti.
+ */
+const CAMPI_VALUTAZIONE = ['note', 'daScrivere', 'contattatoIl']
+
+/**
+ * Aggiorna uno o piu' dei campi qui sopra.
+ *
+ * Una funzione sola invece di tre (salvaNote, segnaContattata, ...) perche'
+ * le rules ammettono una scrittura che tocca quei campi e basta: avere un
+ * punto solo da cui passano rende impossibile, da qui, mandarne uno che le
+ * regole poi rifiuterebbero.
+ *
+ * `contattatoIl: true` diventa "adesso", che e' l'unico valore che il
+ * pannello ha motivo di scrivere; `null` cancella il campo, per quando si
+ * segna contattata una persona per sbaglio.
+ */
+export async function aggiornaValutazione(uid, patch = {}) {
+  if (!isFirebaseConfigured) throw notConfigured()
+  if (!uid) throw new Error('Manca l’identificativo dell’utente.')
+
+  const chiavi = Object.keys(patch)
+  if (chiavi.length === 0) return
+  for (const k of chiavi) {
+    if (!CAMPI_VALUTAZIONE.includes(k)) {
+      throw new Error(`Campo non scrivibile dal pannello: ${k}`)
+    }
+  }
+
+  const da = { updatedAt: serverTimestamp() }
+
+  if ('note' in patch) {
+    const note = String(patch.note ?? '').trim()
+    if (note.length > NOTA_CANDIDATURA_MAX) {
+      throw new Error(`La nota supera i ${NOTA_CANDIDATURA_MAX} caratteri.`)
+    }
+    da.note = note
+  }
+
+  if ('daScrivere' in patch) da.daScrivere = Boolean(patch.daScrivere)
+
+  if ('contattatoIl' in patch) {
+    da.contattatoIl = patch.contattatoIl ? serverTimestamp() : deleteField()
+  }
+
+  await updateDoc(doc(db, CANDIDATURE, uid), da)
 }
 
 /**
