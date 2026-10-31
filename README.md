@@ -520,7 +520,9 @@ Qui il problema è risolto a monte. Dopo il build, `scripts/prerender.mjs`:
    il suo titolo, la sua descrizione e il suo canonico;
 2. **scarica i profili approvati** con l'API REST di Firestore e scrive una
    pagina anche per ognuno di loro (`dist/vetrina/federicofassio/index.html`);
-3. rigenera `sitemap.xml` con tutti questi indirizzi.
+3. scrive un guscio vuoto per `/admin`, `/admin/richieste` e
+   `/admin/candidature`, con `noindex` e fuori dalla sitemap;
+4. rigenera `sitemap.xml` con tutti gli altri indirizzi.
 
 Il punto 2 usa la **chiave pubblica**, la stessa che sta nel bundle: quella
 lettura ha esattamente i permessi di un visitatore qualunque e vede solo ciò che
@@ -529,13 +531,25 @@ custodire. Se fallisce (rete assente, secret mancanti) il build **prosegue**:
 le pagine dei membri sono un miglioramento, non una condizione di
 funzionamento, e il log lo scrive.
 
-Resta un caso: **chi viene approvato dopo l'ultima pubblicazione** non ha ancora
-il suo file. Per lui `public/404.html` contiene un recupero, ma ristretto alla
-sola forma `/vetrina/<un-segmento>`: rimbalza su `/vetrina/?p=<nome>`, e
-`src/main.jsx` rimette l'indirizzo a posto prima che l'applicazione parta.
-Tutto il resto continua a ricevere un 404 onesto, perché una pagina buona a
-qualunque indirizzo inventato è un "soft 404" e a lungo andare danneggia
-l'indicizzazione di quelle vere.
+Il punto 3 non c'entra con i motori di ricerca, ed è un inciampo già pagato:
+dentro l'applicazione i link al pannello funzionavano comunque, perché quella
+navigazione non esce mai dal browser. Ma **chi scrive `/admin/candidature`
+nella barra, chi riceve quel link da un altro admin e chi semplicemente
+ricarica la pagina mentre ci sta sopra** chiede quel percorso al server, e lì
+un file con quel nome non c'era: 404. Non si vede in locale (il server di
+sviluppo serve l'app per qualunque percorso) e non si vede nel build. Si vede
+solo in produzione, e solo se si prova a mano. Per questo c'è
+`serve-pages.mjs`, qui sotto.
+
+Restano due casi che un file non possono averlo, perché sarebbe uno per
+persona: **chi viene approvato dopo l'ultima pubblicazione** e **la scheda di
+una singola candidatura**. Per loro `public/404.html` contiene un recupero,
+ristretto alle due sole forme `/vetrina/<un-segmento>` e
+`/admin/candidature/<un-segmento>`: rimbalza su `…/?p=<nome>`, e
+`src/main.jsx` rimette l'indirizzo a posto prima che l'applicazione parta,
+accettando solo quelle due basi. Tutto il resto continua a ricevere un 404
+onesto, perché una pagina buona a qualunque indirizzo inventato è un "soft
+404" e a lungo andare danneggia l'indicizzazione di quelle vere.
 
 In pratica: **un membro approvato è raggiungibile subito; dopo il primo deploy
 successivo la sua pagina diventa anche indicizzabile.** Se vuoi accelerare,
@@ -550,7 +564,8 @@ node scripts/serve-pages.mjs      # http://localhost:4173
 
 `vite preview` **non** va bene per questa verifica: serve `index.html` per
 qualunque percorso, quindi mostrerebbe tutto funzionante anche se il file non
-esistesse. `serve-pages.mjs` applica le due regole vere di Pages (cartella →
+esistesse. È esattamente il modo in cui il 404 sul pannello è passato
+inosservato. `serve-pages.mjs` applica le due regole vere di Pages (cartella →
 `index.html`, altrimenti `404.html` **con stato 404**).
 
 ---

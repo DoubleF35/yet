@@ -261,6 +261,69 @@ for (const rotta of ROTTE) {
   console.log(`  ${scriviPagina(rotta).padEnd(30)} ${rotta.title}`)
 }
 
+/* --------------------------------------------------------------------------
+   I GUSCI DEL PANNELLO
+
+   /admin e le sue sottopagine NON stanno fra le ROTTE e non devono starci:
+   non hanno niente da indicizzare, non vanno nella sitemap e robots.txt le
+   esclude. Un file pero' deve esistere lo stesso, e il motivo non c'entra
+   niente con i motori di ricerca.
+
+   SENZA, GITHUB PAGES RISPONDE 404 A CHI SCRIVE L'INDIRIZZO. Dentro
+   l'applicazione i link al pannello funzionavano lo stesso, perche' quella
+   navigazione non esce mai dal browser: e' il router che cambia schermata.
+   Ma chi incolla /admin/candidature nella barra, chi lo riceve da un altro
+   admin e chi semplicemente RICARICA la pagina mentre ci sta sopra chiede
+   quel percorso al server, e li' un file con quel nome non c'era. E' un
+   difetto che non si vede in locale (il server di sviluppo serve l'app per
+   qualunque percorso) e nemmeno nel build: si vede solo in produzione.
+
+   Il guscio e' deliberatamente vuoto: titolo, noindex, e una riga per chi
+   arriva con JavaScript spento. Niente descrizione, niente canonico, niente
+   testo: qui non c'e' niente di pubblico da raccontare.
+
+   LE SOTTOPAGINE CON UN IDENTIFICATIVO DENTRO non si possono generare, perche'
+   sarebbero una per candidatura e cambierebbero a ogni iscrizione. Quelle le
+   recupera public/404.html, con lo stesso meccanismo delle pagine dei membri.
+   -------------------------------------------------------------------------- */
+const PANNELLO = ['/admin', '/admin/richieste', '/admin/candidature']
+
+function scriviGuscioPannello(percorso) {
+  let html = base
+
+  html = sostituisci(
+    html,
+    /<title>[\s\S]*?<\/title>/,
+    '<title>Pannello · YET</title>\n    <meta name="robots" content="noindex, nofollow" />',
+  )
+
+  /* Via il canonico: quello di partenza punta alla home, e dire a un motore
+     di ricerca "questa pagina e' la home" e' peggio che non dirgli niente.
+     Con il noindex non cambia l'esito, ma lascia il file onesto. */
+  html = html.replace(/\s*<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/, '')
+  html = html.replace(PRELOAD_POSTER, '')
+
+  html = html.replace(
+    /<!--prerender:start-->[\s\S]*?<!--prerender:end-->/,
+    `<!--prerender:start-->
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#14120f;color:#f2efe9;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+        <p style="margin:0;font-size:1.0625rem;">Il pannello di YET. Serve JavaScript e l'accesso come amministratore.</p>
+      </div>
+      <!--prerender:end-->`,
+  )
+
+  const cartella = join(DIST, percorso)
+  mkdirSync(cartella, { recursive: true })
+  writeFileSync(join(cartella, 'index.html'), html)
+
+  return `${percorso.slice(1)}/index.html`
+}
+
+console.log('\nGenero i gusci del pannello (fuori dalla sitemap, noindex):\n')
+for (const percorso of PANNELLO) {
+  console.log(`  ${scriviGuscioPannello(percorso).padEnd(30)} ${percorso}`)
+}
+
 
 /* --------------------------------------------------------------------------
    Una pagina per ogni resoconto di serata
