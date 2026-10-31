@@ -497,6 +497,144 @@ export default {
   },
 
   /* ---------------------------------------------------------------------
+     LE CANDIDATURE GIA' MANDATE, NEL PANNELLO
+
+     Due pagine: l'elenco con i filtri (candidaturePagina) e la scheda di una
+     sola candidatura (schedaCandidatura).
+     --------------------------------------------------------------------- */
+  candidaturePagina: {
+    apriPannello: 'Apri le candidature',
+    titolo: 'Candidature',
+    intro:
+      'Tutte le candidature mandate, non solo quelle in attesa: a chi hai già scritto, chi ti manca e come è finita. La coda delle richieste si svuota, questo elenco resta.',
+    nienteEmail:
+      'Qui non ci sono le email, e non è una dimenticanza: i profili non la contengono perché l’informativa promette che non finisca in vetrina, e senza un server non si può leggere quella di un altro. Si scrive su WhatsApp, che è il canale che la persona ha autorizzato mandando la candidatura.',
+    tornaAlPannello: 'Torna al pannello',
+    spento: 'Firebase non è configurato, quindi non c’è niente da leggere.',
+
+    erroreTitolo: 'Le candidature non si caricano',
+    errorePermessi:
+      'Il database ha rifiutato la lettura. La tua email è fra gli admin in firestore.rules?',
+    erroreGenerico: 'Qualcosa non ha risposto. Riprova fra un momento.',
+
+    vuotoTitolo: 'Ancora nessuna candidatura',
+    vuotoTesto: 'Quando qualcuno risponde alle domande di selezione, compare qui.',
+
+    numeriAria: 'I numeri delle candidature',
+    conteggi: {
+      totale: 'Totale',
+      plus: 'Community Plus',
+      daValutare: 'Da decidere',
+      event: 'Solo eventi',
+      u16: 'Under 16',
+      senzaLinkedin: 'Senza LinkedIn',
+    },
+
+    cerca: 'Cerca nome, numero o città',
+    contatto: {
+      aria: 'Filtra per contatto',
+      tutti: 'Contattate e no',
+      daContattare: 'Da contattare',
+      contattate: 'Già contattate',
+    },
+    esito: {
+      aria: 'Filtra per esito',
+      tutti: 'Tutti gli esiti',
+      nonDeciso: 'Non ancora deciso',
+      accettato: 'Community Plus',
+      eventi: 'Solo eventi',
+      escluso: 'Escluse',
+    },
+    fascia: {
+      aria: 'Filtra per fascia d’età',
+      tutte: 'Tutte le fasce',
+      u16: 'Sotto i 16',
+      dentro: 'Dai 16 ai 23',
+      over: 'Sopra i 23',
+      ignota: 'Età non chiara',
+    },
+    soloSenzaLinkedin: 'Senza LinkedIn',
+    soloDaScrivere: 'Da scrivere su WhatsApp',
+    filtra: 'Filtra',
+    azzera: 'Azzera',
+
+    esporta: 'Esporta i contatti in CSV, per esito',
+    scarica: 'Scarica CSV',
+    csv: {
+      nome: 'Nome',
+      whatsapp: 'WhatsApp',
+      citta: 'Città',
+      instagram: 'Instagram',
+      linkedin: 'LinkedIn',
+    },
+
+    risultati: '{n} candidature',
+    unRisultato: '1 candidatura',
+    nessunRisultato: 'Nessuna candidatura con questi filtri.',
+
+    senzaNome: 'Senza nome',
+    daScrivere: 'Da scrivere',
+    scritto: 'Contattata',
+    senzaLinkedin: 'Senza LinkedIn',
+    badge: {
+      accettato: 'Plus',
+      eventi: 'Eventi',
+      escluso: 'Esclusa',
+    },
+    punti: '{punti}/{su} punti',
+    whatsapp: 'WhatsApp',
+    apri: 'Apri la scheda',
+
+    scritturaRifiutata: 'Il database ha rifiutato la modifica.',
+    operazioneFallita: 'Non è andata. Riprova.',
+  },
+
+  schedaCandidatura: {
+    tutte: 'Tutte le candidature',
+    nonTrovata: 'Questa candidatura non c’è.',
+
+    fascia: {
+      u16: 'sotto i {min}',
+      dentro: 'fascia {min}-{max}',
+      over: 'sopra i {max}',
+    },
+    candidataIl: 'candidatura del {data}',
+
+    decisione: 'Decisione',
+    esitoFinale: 'Esito finale:',
+    nonDeciso: 'non ancora deciso',
+    ultimoContatto: 'ultimo contatto:',
+    mai: 'mai',
+    conferma: {
+      accettato: 'Conferma Community Plus',
+      eventi: 'Conferma solo eventi',
+      escluso: 'Escludi',
+    },
+    salvo: 'Salvo…',
+    segnaContattata: 'Segna come contattata',
+    annullaContatto: 'Non l’ho contattata',
+
+    note: 'Note',
+    notePlaceholder: 'Appunti dopo la chiamata, impressioni…',
+    noteAvviso:
+      'Queste note stanno dentro la candidatura, e la candidatura la può aprire anche la persona di cui parla. Scrivici quello che le diresti in faccia.',
+    salvaNote: 'Salva le note',
+    salvate: 'Salvate.',
+
+    punteggioTitolo: 'Punteggio: {punti} su {su}',
+    punteggioSpiega:
+      'Quattro criteri, un punto ciascuno. È una proposta, non una decisione: LinkedIn non conta, e il punteggio non è salvato da nessuna parte, viene calcolato mentre lo guardi.',
+
+    risposte: 'Risposte',
+    citta: 'Città',
+    chiE: 'Chi è',
+    consensi: 'Consensi — privacy {privacy} · WhatsApp {whatsapp}',
+
+    scritturaRifiutata: 'Il database ha rifiutato la modifica.',
+    operazioneFallita: 'Non è andata. Riprova.',
+  },
+
+  /* ---------------------------------------------------------------------
      LE FOTO DELLE SERATE, CARICATE DAL PANNELLO
      --------------------------------------------------------------------- */
   galleriaAdmin: {

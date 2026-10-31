@@ -433,8 +433,37 @@ service cloud.firestore {
           'nPitch', 'nEventi', 'eventiQuali',
           'motivazione',
           'consensoPrivacy', 'consensoWhatsapp',
-          'stato', 'createdAt', 'updatedAt'
+          'stato', 'createdAt', 'updatedAt',
+          // I tre campi di chi valuta: gli appunti, il promemoria di
+          // scrivere su WhatsApp e quando le si e' scritto davvero.
+          //
+          // Vanno elencati QUI anche se l'interessato non li scrive mai, e la
+          // ragione si vede solo il giorno dopo: hasOnly() guarda il
+          // documento RISULTANTE, non i campi mandati. Appena un admin
+          // aggiunge una nota, il form della persona, risalvato con
+          // merge, produce un documento che quella nota ce l'ha dentro.
+          // Senza queste tre righe, da quel momento in poi non riuscirebbe
+          // piu' a correggere una sola risposta, e l'errore direbbe soltanto
+          // permission-denied.
+          'note', 'daScrivere', 'contattatoIl'
         ]);
+      }
+
+      // Come devono essere fatti quei tre campi, quando ci sono.
+      //
+      // get() con un ripiego e non incoming().note: leggere una chiave
+      // assente in Security Rules non torna "vuoto", fa fallire l'intera
+      // espressione, e qui i campi mancano quasi sempre (esistono solo dopo
+      // che un admin ha toccato quella candidatura).
+      //
+      // Il tetto di 1000 e' lo stesso di NOTA_CANDIDATURA_MAX in
+      // src/lib/db.js: se cambi uno, cambia l'altro.
+      function valutazioneOk() {
+        return incoming().get('note', '') is string
+            && incoming().get('note', '').size() <= 1000
+            && incoming().get('daScrivere', false) is bool
+            && (!('contattatoIl' in incoming())
+                || incoming().contattatoIl is timestamp);
       }
 
       // Le stesse liste che stanno in src/config/candidatura.js. Sono scritte
@@ -476,17 +505,22 @@ service cloud.firestore {
                     && risposteValide()
                     && consensiOk()
                     && incoming().stato == 'nuovo'
+                    && !incoming().keys().hasAny(['note', 'daScrivere', 'contattatoIl'])
                     && incoming().createdAt == request.time
                     && incoming().updatedAt == request.time;
 
       // --- la corregge l'interessato ----------------------------------------
       // Puo' cambiare le risposte finche' vuole, ma NON lo stato: se un admin
       // l'ha gia' spostata, tornare sul form non deve riportarla in coda.
+      // La valutazione la LEGGE (il documento e' suo) ma non la tocca: qui si
+      // controlla che non cambi, non che non ci sia.
       allow update: if isOwner(uid)
                     && candidaturaKeysOk()
                     && risposteValide()
                     && consensiOk()
                     && incoming().stato == stored().stato
+                    && !incoming().diff(stored()).affectedKeys()
+                         .hasAny(['note', 'daScrivere', 'contattatoIl'])
                     && incoming().createdAt == stored().createdAt
                     && incoming().updatedAt == request.time;
 
@@ -499,10 +533,16 @@ service cloud.firestore {
       // guardi, perche' questo sito non ha un server e qualunque cosa fosse
       // scritta nel documento la potrebbe leggere anche chi si e' candidato.
       // Vedi il commento in testa a src/lib/punteggio.js.
+      //
+      // Oltre allo stato puo' scrivere i tre campi del pannello, che sono
+      // roba sua e non della persona: gli appunti, il promemoria di
+      // scriverle e la data in cui le si e' scritto.
       allow update: if isAdmin()
                     && incoming().diff(stored()).affectedKeys()
-                         .hasOnly(['stato', 'updatedAt'])
+                         .hasOnly(['stato', 'note', 'daScrivere', 'contattatoIl',
+                                   'updatedAt'])
                     && statoValido()
+                    && valutazioneOk()
                     && incoming().updatedAt == request.time;
 
       // Si cancella chi l'ha scritta, o il superadmin per fare pulizia.

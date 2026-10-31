@@ -50,6 +50,9 @@ sta nel piano gratuito Spark di Firebase.
 | `/privacy`  | Privacy  | Informativa GDPR. Descrive quello che il codice fa davvero.             | no              |
 | `/cookie`   | Cookie   | Cosa viene salvato sul dispositivo, e perche' non c'e' il banner.       | no              |
 | `/admin`    | Admin    | Notizie, richieste di iscrizione, sponsor.                              | **solo admin**  |
+| `/admin/richieste` | Richieste | Solo la coda di chi aspetta un sì o un no.                       | **solo admin**  |
+| `/admin/candidature` | Candidature | Tutte le candidature mandate, con filtri, conteggi e CSV.    | **solo admin**  |
+| `/admin/candidature/<uid>` | Candidatura | La scheda di una: esito, note, punteggio, risposte.    | **solo admin**  |
 | `/vetrina/<nome>` | Profilo | La pagina di una persona, con il suo nome nell'indirizzo.        | no              |
 
 `/membri` reindirizza a `/vetrina`: i link condivisi in giro prima della
@@ -399,7 +402,7 @@ firebase deploy --only firestore:rules
 | Collection  | Cosa contiene                                    | Chi legge | Chi scrive |
 | ----------- | ------------------------------------------------ | --------- | ---------- |
 | `users`     | i profili dei membri                             | chiunque, ma **solo gli approvati** | ognuno il proprio; gli admin anche quello degli altri |
-| `candidature` | le risposte del modulo di selezione            | l'interessato e gli admin | l'interessato; gli admin solo lo `stato` |
+| `candidature` | le risposte del modulo di selezione            | l'interessato e gli admin | l'interessato le risposte; gli admin solo `stato`, `note`, `daScrivere`, `contattatoIl` |
 | `news`      | le notizie                                       | chiunque  | admin      |
 | `meetups`   | gli incontri con data e luogo                    | chiunque  | admin      |
 | `media`     | i file caricati, un documento per file           | chiunque  | admin      |
@@ -417,6 +420,14 @@ users/{uid}   displayName, location, bio, photoURL, socials{linkedin,instagram,o
 news/{id}     title, body, attachments[], authorUid, authorName, createdAt, published
 meetups/{id}  title, startsAt (Timestamp), place, body, url, published,
               authorUid, authorName, createdAt
+candidature/{uid}
+              dataNascita, whatsapp, occupazione, ruolo, fonte, stadioProgetto,
+              progettoLink, nPitch, nEventi, eventiQuali, motivazione,
+              consensoPrivacy, consensoWhatsapp, stato, createdAt, updatedAt
+              + i tre campi che scrive solo chi valuta, e che la persona
+                puo' comunque LEGGERE (il documento e' suo):
+                note, daScrivere, contattatoIl
+              NIENTE PUNTEGGIO: non e' salvato, vedi piu' sotto
 media/{id}    dataUrl, contentType, name, width, height, bytes, authorUid, createdAt
 gallerie/{id} foto[] (id dentro media), alt[] (una per foto), aggiornatoIl
               la chiave e' l'ID DELL'INCONTRO, non lo slug del resoconto:
@@ -1015,6 +1026,65 @@ Due collection e non piu' campi nello stesso documento, perche' `users` lo
 legge il mondo intero. Dentro le candidature ci sono una data di nascita e un
 numero di telefono: l'unica cosa che puo' proteggerli e' una regola di
 sicurezza, e le regole ragionano per documento.
+
+### Il pannello delle candidature
+
+Dal pannello, sotto la coda delle richieste, c'e' il bottone **«Apri le
+candidature»**: porta a `/admin/candidature`, e da li' alla scheda di
+ognuna.
+
+**Non e' la coda delle richieste, ed e' il motivo per cui sono due pagine.**
+`/admin/richieste` risponde a una domanda che si svuota: *chi devo approvare
+adesso*. `/admin/candidature` risponde a una che resta: *a chi ho gia'
+scritto, chi mi manca, come e' finita*. Approvare un profilo e decidere cosa
+fare di una persona sono due gesti diversi e succedono in momenti diversi.
+
+**L'elenco** ha in cima sei numeri (totale, Community Plus, ancora da
+decidere, solo eventi, under 16, quanti sono senza LinkedIn), poi i filtri —
+testo su nome, numero e citta', contattate o no, esito, fascia d'eta', senza
+LinkedIn, da scrivere — e infine le schede. I filtri si applicano mentre
+scrivi: il bottone «Filtra» e' li' per chiudere la tastiera sul telefono e
+per mandare il fuoco ai risultati, non perche' senza non filtri niente.
+
+**«Scarica CSV»** tira giu' i contatti di un esito alla volta: nome,
+WhatsApp, citta', Instagram, LinkedIn. Il file lo fabbrica il browser, non un
+server. **Dentro non ci sono ne' il punteggio ne' le note**, e non e' una
+svista: un CSV si gira per WhatsApp senza pensarci, e li' dentro finirebbero
+un giudizio su una persona e gli appunti di una telefonata.
+
+**La scheda** (`/admin/candidature/<uid>`) ha un indirizzo suo, quindi si
+manda a un altro admin e si riapre dov'eri rimasto. Da li' si fanno quattro
+cose e quattro soltanto: si sceglie l'esito, si segna di aver scritto, si
+spunta «da scrivere», si prendono appunti. **Le risposte no**: quelle sono
+quello che la persona ha detto, e le regole non lasciano che un admin le
+riscriva.
+
+**L'esito sta dentro `stato`, non in un campo suo.** `accettato`, `eventi` e
+`escluso` sono gia' tre dei valori che `stato` poteva prendere: aggiungere un
+campo `esito` accanto avrebbe aperto il caso che non si sa risolvere, cioe'
+un documento che dice «escluso» da una parte e «accettato» dall'altra. Di
+conseguenza **«contattata» non e' uno stato ma una data** (`contattatoIl`):
+se fosse uno stato, segnare come contattata una persona gia' accettata le
+cancellerebbe l'esito.
+
+**Le note le puo' leggere anche la persona di cui parlano.**
+`candidature/{uid}` e' leggibile dall'interessato — e' il suo documento, e
+sotto il GDPR deve esserlo — quindi le note che scrivi li' dentro non sono
+private. Le regole gli impediscono di *cambiarle*, non di *vederle*. Sta
+scritto anche sotto il campo, nella pagina, perche' nessuno legge il README
+mentre prende appunti al telefono.
+
+**Niente email, e non e' una dimenticanza.** I documenti `users` non la
+contengono (l'informativa promette che non finisca in vetrina) e Firebase
+Authentication non lascia leggere l'indirizzo di un altro da un sito senza
+server. Si scrive su WhatsApp, che e' il canale che la persona ha autorizzato
+mandando la candidatura.
+
+**Quanto costa aprirla.** La pagina legge tutte le candidature e tutti i
+profili, e i profili si portano dietro la foto come data URL: oggi e' sotto
+il megabyte, e lo paga solo un admin, una volta per apertura. Il giorno in
+cui fosse troppo, la strada non e' alleggerire questa lettura: e' smettere di
+tenere le foto dentro i documenti.
 
 ### Il punteggio non e' nel database
 

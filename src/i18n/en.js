@@ -455,6 +455,138 @@ export default {
     soloRichieste: 'Open just the requests',
   },
 
+  candidaturePagina: {
+    apriPannello: 'Open applications',
+    titolo: 'Applications',
+    intro:
+      'Every application sent, not just the ones waiting: who you have already written to, who is left, and how it ended. The requests queue empties itself, this list stays.',
+    nienteEmail:
+      'There are no email addresses here, and that is on purpose: profiles do not store one, because the privacy notice promises it never goes public, and without a server you cannot read someone else’s. You write on WhatsApp, the channel the person agreed to when they applied.',
+    tornaAlPannello: 'Back to the panel',
+    spento: 'Firebase is not configured, so there is nothing to read.',
+
+    erroreTitolo: 'The applications are not loading',
+    errorePermessi:
+      'The database refused the read. Is your email among the admins in firestore.rules?',
+    erroreGenerico: 'Something did not answer. Try again in a moment.',
+
+    vuotoTitolo: 'No applications yet',
+    vuotoTesto: 'When someone answers the selection questions, they show up here.',
+
+    numeriAria: 'Application numbers',
+    conteggi: {
+      totale: 'Total',
+      plus: 'Community Plus',
+      daValutare: 'Still open',
+      event: 'Events only',
+      u16: 'Under 16',
+      senzaLinkedin: 'No LinkedIn',
+    },
+
+    cerca: 'Search name, number or city',
+    contatto: {
+      aria: 'Filter by contact',
+      tutti: 'Contacted or not',
+      daContattare: 'To contact',
+      contattate: 'Already contacted',
+    },
+    esito: {
+      aria: 'Filter by outcome',
+      tutti: 'All outcomes',
+      nonDeciso: 'Not decided yet',
+      accettato: 'Community Plus',
+      eventi: 'Events only',
+      escluso: 'Turned down',
+    },
+    fascia: {
+      aria: 'Filter by age band',
+      tutte: 'All age bands',
+      u16: 'Under 16',
+      dentro: '16 to 23',
+      over: 'Over 23',
+      ignota: 'Age unclear',
+    },
+    soloSenzaLinkedin: 'No LinkedIn',
+    soloDaScrivere: 'To write on WhatsApp',
+    filtra: 'Filter',
+    azzera: 'Reset',
+
+    esporta: 'Export contacts as CSV, by outcome',
+    scarica: 'Download CSV',
+    csv: {
+      nome: 'Name',
+      whatsapp: 'WhatsApp',
+      citta: 'City',
+      instagram: 'Instagram',
+      linkedin: 'LinkedIn',
+    },
+
+    risultati: '{n} applications',
+    unRisultato: '1 application',
+    nessunRisultato: 'No application matches these filters.',
+
+    senzaNome: 'No name',
+    daScrivere: 'To write',
+    scritto: 'Contacted',
+    senzaLinkedin: 'No LinkedIn',
+    badge: {
+      accettato: 'Plus',
+      eventi: 'Events',
+      escluso: 'Turned down',
+    },
+    punti: '{punti}/{su} points',
+    whatsapp: 'WhatsApp',
+    apri: 'Open the file',
+
+    scritturaRifiutata: 'The database refused the change.',
+    operazioneFallita: 'That did not work. Try again.',
+  },
+
+  schedaCandidatura: {
+    tutte: 'All applications',
+    nonTrovata: 'This application does not exist.',
+
+    fascia: {
+      u16: 'under {min}',
+      dentro: 'band {min}-{max}',
+      over: 'over {max}',
+    },
+    candidataIl: 'applied on {data}',
+
+    decisione: 'Decision',
+    esitoFinale: 'Final outcome:',
+    nonDeciso: 'not decided yet',
+    ultimoContatto: 'last contact:',
+    mai: 'never',
+    conferma: {
+      accettato: 'Confirm Community Plus',
+      eventi: 'Confirm events only',
+      escluso: 'Turn down',
+    },
+    salvo: 'Saving…',
+    segnaContattata: 'Mark as contacted',
+    annullaContatto: 'I have not contacted them',
+
+    note: 'Notes',
+    notePlaceholder: 'Notes after the call, impressions…',
+    noteAvviso:
+      'These notes live inside the application, and the application can be opened by the person it is about. Write what you would say to their face.',
+    salvaNote: 'Save the notes',
+    salvate: 'Saved.',
+
+    punteggioTitolo: 'Score: {punti} out of {su}',
+    punteggioSpiega:
+      'Four criteria, one point each. It is a suggestion, not a decision: LinkedIn does not count, and the score is stored nowhere, it is worked out while you look at it.',
+
+    risposte: 'Answers',
+    citta: 'City',
+    chiE: 'About them',
+    consensi: 'Consents — privacy {privacy} · WhatsApp {whatsapp}',
+
+    scritturaRifiutata: 'The database refused the change.',
+    operazioneFallita: 'That did not work. Try again.',
+  },
+
   galleriaAdmin: {
     titolo: 'Photos from the nights',
     intro:
