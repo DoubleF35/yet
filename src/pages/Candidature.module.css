@@ -395,3 +395,97 @@
   color: var(--danger);
   font-size: var(--step--1);
 }
+
+/* --- aggiunte per ricalcare il pannello delle foto --------------------- */
+
+/* Il titolo e l'uscita sulla stessa riga. */
+.testaRiga {
+  display: flex;
+  gap: var(--space-4);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.esci {
+  flex: none;
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--step--1);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.esci:hover {
+  color: var(--ink);
+}
+
+.esci:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* La spunta quando e' gia' stato scritto: verde, perche' nell'elenco la si
+   cerca con l'occhio e non leggendola. */
+.rigaSpuntaFatta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--esito-plus);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.rigaSpuntaFatta input {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--esito-plus);
+}
+
+/* La proposta del punteggio, quando un esito ancora non c'e'. Gli stessi tre
+   toni della scheda: le due pagine devono dire la stessa cosa con lo stesso
+   colore. */
+.proposta_accettato {
+  background-color: var(--esito-plus-soft);
+  color: var(--esito-plus);
+}
+
+.proposta_valutare {
+  background-color: var(--esito-attesa-soft);
+  color: var(--esito-attesa);
+}
+
+.proposta_eventi {
+  background-color: var(--esito-event-soft);
+  color: var(--esito-event);
+}
+
+.statoRiga {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.social {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--esito-event);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.social:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.social:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

@@ -427,10 +427,10 @@ export default {
 
     /* Il dettaglio del punteggio, nel pannello. Lo legge solo chi organizza. */
     criterio: {
-      pitch: 'Ha presentato più di una volta',
-      prodotto: 'Sta costruendo il prodotto o ha già utenti',
-      eventi: 'È stato ad almeno un evento',
-      ambizione: 'Vuole fare, o sta già facendo, impresa',
+      pitch: 'Ha pitchato più di 1 volta',
+      prodotto: 'Sta costruendo il prodotto o ha già utenti/clienti',
+      eventi: 'Ha partecipato ad almeno 1 evento startup',
+      ambizione: 'Vuole diventare founder, è già founder o lavora in una startup',
     },
 
     proposta: {
@@ -440,12 +440,12 @@ export default {
     },
 
     stato: {
-      nuovo: 'Nuova',
-      contattato: 'Contattata',
-      accettato: 'Accettata',
-      eventi: 'Solo eventi',
-      escluso: 'Esclusa',
-      minorenne: 'Minorenne, da sentire',
+      nuovo: 'Nuovo',
+      contattato: 'Contattato',
+      accettato: 'Community Plus',
+      eventi: 'Solo event',
+      escluso: 'Escluso',
+      minorenne: 'U16, da sentire',
     },
   },
 
@@ -504,7 +504,7 @@ export default {
      --------------------------------------------------------------------- */
   candidaturePagina: {
     apriPannello: 'Apri le candidature',
-    titolo: 'Candidature',
+    titolo: 'Candidature YET',
     intro:
       'Tutte le candidature mandate, non solo quelle in attesa: a chi hai già scritto, chi ti manca e come è finita. La coda delle richieste si svuota, questo elenco resta.',
     nienteEmail:
@@ -523,27 +523,27 @@ export default {
     numeriAria: 'I numeri delle candidature',
     conteggi: {
       totale: 'Totale',
-      plus: 'Community Plus',
-      daValutare: 'Da decidere',
-      event: 'Solo eventi',
-      u16: 'Under 16',
+      plus: 'Plus',
+      daValutare: 'Da valutare',
+      event: 'Event',
+      u16: 'U16',
       senzaLinkedin: 'Senza LinkedIn',
     },
 
-    cerca: 'Cerca nome, numero o città',
-    contatto: {
-      aria: 'Filtra per contatto',
-      tutti: 'Contattate e no',
-      daContattare: 'Da contattare',
-      contattate: 'Già contattate',
+    cerca: 'Cerca nome, telefono, città',
+    stato: {
+      aria: 'Filtra per stato',
+      tutti: 'Tutti gli stati',
+      nuovo: 'Da contattare',
+      contattato: 'Contattato',
     },
     esito: {
       aria: 'Filtra per esito',
       tutti: 'Tutti gli esiti',
       nonDeciso: 'Non ancora deciso',
       accettato: 'Community Plus',
-      eventi: 'Solo eventi',
-      escluso: 'Escluse',
+      eventi: 'Solo event',
+      escluso: 'Escluso',
     },
     fascia: {
       aria: 'Filtra per fascia d’età',
@@ -554,11 +554,11 @@ export default {
       ignota: 'Età non chiara',
     },
     soloSenzaLinkedin: 'Senza LinkedIn',
-    soloDaScrivere: 'Da scrivere su WhatsApp',
+    soloDaScrivere: 'Da scrivere su WA',
     filtra: 'Filtra',
     azzera: 'Azzera',
 
-    esporta: 'Esporta i contatti in CSV, per esito',
+    esporta: 'Esporta contatti CSV per esito finale:',
     scarica: 'Scarica CSV',
     csv: {
       nome: 'Nome',
@@ -568,18 +568,18 @@ export default {
       linkedin: 'LinkedIn',
     },
 
-    risultati: '{n} candidature',
-    unRisultato: '1 candidatura',
+    risultati: '{n} risultati',
+    unRisultato: '1 risultato',
     nessunRisultato: 'Nessuna candidatura con questi filtri.',
 
     senzaNome: 'Senza nome',
     daScrivere: 'Da scrivere',
-    scritto: 'Contattata',
+    scritto: 'Scritto su WA',
     senzaLinkedin: 'Senza LinkedIn',
     badge: {
       accettato: 'Plus',
-      eventi: 'Eventi',
-      escluso: 'Esclusa',
+      eventi: 'Event',
+      escluso: 'Escluso',
     },
     punti: '{punti}/{su} punti',
     whatsapp: 'WhatsApp',
@@ -603,32 +603,58 @@ export default {
     decisione: 'Decisione',
     esitoFinale: 'Esito finale:',
     nonDeciso: 'non ancora deciso',
-    ultimoContatto: 'ultimo contatto:',
-    mai: 'mai',
+    ultimoContatto: 'Ultimo contatto:',
+    mai: '—',
     conferma: {
       accettato: 'Conferma Community Plus',
-      eventi: 'Conferma solo eventi',
+      eventi: 'Conferma Solo event',
       escluso: 'Escludi',
     },
     salvo: 'Salvo…',
-    segnaContattata: 'Segna come contattata',
-    annullaContatto: 'Non l’ho contattata',
+    segnaContattata: 'Segna come contattato',
+    annullaContatto: 'Non l’ho contattato',
 
     note: 'Note',
     notePlaceholder: 'Appunti dopo la chiamata, impressioni…',
     noteAvviso:
       'Queste note stanno dentro la candidatura, e la candidatura la può aprire anche la persona di cui parla. Scrivici quello che le diresti in faccia.',
-    salvaNote: 'Salva le note',
+    salvaNote: 'Salva note',
     salvate: 'Salvate.',
 
-    punteggioTitolo: 'Punteggio: {punti} su {su}',
+    punteggioTitolo: 'Punteggio: {punti}/{su}',
     punteggioSpiega:
-      'Quattro criteri, un punto ciascuno. È una proposta, non una decisione: LinkedIn non conta, e il punteggio non è salvato da nessuna parte, viene calcolato mentre lo guardi.',
+      'Da 3 punti in su: Community Plus. 2 punti: Da valutare. Meno: Solo event sharing. LinkedIn non conta. Il punteggio non è salvato da nessuna parte: viene calcolato mentre lo guardi.',
 
+    criterio: {
+      pitch: 'Pitch',
+      prodotto: 'Prodotto',
+      eventi: 'Eventi',
+      ambizione: 'Ambizione',
+    },
+    piuUno: '(+1)',
+    zero: '(0)',
+
+    /* LE STESSE DOMANDE, VISTE DA CHI LEGGE E NON DA CHI RISPONDE.
+       Nel form sono rivolte alla persona ("Cosa fai adesso"); qui si sta
+       leggendo la sua scheda, quindi parlano di lei ("Cosa fa oggi"). Sono
+       chiavi a parte e non una riscrittura di candidatura.*, perche' quelle
+       le usa il form e li' il "tu" e' giusto. */
+    domanda: {
+      dataNascita: 'Data di nascita',
+      citta: 'Città',
+      occupazione: 'Cosa fa oggi',
+      ruolo: 'Si vede come',
+      stadioProgetto: 'Progetto',
+      progettoLink: 'Link/nome progetto',
+      nPitch: 'Ha pitchato',
+      nEventi: 'Eventi startup',
+      eventiQuali: 'Quali eventi',
+      fonte: 'Come ci ha conosciuto',
+      motivazione: 'Cosa cerca in YET',
+      chiE: 'Chi è',
+    },
     risposte: 'Risposte',
-    citta: 'Città',
-    chiE: 'Chi è',
-    consensi: 'Consensi — privacy {privacy} · WhatsApp {whatsapp}',
+    consensi: 'Consensi — Privacy {privacy} · WhatsApp {whatsapp} · il {data}',
 
     scritturaRifiutata: 'Il database ha rifiutato la modifica.',
     operazioneFallita: 'Non è andata. Riprova.',

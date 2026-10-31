@@ -407,10 +407,10 @@ export default {
     stato: {
       nuovo: 'New',
       contattato: 'Contacted',
-      accettato: 'Accepted',
-      eventi: 'Events only',
-      escluso: 'Excluded',
-      minorenne: 'Under 16, to speak with',
+      accettato: 'Community Plus',
+      eventi: 'Event only',
+      escluso: 'Turned down',
+      minorenne: 'U16, to speak with',
     },
   },
 
@@ -457,7 +457,7 @@ export default {
 
   candidaturePagina: {
     apriPannello: 'Open applications',
-    titolo: 'Applications',
+    titolo: 'YET applications',
     intro:
       'Every application sent, not just the ones waiting: who you have already written to, who is left, and how it ended. The requests queue empties itself, this list stays.',
     nienteEmail:
@@ -476,26 +476,26 @@ export default {
     numeriAria: 'Application numbers',
     conteggi: {
       totale: 'Total',
-      plus: 'Community Plus',
-      daValutare: 'Still open',
-      event: 'Events only',
-      u16: 'Under 16',
+      plus: 'Plus',
+      daValutare: 'To weigh up',
+      event: 'Event',
+      u16: 'U16',
       senzaLinkedin: 'No LinkedIn',
     },
 
-    cerca: 'Search name, number or city',
-    contatto: {
-      aria: 'Filter by contact',
-      tutti: 'Contacted or not',
-      daContattare: 'To contact',
-      contattate: 'Already contacted',
+    cerca: 'Search name, phone, city',
+    stato: {
+      aria: 'Filter by state',
+      tutti: 'All states',
+      nuovo: 'To contact',
+      contattato: 'Contacted',
     },
     esito: {
       aria: 'Filter by outcome',
       tutti: 'All outcomes',
       nonDeciso: 'Not decided yet',
       accettato: 'Community Plus',
-      eventi: 'Events only',
+      eventi: 'Event only',
       escluso: 'Turned down',
     },
     fascia: {
@@ -507,11 +507,11 @@ export default {
       ignota: 'Age unclear',
     },
     soloSenzaLinkedin: 'No LinkedIn',
-    soloDaScrivere: 'To write on WhatsApp',
+    soloDaScrivere: 'To write on WA',
     filtra: 'Filter',
     azzera: 'Reset',
 
-    esporta: 'Export contacts as CSV, by outcome',
+    esporta: 'Export contacts as CSV by final outcome:',
     scarica: 'Download CSV',
     csv: {
       nome: 'Name',
@@ -521,17 +521,17 @@ export default {
       linkedin: 'LinkedIn',
     },
 
-    risultati: '{n} applications',
-    unRisultato: '1 application',
+    risultati: '{n} results',
+    unRisultato: '1 result',
     nessunRisultato: 'No application matches these filters.',
 
     senzaNome: 'No name',
     daScrivere: 'To write',
-    scritto: 'Contacted',
+    scritto: 'Written on WA',
     senzaLinkedin: 'No LinkedIn',
     badge: {
       accettato: 'Plus',
-      eventi: 'Events',
+      eventi: 'Event',
       escluso: 'Turned down',
     },
     punti: '{punti}/{su} points',
@@ -556,11 +556,11 @@ export default {
     decisione: 'Decision',
     esitoFinale: 'Final outcome:',
     nonDeciso: 'not decided yet',
-    ultimoContatto: 'last contact:',
-    mai: 'never',
+    ultimoContatto: 'Last contact:',
+    mai: '—',
     conferma: {
       accettato: 'Confirm Community Plus',
-      eventi: 'Confirm events only',
+      eventi: 'Confirm Event only',
       escluso: 'Turn down',
     },
     salvo: 'Saving…',
@@ -571,17 +571,38 @@ export default {
     notePlaceholder: 'Notes after the call, impressions…',
     noteAvviso:
       'These notes live inside the application, and the application can be opened by the person it is about. Write what you would say to their face.',
-    salvaNote: 'Save the notes',
+    salvaNote: 'Save notes',
     salvate: 'Saved.',
 
-    punteggioTitolo: 'Score: {punti} out of {su}',
+    punteggioTitolo: 'Score: {punti}/{su}',
     punteggioSpiega:
-      'Four criteria, one point each. It is a suggestion, not a decision: LinkedIn does not count, and the score is stored nowhere, it is worked out while you look at it.',
+      '3 points or more: Community Plus. 2 points: to weigh up. Less: event sharing only. LinkedIn does not count. The score is stored nowhere: it is worked out while you look at it.',
 
+    criterio: {
+      pitch: 'Pitch',
+      prodotto: 'Product',
+      eventi: 'Events',
+      ambizione: 'Ambition',
+    },
+    piuUno: '(+1)',
+    zero: '(0)',
+
+    domanda: {
+      dataNascita: 'Date of birth',
+      citta: 'City',
+      occupazione: 'What they do now',
+      ruolo: 'Sees themselves as',
+      stadioProgetto: 'Project',
+      progettoLink: 'Project link/name',
+      nPitch: 'Has pitched',
+      nEventi: 'Startup events',
+      eventiQuali: 'Which events',
+      fonte: 'How they heard about us',
+      motivazione: 'What they want from YET',
+      chiE: 'About them',
+    },
     risposte: 'Answers',
-    citta: 'City',
-    chiE: 'About them',
-    consensi: 'Consents — privacy {privacy} · WhatsApp {whatsapp}',
+    consensi: 'Consents — Privacy {privacy} · WhatsApp {whatsapp} · on {data}',
 
     scritturaRifiutata: 'The database refused the change.',
     operazioneFallita: 'That did not work. Try again.',

@@ -144,6 +144,11 @@
   --esito-u16-soft: #eae0fb;
   --whatsapp: #0f7a42;
 
+  /* Il segno di un criterio che non e' scattato, nella scheda di una
+     candidatura. Separato da --danger apposta: li' qualcosa e' andato storto,
+     qui no, e' solo un punto che non c'e'. 5.9:1 sul bianco della scheda. */
+  --segno-no: #b3261e;
+
   /* -----------------------------------------------------------------------
      1a. SOPRA UNA FOTOGRAFIA
 

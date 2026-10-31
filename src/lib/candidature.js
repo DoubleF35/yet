@@ -141,7 +141,12 @@ export function componiDossier(candidatura, profilo) {
     stato: c.stato ?? 'nuovo',
     esito: esitoDi(c.stato),
     note: String(c.note ?? ''),
-    daScrivere: c.daScrivere === true,
+    /* Il verso del campo: ASSENTE VUOL DIRE "DA SCRIVERE".
+       Una candidatura appena arrivata non l'ha toccata nessuno, quindi a
+       nessuno e' ancora stato scritto. Con il verso opposto (assente = gia'
+       fatto) le candidature nuove sarebbero sparite dal filtro proprio
+       mentre sono le uniche che hanno bisogno di una risposta. */
+    daScrivere: c.daScrivere !== false,
     /* Le date restano come arrivano, cioe' Timestamp di Firestore: a
        trasformarle ci pensa formatDate() nel momento in cui si disegnano.
        Convertirle qui vorrebbe dire importare lib/db.js, e con lui Firebase,
@@ -204,8 +209,13 @@ export function filtra(dossiers = [], filtri = {}) {
   const cifre = testo.replace(/[^\d]/g, '')
 
   return dossiers.filter((d) => {
-    if (filtri.contatto === 'da-contattare' && d.contattata) return false
-    if (filtri.contatto === 'contattate' && !d.contattata) return false
+    /* Lo "stato" e' dove sta la persona nel giro, non come e' finita: o non
+       le si e' ancora scritto, o le si e' scritto. L'esito e' il filtro
+       accanto, e sono due cose che si incrociano: una gia' contattata puo'
+       essere ancora senza esito, e una decisa puo' non essere ancora stata
+       avvisata. */
+    if (filtri.stato === 'nuovo' && d.contattata) return false
+    if (filtri.stato === 'contattato' && !d.contattata) return false
 
     if (filtri.esito === 'non-deciso' && d.esito !== null) return false
     if (ESITI.includes(filtri.esito) && d.esito !== filtri.esito) return false
