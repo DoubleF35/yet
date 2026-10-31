@@ -38,6 +38,19 @@
         var m = window.location.pathname.match(/^\/vetrina\/([^/]+)\/?$/)
         if (m && m[1]) {
           window.location.replace('/vetrina/?p=' + encodeURIComponent(m[1]))
+          return
+        }
+
+        /* La scheda di una candidatura, nel pannello. Stesso meccanismo delle
+           pagine dei membri e stessa ragione: l'identificativo e' uno per
+           persona, quindi un file per ognuna non si puo' generare al build.
+
+           /admin, /admin/richieste e /admin/candidature invece un file ce
+           l'hanno (li scrive scripts/prerender.mjs) e qui non arrivano mai.
+           Qui arriva solo la forma con l'identificativo dentro. */
+        var c = window.location.pathname.match(/^\/admin\/candidature\/([^/]+)\/?$/)
+        if (c && c[1]) {
+          window.location.replace('/admin/candidature/?p=' + encodeURIComponent(c[1]))
         }
       })()
     </script>
