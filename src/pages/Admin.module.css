@@ -523,3 +523,30 @@
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+
+/* Il bottone per le candidature gia' mandate.
+   Pieno e non sottolineato come la scorciatoia qui sopra: la coda delle
+   richieste si svuota e sparisce, l'elenco delle candidature e' invece il
+   posto in cui si torna, e deve farsi trovare senza cercarlo. */
+.bottoneCandidature {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border-radius: var(--radius);
+  background-color: var(--ink);
+  color: var(--bg);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.bottoneCandidature:hover {
+  background-color: var(--coral-dark);
+  color: var(--on-coral);
+}
+
+.bottoneCandidature:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

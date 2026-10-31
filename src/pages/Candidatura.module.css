@@ -1,0 +1,376 @@
+/* =========================================================================
+   LA SCHEDA DI UNA CANDIDATURA
+
+   Quattro riquadri in colonna: decisione, appunti, punteggio, risposte. In
+   quest'ordine e non in quello della lettura, perche' la pagina si apre
+   avendo gia' deciso di decidere: i tasti stanno in alto, dove arriva il
+   pollice, e le risposte sotto, dove si scorre.
+
+   I colori degli esiti vengono dai token --esito-* del tema: le stesse tre
+   parole devono avere lo stesso colore qui e nell'elenco.
+   ========================================================================= */
+
+.pagina {
+  padding-block: var(--space-9) var(--space-10);
+  max-inline-size: 48rem;
+}
+
+.ritorno {
+  margin: 0 0 var(--space-5);
+}
+
+.link {
+  color: var(--coral-text);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.ritorno .link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--muted);
+  font-size: var(--step--1);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.ritorno .link:hover {
+  color: var(--ink);
+}
+
+.link:focus-visible,
+.decide:focus-visible,
+.secondario:focus-visible,
+.salva:focus-visible,
+.whatsapp:focus-visible,
+.contatto:focus-visible,
+.textarea:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.testa {
+  margin-block-end: var(--space-6);
+}
+
+.titolo {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-heading);
+}
+
+.etichette {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-2);
+}
+
+.badge {
+  padding: 0.15rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  line-height: 1.6;
+}
+
+/* La proposta del punteggio, nei suoi tre toni. "Da accettare" non e' verde
+   pieno di proposito: non e' una decisione, e' una somma di quattro spunte. */
+.proposta_accettato {
+  background-color: var(--esito-plus-soft);
+  color: var(--esito-plus);
+}
+
+.proposta_valutare {
+  background-color: var(--esito-attesa-soft);
+  color: var(--esito-attesa);
+}
+
+.proposta_eventi {
+  background-color: var(--esito-event-soft);
+  color: var(--esito-event);
+}
+
+.badge_stato {
+  background-color: var(--surface-sunken);
+  color: var(--muted);
+}
+
+.meta {
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.contatti {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.whatsapp {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius);
+  background-color: var(--whatsapp);
+  color: #ffffff;
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.contatto {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+/* --- i riquadri ------------------------------------------------------- */
+.scheda {
+  margin-block-end: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+}
+
+.schedaTitolo {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+}
+
+.schedaRiga {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.schedaRiga strong {
+  color: var(--ink);
+}
+
+.bottoni {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-block-end: var(--space-3);
+}
+
+.decide {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: 0;
+  border-radius: var(--radius);
+  color: #ffffff;
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.decide_accettato {
+  background-color: var(--esito-plus);
+}
+
+.decide_eventi {
+  background-color: var(--esito-event);
+}
+
+.decide_escluso {
+  background-color: var(--ink);
+  color: var(--bg);
+}
+
+/* Il bottone dell'esito gia' scelto resta a schermo ma spento: toglierlo
+   farebbe ballare la fila di tasti a ogni clic, e non si capirebbe piu'
+   quale delle tre e' la decisione presa. */
+.decide:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.secondario {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.spunta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: 2.75rem;
+  font-size: var(--step--1);
+}
+
+.spunta input {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--coral);
+}
+
+.textarea {
+  inline-size: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+  resize: vertical;
+}
+
+/* Che le note le possa leggere anche la persona non e' un dettaglio tecnico:
+   sta sotto al campo, dove si guarda mentre si scrive. */
+.avviso {
+  margin: var(--space-2) 0 var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  text-wrap: pretty;
+}
+
+.salva {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--ink);
+  color: var(--bg);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.salvate {
+  margin-inline-start: var(--space-3);
+  color: var(--ok);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.spiega {
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  text-wrap: pretty;
+}
+
+/* --- i criteri -------------------------------------------------------- */
+.criteri {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criterioSi,
+.criterioNo {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.criterioSi {
+  color: var(--ink);
+}
+
+.criterioNo {
+  color: var(--muted);
+}
+
+/* Il segno e non solo il colore: chi non distingue il verde dal grigio deve
+   comunque poter dire quali criteri sono scattati. */
+.segno {
+  inline-size: 1rem;
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.criterioSi .segno {
+  color: var(--esito-plus);
+}
+
+/* --- le risposte ------------------------------------------------------ */
+.elenco {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.riga {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.domanda {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.risposta {
+  margin: 0;
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.consensi {
+  margin: var(--space-5) 0 0;
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.nota {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--coral);
+  border-radius: var(--radius);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.errore {
+  margin: var(--space-2) 0 0;
+  color: var(--danger);
+  font-size: var(--step--1);
+}

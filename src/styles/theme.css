@@ -115,6 +115,36 @@
   --ok-soft: #dce8e1;
 
   /* -----------------------------------------------------------------------
+     GLI ESITI DELLE CANDIDATURE
+
+     Quattro colori che vivono solo nel pannello (/admin/candidature e la
+     scheda di una candidatura) e che fuori di li' non vanno usati: dicono
+     "dentro", "solo agli eventi", "da decidere" e "minorenne, da sentire".
+
+     Sono qui e non dentro i due moduli CSS perche' le due pagine devono
+     dire la stessa cosa con lo stesso colore, e due copie dello stesso
+     verde e' esattamente il modo in cui si finisce con due verdi diversi.
+
+     CONTRASTO, misurato e non a occhio: ogni -soft e' un FONDO e sopra ci
+     va il colore pieno corrispondente, mai --ink. I rapporti sul fondo
+     tenue stanno fra 5.1:1 e 5.8:1, sul bianco delle schede fra 6.1:1 e
+     7.3:1. Tutti sopra la soglia AA anche a 15px, che e' la misura a cui
+     queste etichette vengono davvero disegnate.
+
+     --whatsapp e' un caso a parte: e' un FONDO con il bianco sopra (5.4:1),
+     e il verde e' quello di WhatsApp perche' li' il colore e' il modo in cui
+     si riconosce il bottone senza leggerlo. */
+  --esito-plus: #15703f;
+  --esito-plus-soft: #dcefe3;
+  --esito-event: #1b4fd8;
+  --esito-event-soft: #dfe6fc;
+  --esito-attesa: #8a5000;
+  --esito-attesa-soft: #fbeacd;
+  --esito-u16: #6b2fc9;
+  --esito-u16-soft: #eae0fb;
+  --whatsapp: #0f7a42;
+
+  /* -----------------------------------------------------------------------
      1a. SOPRA UNA FOTOGRAFIA
 
      Questi NON seguono il tema, ed e' il punto. Su una fotografia il testo e'

@@ -1,0 +1,397 @@
+/* =========================================================================
+   L'ELENCO DELLE CANDIDATURE
+
+   Pensata per il telefono per primo, e non e' un modo di dire: il giro vero
+   e' scorrere questa pagina con WhatsApp aperto nell'altra mano. Quindi una
+   colonna sola, bersagli grandi, e i numeri in cima leggibili senza zoom.
+
+   I COLORI DEGLI ESITI stanno qui e non fra i token del tema perche' valgono
+   solo per questa pagina: il verde dice "dentro", il blu "solo agli eventi",
+   il viola "minorenne, da sentire". Sono gli stessi tre significati che gia'
+   portano i nomi degli stati, scritti anche in colore per chi scorre.
+   ========================================================================= */
+
+.pagina {
+  padding-block: var(--space-9) var(--space-10);
+  max-inline-size: 52rem;
+}
+
+.ritorno {
+  margin: 0 0 var(--space-5);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--ink);
+}
+
+.link:focus-visible,
+.nome:focus-visible,
+.apri:focus-visible,
+.whatsapp:focus-visible,
+.cerca:focus-visible,
+.select:focus-visible,
+.filtra:focus-visible,
+.azzera:focus-visible,
+.scarica:focus-visible,
+.risultati:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.testa {
+  margin-block-end: var(--space-6);
+}
+
+.titolo {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-heading);
+}
+
+.intro {
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: var(--lh-relaxed);
+  text-wrap: pretty;
+}
+
+.nota {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--coral);
+  border-radius: var(--radius);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+  text-wrap: pretty;
+}
+
+/* --- i numeri in cima --------------------------------------------------
+   auto-fit e non due colonne fisse: a 375px ne stanno due, su un portatile
+   sei, e in mezzo il browser decide da solo senza un breakpoint da
+   mantenere. */
+.numeri {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--space-3);
+  margin-block-end: var(--space-6);
+}
+
+.numero {
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+}
+
+.numeroEtichetta {
+  display: block;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.numeroValore {
+  display: block;
+  margin-block-start: var(--space-1);
+  font-size: var(--step-3);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-heading);
+}
+
+.plus .numeroValore {
+  color: var(--esito-plus);
+}
+
+.attesa .numeroValore {
+  color: var(--esito-attesa);
+}
+
+.event .numeroValore {
+  color: var(--esito-event);
+}
+
+.u16 .numeroValore {
+  color: var(--esito-u16);
+}
+
+/* --- i filtri --------------------------------------------------------- */
+.filtri {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-end: var(--space-5);
+}
+
+@media (min-width: 40rem) {
+  .filtri {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cerca,
+  .bottoniFiltri {
+    grid-column: 1 / -1;
+  }
+}
+
+.cerca,
+.select,
+.textarea {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step-0);
+}
+
+.spunta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: 2.75rem;
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.spunta input {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--coral);
+}
+
+.bottoniFiltri {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filtra {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--ink);
+  color: var(--bg);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.azzera {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--step--1);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+/* --- l'esportazione --------------------------------------------------- */
+.esporta {
+  margin-block-end: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface-sunken);
+}
+
+.esportaEtichetta {
+  display: block;
+  margin-block-end: var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.esportaRiga {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.esportaRiga .select {
+  inline-size: auto;
+  flex: 1 1 12rem;
+}
+
+.scarica {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+/* --- i risultati ------------------------------------------------------ */
+.risultati {
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.elenco {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.riga {
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+}
+
+.rigaTesta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.nome {
+  color: var(--ink);
+  font-size: var(--step-1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-heading);
+  text-decoration: none;
+}
+
+.nome:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.rigaSpunta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.rigaSpunta input {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--coral);
+}
+
+.etichette {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: var(--space-2) 0 0;
+}
+
+.badge {
+  padding: 0.15rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  line-height: 1.6;
+}
+
+.badge_accettato {
+  background-color: var(--esito-plus-soft);
+  color: var(--esito-plus);
+}
+
+.badge_eventi {
+  background-color: var(--esito-event-soft);
+  color: var(--esito-event);
+}
+
+.badge_escluso {
+  background-color: var(--line-soft);
+  color: var(--muted);
+}
+
+.badge_contattata {
+  background-color: var(--ok-soft);
+  color: var(--ok);
+}
+
+.badge_attenzione {
+  background-color: var(--esito-attesa-soft);
+  color: var(--esito-attesa);
+}
+
+.punti,
+.citta {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.azioni {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: var(--space-3) 0 0;
+}
+
+/* Il verde di WhatsApp e' il verde di WhatsApp: qui non e' decorazione, e'
+   il modo in cui si riconosce il bottone senza leggerlo. */
+.whatsapp {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius);
+  background-color: var(--whatsapp);
+  color: #ffffff;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.apri {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  color: var(--coral-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.erroreRiga {
+  margin: var(--space-2) 0 0;
+  color: var(--danger);
+  font-size: var(--step--1);
+}
