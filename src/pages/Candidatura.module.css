@@ -10,7 +10,13 @@
    parole devono avere lo stesso colore qui e nell'elenco.
    ========================================================================= */
 
+/* L'ancora di scorrimento spenta: quando i dati arrivano questa pagina
+   passa da uno scheletro corto a venti schede, e il browser, vedendo
+   comparire roba sopra, sposterebbe lo scorrimento per tenere fermo quello
+   che credeva stessi guardando. Li' sopra pero' non c'era niente da tenere
+   fermo: stava caricando. */
 .pagina {
+  overflow-anchor: none;
   padding-block: var(--space-9) var(--space-10);
   max-inline-size: 48rem;
 }
