@@ -73,7 +73,19 @@ function ripristinaIndirizzo() {
      con ?p=//altrosito.example diventerebbe un salto fuori dal sito. */
   if (!/^[^/\\]+$/.test(nome)) return
 
-  window.history.replaceState(null, '', `/vetrina/${nome}`)
+  /* Da dove siamo stati recuperati. Si legge dal percorso e si confronta con
+     un elenco chiuso, invece di fidarsi: ?p= lo puo' aggiungere chiunque a
+     qualunque indirizzo, e senza questo controllo basterebbe appenderlo alla
+     home per farle cambiare indirizzo sotto i piedi.
+
+     Le due voci sono le sole pagine che esistono come file e che hanno sotto
+     di se' un segmento variabile: la vetrina, con il nome di un membro, e
+     l'elenco delle candidature, con l'identificativo di una. */
+  const BASI = ['/vetrina/', '/admin/candidature/']
+  const base = BASI.find((b) => window.location.pathname === b)
+  if (!base) return
+
+  window.history.replaceState(null, '', `${base}${nome}`)
 }
 
 ripristinaIndirizzo()
