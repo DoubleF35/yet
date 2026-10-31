@@ -4,7 +4,17 @@ import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import Skeleton from '../components/Skeleton.jsx'
-import { ESITI, FASCE, aCsv, componiDossiers, conteggi, filtra } from '../lib/candidature.js'
+import {
+  ESITI,
+  FASCE,
+  aCsv,
+  componiDossiers,
+  conteggi,
+  filtra,
+  linkInstagram,
+  linkLinkedin,
+} from '../lib/candidature.js'
+import { useAuth } from '../lib/auth.jsx'
 import { adminListUsers, aggiornaValutazione, listCandidature } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -33,7 +43,7 @@ import s from './Candidature.module.css'
 
 const FILTRI_VUOTI = {
   testo: '',
-  contatto: 'tutti',
+  stato: 'tutti',
   esito: 'tutti',
   fascia: 'tutte',
   senzaLinkedin: false,
@@ -52,6 +62,7 @@ function Numero({ etichetta, valore, tono }) {
 
 export default function Candidature() {
   const { t } = useI18n()
+  const { signOutUser } = useAuth()
 
   const [dossiers, setDossiers] = useState([])
   const [stato, setStato] = useState('loading') // loading | ready | error | spento
@@ -165,7 +176,15 @@ export default function Candidature() {
       </p>
 
       <header className={s.testa}>
-        <h1 className={s.titolo}>{t('candidaturePagina.titolo')}</h1>
+        <div className={s.testaRiga}>
+          <h1 className={s.titolo}>{t('candidaturePagina.titolo')}</h1>
+          {/* L'uscita sta qui e non solo in navbar perche' e' una pagina su
+              cui si sta a lungo, con i dati di altre persone sotto gli occhi,
+              spesso su un telefono passato di mano. */}
+          <button className={s.esci} type="button" onClick={() => signOutUser()}>
+            {t('nav.esci')}
+          </button>
+        </div>
         <p className={s.intro}>{t('candidaturePagina.intro')}</p>
         {/* Detto a schermo e non solo nel README: chi apre questa pagina e'
             esattamente la persona che si sta chiedendo dove sia l'email. */}
@@ -251,15 +270,13 @@ export default function Candidature() {
 
             <select
               className={s.select}
-              value={filtri.contatto}
-              onChange={cambia('contatto')}
-              aria-label={t('candidaturePagina.contatto.aria')}
+              value={filtri.stato}
+              onChange={cambia('stato')}
+              aria-label={t('candidaturePagina.stato.aria')}
             >
-              <option value="tutti">{t('candidaturePagina.contatto.tutti')}</option>
-              <option value="da-contattare">
-                {t('candidaturePagina.contatto.daContattare')}
-              </option>
-              <option value="contattate">{t('candidaturePagina.contatto.contattate')}</option>
+              <option value="tutti">{t('candidaturePagina.stato.tutti')}</option>
+              <option value="nuovo">{t('candidaturePagina.stato.nuovo')}</option>
+              <option value="contattato">{t('candidaturePagina.stato.contattato')}</option>
             </select>
 
             <select
@@ -367,26 +384,33 @@ export default function Candidature() {
                       {d.nome ?? t('candidaturePagina.senzaNome')}
                     </Link>
 
-                    <label className={s.rigaSpunta}>
+                    {/* UNA SPUNTA SOLA, CHE CAMBIA NOME. Non due controlli:
+                        "da scrivere" e "scritto" sono lo stesso fatto visto
+                        dai due lati, e due caselle che dicono la stessa cosa
+                        finiscono prima o poi in disaccordo. */}
+                    <label
+                      className={d.daScrivere ? s.rigaSpunta : s.rigaSpuntaFatta}
+                    >
                       <input
                         type="checkbox"
-                        checked={d.daScrivere}
+                        checked={!d.daScrivere}
                         disabled={!!occupato[d.uid]}
-                        onChange={(e) => segnaDaScrivere(d.uid, e.target.checked)}
+                        onChange={(e) => segnaDaScrivere(d.uid, !e.target.checked)}
                       />
-                      {t('candidaturePagina.daScrivere')}
+                      {d.daScrivere
+                        ? t('candidaturePagina.daScrivere')
+                        : t('candidaturePagina.scritto')}
                     </label>
                   </div>
 
                   <p className={s.etichette}>
-                    {d.esito && (
+                    {d.esito ? (
                       <span className={`${s.badge} ${s[`badge_${d.esito}`]}`}>
                         {t(`candidaturePagina.badge.${d.esito}`)}
                       </span>
-                    )}
-                    {d.contattata && (
-                      <span className={`${s.badge} ${s.badge_contattata}`}>
-                        {t('candidaturePagina.scritto')}
+                    ) : (
+                      <span className={`${s.badge} ${s[`proposta_${d.proposta}`]}`}>
+                        {t(`candidatura.proposta.${d.proposta}`)}
                       </span>
                     )}
                     {d.senzaLinkedin && (
@@ -394,6 +418,11 @@ export default function Candidature() {
                         {t('candidaturePagina.senzaLinkedin')}
                       </span>
                     )}
+                    <span className={s.statoRiga}>
+                      {d.contattata
+                        ? t('candidaturePagina.stato.contattato')
+                        : t('candidaturePagina.stato.nuovo')}
+                    </span>
                     <span className={s.punti}>
                       {t('candidaturePagina.punti', { punti: d.punteggio, su: d.su })}
                     </span>
@@ -409,6 +438,26 @@ export default function Candidature() {
                         rel="noopener noreferrer"
                       >
                         {t('candidaturePagina.whatsapp')}
+                      </a>
+                    )}
+                    {linkLinkedin(d.linkedin) && (
+                      <a
+                        className={s.social}
+                        href={linkLinkedin(d.linkedin)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        LinkedIn ↗
+                      </a>
+                    )}
+                    {linkInstagram(d.instagram) && (
+                      <a
+                        className={s.social}
+                        href={linkInstagram(d.instagram)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Instagram ↗
                       </a>
                     )}
                     <Link className={s.apri} to={`/admin/candidature/${d.uid}`}>
