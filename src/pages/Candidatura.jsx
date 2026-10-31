@@ -8,10 +8,10 @@ import { ESITI, componiDossier, linkInstagram, linkLinkedin } from '../lib/candi
 import {
   NOTA_CANDIDATURA_MAX,
   aggiornaValutazione,
-  formatDate,
   getCandidatura,
   getUserProfile,
   setStatoCandidatura,
+  toDate,
 } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
@@ -33,17 +33,40 @@ import s from './Candidatura.module.css'
    pagina.
    ========================================================================= */
 
+/* Le date di questa pagina sono CORTE, e non e' una scelta estetica: qui si
+   guarda una scheda alla volta con il telefono in mano, e "29/10/26, 22:21"
+   si legge in un colpo d'occhio mentre "29 ottobre 2026 alle 22:21" fa andare
+   la riga a capo. Il resto del sito usa il formato disteso di lib/db.js,
+   perche' li' le date si leggono, non si consultano. */
+const tagLingua = (lang) => (lang === 'en' ? 'en-GB' : 'it-IT')
+
+function quando(valore, lang) {
+  const d = toDate(valore)
+  if (!d) return null
+  return new Intl.DateTimeFormat(tagLingua(lang), {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d)
+}
+
 /**
- * La data di nascita scritta per bene, da "2007-10-18".
+ * La data di nascita, da "2007-10-18" a "18/10/2007".
  *
  * Il mezzogiorno attaccato in fondo non e' un vezzo: senza, la stringa viene
  * letta come mezzanotte UTC, e in qualunque fuso a ovest di Greenwich la data
  * mostrata scalerebbe di un giorno. Con T12:00:00 viene letta come ora
  * locale, e nessun fuso la sposta abbastanza da cambiarle il giorno.
  */
-function dataNascita(iso, lang, formatta) {
+function dataNascita(iso, lang) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso ?? ''))) return null
-  return formatta(new Date(`${iso}T12:00:00`), lang)
+  return new Intl.DateTimeFormat(tagLingua(lang), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(`${iso}T12:00:00`))
 }
 
 /**
@@ -236,7 +259,7 @@ export default function Candidatura() {
                 </>
               )}
               {t('schedaCandidatura.candidataIl', {
-                data: formatDate(dossier.creataIl, lang),
+                data: quando(dossier.creataIl, lang) ?? '—',
               })}
             </p>
 
@@ -290,9 +313,7 @@ export default function Candidatura() {
               {' · '}
               {t('schedaCandidatura.ultimoContatto')}{' '}
               <strong>
-                {dossier.contattatoIl
-                  ? formatDate(dossier.contattatoIl, lang)
-                  : t('schedaCandidatura.mai')}
+                {quando(dossier.contattatoIl, lang) ?? t('schedaCandidatura.mai')}
               </strong>
             </p>
 
@@ -406,10 +427,24 @@ export default function Candidatura() {
             <ul className={s.criteri}>
               {dossier.dettaglio.map((d) => (
                 <li className={d.scattato ? s.criterioSi : s.criterioNo} key={d.id}>
+                  {/* Il segno PRIMA e il punteggio accanto al nome: si legge
+                      "questo si', e vale uno". Il segno non e' solo colore,
+                      perche' chi non distingue il verde dal rosso deve poter
+                      dire lo stesso quali criteri sono scattati. */}
                   <span className={s.segno} aria-hidden="true">
-                    {d.scattato ? '+' : '–'}
+                    {d.scattato ? '✓' : '✗'}
                   </span>
-                  {t(d.chiave)}
+                  <span>
+                    <strong className={s.criterioNome}>
+                      {t(`schedaCandidatura.criterio.${d.id}`)}
+                    </strong>{' '}
+                    <span className={s.criterioPunto}>
+                      {d.scattato
+                        ? t('schedaCandidatura.piuUno')
+                        : t('schedaCandidatura.zero')}
+                    </span>
+                    <span className={s.criterioTesto}>{t(d.chiave)}</span>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -423,54 +458,65 @@ export default function Candidatura() {
 
             <dl className={s.elenco}>
               <Riga
-                etichetta={t('candidatura.dataNascita')}
-                valore={dataNascita(dossier.candidatura.dataNascita, lang, formatDate)}
+                etichetta={t('schedaCandidatura.domanda.dataNascita')}
+                valore={dataNascita(dossier.candidatura.dataNascita, lang)}
               />
-              <Riga etichetta={t('schedaCandidatura.citta')} valore={dossier.citta} />
+              <Riga etichetta={t('schedaCandidatura.domanda.citta')} valore={dossier.citta} />
               <Riga
-                etichetta={t('candidatura.occupazione')}
+                etichetta="Instagram"
+                valore={dossier.instagram}
+                href={linkInstagram(dossier.instagram)}
+              />
+              <Riga
+                etichetta="LinkedIn"
+                valore={dossier.linkedin}
+                href={linkLinkedin(dossier.linkedin)}
+              />
+              <Riga
+                etichetta={t('schedaCandidatura.domanda.occupazione')}
                 valore={etichetta(t, 'occupazione', dossier.candidatura.occupazione)}
               />
               <Riga
-                etichetta={t('candidatura.ruolo')}
+                etichetta={t('schedaCandidatura.domanda.ruolo')}
                 valore={etichetta(t, 'ruolo', dossier.candidatura.ruolo)}
               />
               <Riga
-                etichetta={t('candidatura.stadioProgetto')}
+                etichetta={t('schedaCandidatura.domanda.stadioProgetto')}
                 valore={etichetta(t, 'stadio', dossier.candidatura.stadioProgetto)}
               />
               <Riga
-                etichetta={t('candidatura.progettoLink')}
+                etichetta={t('schedaCandidatura.domanda.progettoLink')}
                 valore={dossier.candidatura.progettoLink}
                 href={dossier.candidatura.progettoLink}
               />
               <Riga
-                etichetta={t('candidatura.nPitch')}
+                etichetta={t('schedaCandidatura.domanda.nPitch')}
                 valore={etichetta(t, 'nPitch', dossier.candidatura.nPitch)}
               />
               <Riga
-                etichetta={t('candidatura.nEventi')}
+                etichetta={t('schedaCandidatura.domanda.nEventi')}
                 valore={etichetta(t, 'nEventi', dossier.candidatura.nEventi)}
               />
               <Riga
-                etichetta={t('candidatura.eventiQuali')}
+                etichetta={t('schedaCandidatura.domanda.eventiQuali')}
                 valore={dossier.candidatura.eventiQuali}
               />
               <Riga
-                etichetta={t('candidatura.fonte')}
+                etichetta={t('schedaCandidatura.domanda.fonte')}
                 valore={etichetta(t, 'fonte', dossier.candidatura.fonte)}
               />
               <Riga
-                etichetta={t('candidatura.motivazione')}
+                etichetta={t('schedaCandidatura.domanda.motivazione')}
                 valore={dossier.candidatura.motivazione}
               />
-              <Riga etichetta={t('schedaCandidatura.chiE')} valore={dossier.bio} />
+              <Riga etichetta={t('schedaCandidatura.domanda.chiE')} valore={dossier.bio} />
             </dl>
 
             <p className={s.consensi}>
               {t('schedaCandidatura.consensi', {
                 privacy: dossier.candidatura.consensoPrivacy ? '✓' : '✗',
                 whatsapp: dossier.candidatura.consensoWhatsapp ? '✓' : '✗',
+                data: quando(dossier.creataIl, lang) ?? '—',
               })}
             </p>
           </section>

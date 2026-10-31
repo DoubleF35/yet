@@ -374,3 +374,29 @@
   color: var(--danger);
   font-size: var(--step--1);
 }
+
+/* --- i criteri come nelle foto: segno, nome, punto, spiegazione -------- */
+.criterioNome {
+  font-weight: var(--weight-bold);
+}
+
+.criterioPunto {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+/* La spiegazione va a capo sotto il nome: su un telefono "Vuole diventare
+   founder, e' gia' founder o lavora in una startup" non ci sta accanto. */
+.criterioTesto {
+  display: block;
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+/* Il rosso del segno mancante. Non e' un errore ed e' per questo che non usa
+   --danger: e' un criterio che non e' scattato, non qualcosa che e' andato
+   storto. */
+.criterioNo .segno {
+  color: var(--segno-no);
+}
