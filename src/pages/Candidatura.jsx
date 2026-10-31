@@ -15,6 +15,7 @@ import {
 } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
+import { useInCimaQuandoPronta } from '../lib/scorrimento.js'
 
 import s from './Candidatura.module.css'
 
@@ -151,6 +152,10 @@ export default function Candidatura() {
       vivo = false
     }
   }, [uid, tentativo])
+
+  /* La pagina si allunga di colpo quando i dati arrivano: senza questo,
+     dove ci si ritrova lo decide il browser. Vedi lib/scorrimento.js. */
+  useInCimaQuandoPronta(stato === 'ready')
 
   /* Un solo punto per tutte le scritture della pagina, cosi' il messaggio di
      errore e il bottone bloccato si comportano allo stesso modo qualunque

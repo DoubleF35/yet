@@ -18,6 +18,7 @@ import { useAuth } from '../lib/auth.jsx'
 import { adminListUsers, aggiornaValutazione, listCandidature } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
+import { useInCimaQuandoPronta } from '../lib/scorrimento.js'
 
 import s from './Candidature.module.css'
 
@@ -107,6 +108,10 @@ export default function Candidature() {
       vivo = false
     }
   }, [tentativo])
+
+  /* La pagina si allunga di colpo quando i dati arrivano: senza questo,
+     dove ci si ritrova lo decide il browser. Vedi lib/scorrimento.js. */
+  useInCimaQuandoPronta(stato === 'ready')
 
   const numeri = useMemo(() => conteggi(dossiers), [dossiers])
   const visibili = useMemo(() => filtra(dossiers, filtri), [dossiers, filtri])
