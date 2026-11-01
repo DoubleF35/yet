@@ -350,7 +350,8 @@ export default {
     stadioUtenti: 'I already have users or customers',
 
     progettoLink: 'Link to the project',
-    progettoLinkHint: 'If there is something to look at. A single page is fine.',
+    progettoLinkHint: 'A single page is fine.',
+    progettoLinkNessuno: 'There is nothing to show yet',
 
     nPitch: 'How many times you have pitched it',
     nPitchMai: 'Never',
@@ -985,6 +986,9 @@ export default {
         'This is what other people see on the members page. Two well-written lines are worth more than a CV.',
       chiSei: 'Who you are',
       obbligatorio: ' (required)',
+      rispostaObbligatoria: 'An answer is needed.',
+      linkOppureNessuno: 'Write the link, or tick “I don’t have one”.',
+      nonCeLHo: 'I don’t have one',
       nome: 'Name and surname',
       nomeHint: 'How you want to be called. Just a first name is fine.',
       nomeErrore: 'A name is needed: it is the one you appear with among the members.',
@@ -1015,7 +1019,7 @@ export default {
       fotoNonUsabile: 'I cannot use this image.',
       cosaFai: 'What you do',
       cosaFaiHint:
-        'All optional, and they are the ones that make the difference: anyone looking for a hand or a co-founder reads these three. They appear on your profile page.',
+        'These are the ones that make the difference: anyone looking for a hand or a co-founder reads these three. They appear on your profile page.',
       project: 'What you are building',
       projectHint:
         'The project, the product, the idea. Even if it has just started, or is still fuzzy: writing what it is right now is worth more than a perfect description.',
@@ -1027,7 +1031,7 @@ export default {
         'The things other people can ask you about. No job title needed: “I edit video”, “my English is good”, “I can build a website”.',
       doveTrovarti: 'Where to find you',
       doveTrovartiHint:
-        'All optional. They are for the people who see your project and want to write to you.',
+        'They are for the people who see your project and want to write to you. If you are not on one of them, tick “I don’t have one”: that is fine too.',
       altro: 'Other',
       linkedinPlaceholder: 'https://www.linkedin.com/in/yourname',
       instagramPlaceholder: '@username',
