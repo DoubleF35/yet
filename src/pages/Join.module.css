@@ -561,3 +561,29 @@
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+
+/* «Non ce l'ho», sotto i tre campi dei link.
+   Piccola e grigia: e' la risposta di ripiego, non quella che speriamo. Ma
+   l'area da toccare resta alta 2.75rem, perche' su un telefono una spunta
+   piccola e' una spunta che si sbaglia. */
+.nonCeLHo {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: 2.75rem;
+  margin-block-start: var(--space-1);
+  color: var(--muted);
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.nonCeLHoBox {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--coral);
+}
+
+.nonCeLHoBox:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

@@ -297,6 +297,19 @@ const EMPTY_FORM = {
   instagram: '',
   other: '',
 
+  /* «NON CE L'HO», PER I TRE LINK E PER IL PROGETTO.
+     Da quando ogni domanda vuole una risposta, un campo vuoto non basta piu'
+     a distinguere "non ce l'ho" da "l'ho saltato", e senza questa distinzione
+     chi non sta su LinkedIn non riuscirebbe piu' a mandare la candidatura.
+
+     NON SI SALVANO DA NESSUNA PARTE, ed e' voluto: quello che resta nel
+     profilo e' la stringa vuota, esattamente come prima. Servono al momento
+     di premere Manda, per sapere che una risposta c'e' stata, non dopo. */
+  nessunLinkedin: false,
+  nessunInstagram: false,
+  nessunAltro: false,
+  nessunProgettoLink: false,
+
   /* LE RISPOSTE DI SELEZIONE.
      Stanno nello stesso stato dei campi pubblici perche' il form e' uno solo
      e si manda in una volta, ma finiscono in DUE documenti diversi: questi in
@@ -324,6 +337,40 @@ const CAMPI_CANDIDATURA = [
   'motivazione', 'consensoPrivacy', 'consensoWhatsapp',
 ]
 
+/** L'asterisco, piu' la stessa cosa detta a parole per chi non lo vede. */
+function Obbligatorio({ t }) {
+  return (
+    <>
+      <span className={s.req} aria-hidden="true">
+        *
+      </span>
+      <span className="sr-only">{t('join.form.obbligatorio')}</span>
+    </>
+  )
+}
+
+/**
+ * «Non ce l'ho», sotto un campo che adesso vuole una risposta.
+ *
+ * Spuntandola il campo si svuota e si spegne, e non e' un vezzo: un indirizzo
+ * rimasto scritto dentro un campo disattivato sembra salvato e non lo e'.
+ * Quello che finisce nel profilo resta la stringa vuota, come prima.
+ */
+function NonCeLHo({ id, attivo, onCambia, testo }) {
+  return (
+    <label className={s.nonCeLHo} htmlFor={id}>
+      <input
+        className={s.nonCeLHoBox}
+        id={id}
+        type="checkbox"
+        checked={attivo === true}
+        onChange={(e) => onCambia(e.target.checked)}
+      />
+      <span>{testo}</span>
+    </label>
+  )
+}
+
 /** Dal documento Firestore (più i dati Google come ripiego) allo stato del form. */
 function formFromProfile(profile, user) {
   const socials = (profile && profile.socials) || {}
@@ -342,6 +389,15 @@ function formFromProfile(profile, user) {
     linkedin: socials.linkedin || '',
     instagram: socials.instagram || '',
     other: socials.other || '',
+
+    /* Ripartono spenti: chi torna qui sta MODIFICANDO, e in modifica niente
+       e' obbligatorio, quindi non c'e' niente da sbloccare. Spuntarli da
+       soli perche' il campo e' vuoto direbbe a nome suo una cosa che non ha
+       detto. */
+    nessunLinkedin: false,
+    nessunInstagram: false,
+    nessunAltro: false,
+    nessunProgettoLink: false,
   }
 }
 
@@ -422,7 +478,19 @@ function ProfileForm({ firebaseMissing }) {
     if (profile == null && profileLoading) return
 
     hydratedUid.current = user.uid
-    setForm(formFromProfile(profile, user))
+    /* FUSO, NON SOSTITUITO, e non e' un dettaglio: formFromProfile() torna i
+       soli campi PUBBLICI, quindi un setForm secco cancellava dallo stato
+       tutte le risposte di selezione, lasciandole a `undefined` invece che a
+       stringa vuota. Per chi si candida la prima volta non c'e' nessuna
+       candidatura da rileggere che le rimetta a posto, e premere Manda senza
+       aver scritto la motivazione non dava l'errore: lanciava un'eccezione su
+       `form.motivazione.trim()` e non succedeva niente. Si vedeva solo
+       lasciando vuoto proprio il campo che la validazione doveva segnalare.
+
+       Quando si cambia account si riparte invece da zero: tenere la data di
+       nascita di chi c'era prima dentro il form di qualcun altro non e'
+       comodita', e' un dato della persona sbagliata. */
+    setForm((prec) => ({ ...(switched ? EMPTY_FORM : prec), ...formFromProfile(profile, user) }))
   }, [user, profile, profileLoading])
 
   /* Le risposte di selezione arrivano da un'altra collection, quindi da una
@@ -579,6 +647,35 @@ function ProfileForm({ firebaseMissing }) {
       nextErrors.photoURL = t('join.form.fotoErrore')
     }
 
+    /* I TRE CAMPI DI «COSA FAI» E I TRE LINK ADESSO VOGLIONO UNA RISPOSTA.
+       Erano facoltativi, e qui sopra c'era scritto che un profilo con solo
+       nome e bio doveva restare legittimo. La scelta e' cambiata: una tessera
+       che non dice cosa fai, cosa cerchi e dove trovarti non serve a chi la
+       legge, ed e' esattamente il mestiere della vetrina.
+
+       Per i tre link la domanda si puo' pero' chiudere anche con un no, ed e'
+       la ragione per cui esistono gli interruttori «non ce l'ho»: pretendere
+       un indirizzo LinkedIn da chi su LinkedIn non c'e' non e' rigore, e' un
+       muro, e chi lo trova davanti chiude la pagina.
+
+       Solo alla prima candidatura: in modifica resta tutto com'era, perche'
+       chi ha un profilo nato prima di questa regola non deve ritrovarsi il
+       salvataggio bloccato per campi che allora nessuno gli aveva chiesto. */
+    if (!modifica) {
+      for (const campo of ['project', 'looking', 'skills']) {
+        if (!form[campo].trim()) nextErrors[campo] = t('join.form.rispostaObbligatoria')
+      }
+      for (const [campo, nessuno] of [
+        ['linkedin', 'nessunLinkedin'],
+        ['instagram', 'nessunInstagram'],
+        ['other', 'nessunAltro'],
+      ]) {
+        if (!form[campo].trim() && form[nessuno] !== true) {
+          nextErrors[campo] = t('join.form.linkOppureNessuno')
+        }
+      }
+    }
+
     /* Le domande di selezione. Sono tutte obbligatorie tranne il link al
        progetto e l'elenco degli eventi, che hanno senso solo per alcuni.
 
@@ -593,10 +690,23 @@ function ProfileForm({ firebaseMissing }) {
       erroriSelezione.whatsapp = t('candidatura.whatsappErrore')
     }
     for (const campo of ['occupazione', 'ruolo', 'fonte', 'stadioProgetto', 'nPitch', 'nEventi']) {
-      if (!form[campo]) erroriSelezione[campo] = t('join.form.obbligatorio')
+      if (!form[campo]) erroriSelezione[campo] = t('join.form.rispostaObbligatoria')
     }
     if (!form.motivazione.trim()) {
-      erroriSelezione.motivazione = t('join.form.obbligatorio')
+      erroriSelezione.motivazione = t('join.form.rispostaObbligatoria')
+    }
+
+    /* Le due domande che compaiono solo a volte. Si pretendono quando sono a
+       schermo e si lasciano stare quando non lo sono: chiedere il link di un
+       progetto a chi ha appena detto «niente, per ora» sarebbe una domanda
+       senza risposta possibile. */
+    if (form.stadioProgetto && form.stadioProgetto !== 'nessuno') {
+      if (!form.progettoLink.trim() && form.nessunProgettoLink !== true) {
+        erroriSelezione.progettoLink = t('join.form.linkOppureNessuno')
+      }
+    }
+    if (form.nEventi && form.nEventi !== 'zero' && !form.eventiQuali.trim()) {
+      erroriSelezione.eventiQuali = t('join.form.rispostaObbligatoria')
     }
     if (form.consensoPrivacy !== true || form.consensoWhatsapp !== true) {
       erroriSelezione.consensi = t('candidatura.consensoMancante')
@@ -633,12 +743,18 @@ function ProfileForm({ firebaseMissing }) {
         (nextErrors.location && placeRef.current) ||
         (nextErrors.bio && bioRef.current) ||
         (nextErrors.photoURL && photoRef.current) ||
+        ['project', 'looking', 'skills', 'linkedin', 'instagram', 'other']
+          .filter((c) => nextErrors[c])
+          .map((c) => document.getElementById(`${fid}-${c}`))
+          .find(Boolean) ||
         (nextErrors.dataNascita && document.getElementById(`${fid}-nascita`)) ||
         (nextErrors.whatsapp && document.getElementById(`${fid}-whatsapp`)) ||
         ['occupazione', 'ruolo', 'stadioProgetto', 'nPitch', 'nEventi', 'fonte']
           .filter((c) => nextErrors[c])
           .map((c) => document.querySelector(`input[name="${c}"]`))
           .find(Boolean) ||
+        (nextErrors.progettoLink && document.getElementById(`${fid}-progetto`)) ||
+        (nextErrors.eventiQuali && document.getElementById(`${fid}-quali`)) ||
         (nextErrors.motivazione && document.getElementById(`${fid}-motivazione`)) ||
         (nextErrors.consensi && document.getElementById(`${fid}-consenso-privacy`)) ||
         null
@@ -1024,6 +1140,7 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-project`}>
                 {t('join.form.project')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <textarea
                 className={cx(s.input, s.textarea)}
@@ -1037,11 +1154,17 @@ function ProfileForm({ firebaseMissing }) {
               <p className={s.hint} id={`${fid}-project-hint`}>
                 {t('join.form.projectHint')}
               </p>
+              {errors.project && (
+                <p className={s.fieldError} role="alert">
+                  {errors.project}
+                </p>
+              )}
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-looking`}>
                 {t('join.form.looking')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, s.textareaShort)}
@@ -1055,11 +1178,17 @@ function ProfileForm({ firebaseMissing }) {
               <p className={s.hint} id={`${fid}-looking-hint`}>
                 {t('join.form.lookingHint')}
               </p>
+              {errors.looking && (
+                <p className={s.fieldError} role="alert">
+                  {errors.looking}
+                </p>
+              )}
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-skills`}>
                 {t('join.form.skills')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <textarea
                 className={cx(s.input, s.textarea, s.textareaShort)}
@@ -1073,6 +1202,11 @@ function ProfileForm({ firebaseMissing }) {
               <p className={s.hint} id={`${fid}-skills-hint`}>
                 {t('join.form.skillsHint')}
               </p>
+              {errors.skills && (
+                <p className={s.fieldError} role="alert">
+                  {errors.skills}
+                </p>
+              )}
             </div>
           </fieldset>
 
@@ -1083,6 +1217,7 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-linkedin`}>
                 {t('social.linkedin')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               {/* `type="text"` e non `url` di proposito: questi campi accettano
                   anche un handle nudo ("mario-rossi") e la validazione del
@@ -1100,17 +1235,34 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.linkedin}
                 onChange={update('linkedin')}
+                disabled={form.nessunLinkedin === true}
+                aria-invalid={errors.linkedin ? 'true' : undefined}
                 placeholder={t('join.form.linkedinPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
               />
+              <NonCeLHo
+                id={`${fid}-linkedin-no`}
+                attivo={form.nessunLinkedin}
+                onCambia={(acceso) => {
+                  scrivi('nessunLinkedin', acceso)
+                  if (acceso) scrivi('linkedin', '')
+                }}
+                testo={t('join.form.nonCeLHo')}
+              />
+              {errors.linkedin && (
+                <p className={s.fieldError} role="alert">
+                  {errors.linkedin}
+                </p>
+              )}
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-instagram`}>
                 {t('social.instagram')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <input
                 className={s.input}
@@ -1119,17 +1271,34 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.instagram}
                 onChange={update('instagram')}
+                disabled={form.nessunInstagram === true}
+                aria-invalid={errors.instagram ? 'true' : undefined}
                 placeholder={t('join.form.instagramPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
               />
+              <NonCeLHo
+                id={`${fid}-instagram-no`}
+                attivo={form.nessunInstagram}
+                onCambia={(acceso) => {
+                  scrivi('nessunInstagram', acceso)
+                  if (acceso) scrivi('instagram', '')
+                }}
+                testo={t('join.form.nonCeLHo')}
+              />
+              {errors.instagram && (
+                <p className={s.fieldError} role="alert">
+                  {errors.instagram}
+                </p>
+              )}
             </div>
 
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-other`}>
                 {t('join.form.altro')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <input
                 className={s.input}
@@ -1138,12 +1307,28 @@ function ProfileForm({ firebaseMissing }) {
                 inputMode="url"
                 value={form.other}
                 onChange={update('other')}
+                disabled={form.nessunAltro === true}
+                aria-invalid={errors.other ? 'true' : undefined}
                 placeholder={t('join.form.altroPlaceholder')}
                 autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
               />
+              <NonCeLHo
+                id={`${fid}-other-no`}
+                attivo={form.nessunAltro}
+                onCambia={(acceso) => {
+                  scrivi('nessunAltro', acceso)
+                  if (acceso) scrivi('other', '')
+                }}
+                testo={t('join.form.nonCeLHo')}
+              />
+              {errors.other && (
+                <p className={s.fieldError} role="alert">
+                  {errors.other}
+                </p>
+              )}
             </div>
           </fieldset>
 
