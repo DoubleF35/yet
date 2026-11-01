@@ -228,6 +228,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
           <div className={s.campo}>
             <label className={s.etichetta} htmlFor={`${fid}-progetto`}>
               {t('candidatura.progettoLink')}
+              {!facoltative && (
+                <span className={s.req} aria-hidden="true">
+                  {' *'}
+                </span>
+              )}
             </label>
             <input
               className={s.input}
@@ -238,11 +243,31 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
               maxLength={200}
               value={valori.progettoLink ?? ''}
               onChange={(e) => onCambia('progettoLink', e.target.value)}
+              disabled={valori.nessunProgettoLink === true}
               aria-describedby={`${fid}-progetto-hint`}
             />
             <p className={s.aiuto} id={`${fid}-progetto-hint`}>
               {t('candidatura.progettoLinkHint')}
             </p>
+            {/* Chi sta costruendo qualcosa puo' benissimo non avere ancora
+                niente da far vedere, e dirlo e' una risposta. Senza questa
+                spunta la domanda non avrebbe uscita. */}
+            {!facoltative && (
+              <label className={s.consenso} htmlFor={`${fid}-progetto-no`}>
+                <input
+                  className={s.checkbox}
+                  id={`${fid}-progetto-no`}
+                  type="checkbox"
+                  checked={valori.nessunProgettoLink === true}
+                  onChange={(e) => {
+                    onCambia('nessunProgettoLink', e.target.checked)
+                    if (e.target.checked) onCambia('progettoLink', '')
+                  }}
+                />
+                <span>{t('candidatura.progettoLinkNessuno')}</span>
+              </label>
+            )}
+            {errori.progettoLink && <p className={s.errore}>{errori.progettoLink}</p>}
           </div>
         )}
 
@@ -270,6 +295,11 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
           <div className={s.campo}>
             <label className={s.etichetta} htmlFor={`${fid}-quali`}>
               {t('candidatura.eventiQuali')}
+              {!facoltative && (
+                <span className={s.req} aria-hidden="true">
+                  {' *'}
+                </span>
+              )}
             </label>
             <input
               className={s.input}
@@ -283,6 +313,7 @@ export default function DomandeSelezione({ fid, valori, onCambia, errori = {}, f
             <p className={s.aiuto} id={`${fid}-quali-hint`}>
               {t('candidatura.eventiQualiHint')}
             </p>
+            {errori.eventiQuali && <p className={s.errore}>{errori.eventiQuali}</p>}
           </div>
         )}
       </fieldset>

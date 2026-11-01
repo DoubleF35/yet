@@ -382,7 +382,8 @@ export default {
     stadioUtenti: 'Ho già utenti o clienti',
 
     progettoLink: 'Link al progetto',
-    progettoLinkHint: 'Se c’è qualcosa da vedere. Anche una pagina sola va bene.',
+    progettoLinkHint: 'Anche una pagina sola va bene.',
+    progettoLinkNessuno: 'Non c’è ancora niente da vedere',
 
     nPitch: 'Quante volte l’hai presentato a un pubblico',
     nPitchMai: 'Mai',
@@ -1057,6 +1058,9 @@ export default {
         'È quello che gli altri vedono nella pagina Membri. Due righe fatte bene valgono più di un curriculum.',
       chiSei: 'Chi sei',
       obbligatorio: ' (obbligatorio)',
+      rispostaObbligatoria: 'Serve una risposta.',
+      linkOppureNessuno: 'Scrivi il link, oppure spunta «non ce l’ho».',
+      nonCeLHo: 'Non ce l’ho',
       nome: 'Nome e cognome',
       nomeHint: 'Come vuoi essere chiamato. Anche solo il nome va bene.',
       nomeErrore: 'Serve un nome: è quello con cui compari fra i membri.',
@@ -1087,7 +1091,7 @@ export default {
       fotoNonUsabile: 'Non riesco a usare questa immagine.',
       cosaFai: 'Cosa fai',
       cosaFaiHint:
-        'Facoltativi, e sono quelli che fanno la differenza: chi cerca una mano o un socio legge questi tre. Compaiono nella pagina del tuo profilo.',
+        'Sono quelli che fanno la differenza: chi cerca una mano o un socio legge questi tre. Compaiono nella pagina del tuo profilo.',
       project: 'Cosa stai costruendo',
       projectHint:
         'Il progetto, il prodotto, l’idea. Anche se è appena cominciata, o se è ancora confusa: scrivere com’è adesso vale più di una descrizione perfetta.',
@@ -1098,7 +1102,7 @@ export default {
       skillsHint:
         'Quello su cui gli altri possono chiedere a te. Non serve un titolo: “monto video”, “parlo inglese bene”, “so fare un sito”.',
       doveTrovarti: 'Dove trovarti',
-      doveTrovartiHint: 'Tutti facoltativi. Servono a chi vede il tuo progetto e vuole scriverti.',
+      doveTrovartiHint: 'Servono a chi vede il tuo progetto e vuole scriverti. Se su uno di questi non ci sei, spunta «non ce l’ho»: va bene lo stesso.',
       altro: 'Altro',
       linkedinPlaceholder: 'https://www.linkedin.com/in/nomecognome',
       instagramPlaceholder: '@nomeutente',
