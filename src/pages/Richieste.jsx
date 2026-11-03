@@ -19,11 +19,12 @@ import s from './Richieste.module.css'
  * indirizzo suo. Se un domani cambia come si approva qualcuno, cambia in un
  * posto solo e tutte e due le pagine lo seguono.
  *
- * SULLE MAIL. Il sito vecchio mandava una mail a ogni nuova candidatura: usava
- * Resend da dentro un server Next.js. Qui un server non c'e', il sito e' fatto
- * di file statici, e una chiave di posta messa nel sito la leggerebbe chiunque
- * apra il codice. Finche' resta cosi', questa pagina E' la notifica: si apre e
- * si vede quante ce ne sono. Il README spiega cosa servirebbe per riaverle.
+ * SULLE MAIL. Adesso una mail arriva: quando qualcuno si candida ne partono
+ * due, una a info e una a chi si e' iscritto. A mandarle non e' il sito ma uno
+ * script su Google Apps Script (scripts/posta.gs), perche' una chiave di posta
+ * messa qui dentro la leggerebbe chiunque apra il codice. Dentro quella mail
+ * c'e' solo il nome e l'indirizzo: le risposte restano qui, dietro l'accesso,
+ * perche' una casella di posta e' il posto sbagliato per una data di nascita.
  */
 export default function Richieste() {
   const { t } = useI18n()
