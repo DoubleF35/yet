@@ -29,12 +29,15 @@
 # fallisce in produzione con "auth/unauthorized-domain".
 #
 # -----------------------------------------------------------------------------
-# STATO DI QUESTO REPO (DoubleF35/yet), aggiornato a settembre 2026:
+# STATO DI QUESTO REPO (DoubleF35/yet), aggiornato a novembre 2026:
 #   [x] Pages impostato su "GitHub Actions"
 #   [x] i sette secret creati
-#   [ ] yetcommunity.it fra i Domini autorizzati di Firebase
-#   [ ] firestore.rules pubblicate (il database è in modalità di produzione,
-#       quindi finché non lo fai ogni lettura e scrittura viene negata)
+#   [x] yetcommunity.it fra i Domini autorizzati di Firebase
+#   [x] firestore.rules pubblicate
+#   [ ] VITE_URL_POSTA, l'ottavo secret: l'indirizzo della web app di
+#       Google Apps Script che manda le due mail dell'iscrizione. Finché
+#       manca, il sito non ne manda e tutto il resto funziona identico.
+#       Come pubblicare lo script: README, "Le due mail dell'iscrizione".
 # =============================================================================
 
 name: Deploy su GitHub Pages
