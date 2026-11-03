@@ -973,29 +973,99 @@ Gli **admin nascono già approvati**. Non è una scorciatoia: se dovessero passa
 dalla propria coda, al primo avvio non ci sarebbe nessuno ad approvare il primo
 di loro.
 
-### La notifica agli amministratori
+### Le due mail dell'iscrizione
 
-Quando arriva una richiesta, la vedete **aprendo `/admin`**: c'è il conteggio
-«N in attesa» accanto al titolo.
+Quando qualcuno manda la candidatura partono due messaggi: **uno a
+`info.yetcommunity@gmail.com`**, con nome e indirizzo e il link al pannello, e
+**uno a chi si è iscritto**, che conferma che è arrivata. Le risposte di
+selezione non viaggiano per mail: restano nel database e si leggono dal
+pannello, dietro l'accesso. Una casella di posta è il posto sbagliato per una
+data di nascita e un numero di telefono.
 
-Non arriva una mail, e non è una dimenticanza: **sul piano gratuito Spark non è
-possibile inviare email**. Serve del codice che giri su un server, e su Firebase
-quel codice sono le Cloud Functions, disponibili solo dal piano Blaze (a
-consumo). Le alternative, se un giorno la cosa diventa scomoda:
+**Perché serviva un pezzo in più.** Mandare una mail vuole del codice che giri
+da qualche parte che non sia il browser di chi si iscrive: una chiave SMTP
+messa nel sito la legge chiunque apra il codice, e diventa un modo per spedire
+posta a nome vostro. Su Firebase quel codice sarebbero le Cloud Functions, che
+il piano gratuito Spark non ha. Quindi il server è **Google Apps Script**:
+gratis, senza carta di credito, e la mail parte dalla casella Gmail vera di
+YET, quindi le risposte tornano dove devono e non finisce nello spam come
+succede con un mittente inventato.
 
-1. **Passare al piano Blaze** e usare l'estensione *Trigger Email*, oppure una
-   Cloud Function di venti righe che parte quando nasce un documento `pending`.
-   È la strada pulita. Con questi volumi resterebbe dentro la soglia gratuita,
-   ma richiede una carta di credito sul progetto.
-2. **Un servizio esterno tipo EmailJS**, che manda la mail dal browser di chi si
-   iscrive. Funziona senza backend, ma introduce una terza parte che vede i
-   dati: andrebbe aggiunta all'informativa privacy, e forse comparirebbe la
-   necessità del banner cookie che oggi non c'è.
-3. **Lasciare così.** Con quattro amministratori e un volume di iscrizioni
-   basso, aprire il pannello ogni tanto è probabilmente sufficiente.
+Il codice sta in [`scripts/posta.gs`](scripts/posta.gs), **non gira dentro il
+sito** ed è nel repo solo per non perderlo e per poterne leggere la storia.
 
-Ho scelto la 3 di default perché è l'unica che non cambia né il piano tariffario
-né la storia della privacy. Dimmi se preferisci una delle altre due.
+#### La regola che non si tocca
+
+L'indirizzo dello script è pubblico: chiunque lo trovi nel bundle può
+chiamarlo. Quello che lo rende innocuo è una regola sola:
+
+> **Chi chiama non sceglie niente.**
+
+Il sito manda soltanto un **token di accesso** e la lingua. I destinatari li
+decide lo script — l'indirizzo di YET, più quello scritto *dentro* il token —
+e il testo pure. Non accetta né un indirizzo, né un oggetto, né una riga di
+messaggio. Il token non viene letto ma **verificato chiamando Google**: un
+token si scrive a mano in dieci secondi, mentre la verifica dice se è stato
+emesso davvero dal vostro progetto Firebase e se non è scaduto.
+
+Il giorno in cui qualcuno aggiunge un parametro `testo` per comodità, quello
+script diventa un megafono per spammer. Sta scritto anche lì dentro, in cima.
+
+#### Pubblicarlo, una volta sola
+
+1. Vai su [script.google.com](https://script.google.com) **con l'account
+   `info.yetcommunity@gmail.com`**, non con il tuo: la mail parte da chi
+   possiede lo script.
+2. *Nuovo progetto*, chiamalo «Posta YET». Cancella il contenuto di `Codice.gs`
+   e incolla tutto `scripts/posta.gs`.
+3. In cima al file, al posto di `INCOLLA-QUI-VITE_FIREBASE_API_KEY`, metti il
+   valore di `VITE_FIREBASE_API_KEY`. Non è un segreto (sta già nel bundle):
+   serve a dire *quale progetto*, così un token emesso da un altro progetto
+   Firebase viene rifiutato.
+4. *Distribuisci* → *Nuova distribuzione* → tipo **App web**. Esegui come
+   **me**, accesso **Chiunque**. «Chiunque» è obbligatorio, perché a chiamarla
+   è il browser di chi si iscrive, e non è un buco: senza un token valido lo
+   script non manda niente.
+5. Google chiede l'autorizzazione a mandare posta a tuo nome: dagliela. La
+   prima volta passa da «Avanzate → Vai a Posta YET», perché l'app non è
+   verificata — è tua, va bene così.
+6. Copia l'**indirizzo della web app** (finisce in `/exec`) e mettilo in due
+   posti: `VITE_URL_POSTA` nel tuo `.env`, e un secret con lo stesso nome su
+   GitHub (*Settings → Secrets and variables → Actions*).
+
+**Quando cambi lo script**, *Distribuisci → Gestisci distribuzioni → matita →
+Versione: Nuova*. Se invece crei una distribuzione nuova l'indirizzo cambia, e
+va aggiornato anche in `.env` e nel secret.
+
+#### Cosa succede se non lo fai
+
+Niente di rotto. Senza `VITE_URL_POSTA` il sito non manda nessuna mail e tutto
+il resto funziona identico: le candidature arrivano nel pannello, che è il
+posto dove vivono davvero. La mail è un avviso, non il dato.
+
+#### I limiti, e cosa non aspettarsi
+
+Un account Gmail normale manda **100 destinatari al giorno**. Qui ogni
+iscrizione ne consuma due, quindi si sta larghi fino a una cinquantina di
+iscrizioni in un giorno solo. Oltre, lo script smette e scrive l'errore nel
+registro delle esecuzioni (*Esecuzioni*, nella barra di Apps Script): le
+candidature continuano ad arrivare lo stesso.
+
+Lo script si lascia chiamare **una volta ogni sei ore per persona**. Il sito lo
+chiama solo alla prima candidatura, ma il sito non è l'unico che può chiamarlo:
+senza quel freno, chi ha un account valido potrebbe riempire di posta la vostra
+casella e la propria.
+
+E se la mail non parte, **l'iscrizione non fallisce**: la candidatura è già
+salvata quando la chiamata parte, e un errore della posta mostrato a schermo
+sarebbe una persona convinta di non essersi iscritta, che riprova e riscrive
+tutto. Si perde un avviso, non una candidatura.
+
+#### L'informativa privacy
+
+È già aggiornata: dice che le due mail partono, che a mandarle è Apps Script
+con Gmail, e che le risposte di selezione non ci viaggiano dentro. Se un domani
+cambi il modo di mandarle, quella pagina va cambiata insieme al codice.
 
 ### Il campo `role`
 
