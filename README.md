@@ -1037,6 +1037,30 @@ script diventa un megafono per spammer. Sta scritto anche lì dentro, in cima.
 Versione: Nuova*. Se invece crei una distribuzione nuova l'indirizzo cambia, e
 va aggiornato anche in `.env` e nel secret.
 
+#### Controllare che funzioni, senza mandare niente
+
+Appena pubblicato, prima ancora di toccare `.env`:
+
+```bash
+curl -s -X POST '<il tuo indirizzo /exec>' \
+  -H 'Content-Type: text/plain' \
+  -d '{"idToken":"inventato"}'
+```
+
+Deve rispondere `{"ok":false,"errore":"token non valido"}`. Se risponde così
+sono vere tre cose insieme: l'indirizzo è vivo, l'accesso è su «Chiunque», e la
+verifica del token funziona davvero. E non è partita nessuna mail, perché il
+token non valeva niente.
+
+Se invece torna una pagina HTML di login, l'accesso è rimasto su «Solo io»:
+rifai la distribuzione. Se torna `errore interno`, apri *Esecuzioni* nella
+barra di Apps Script: lì c'è il motivo per esteso, quasi sempre la chiave
+Firebase lasciata com'era.
+
+La prova vera è l'ultima e si fa in due minuti: metti `VITE_URL_POSTA` nel
+`.env`, `npm run dev`, e iscriviti con un tuo secondo account Google. Devono
+arrivare due mail, una a info e una a quell'account.
+
 #### Cosa succede se non lo fai
 
 Niente di rotto. Senza `VITE_URL_POSTA` il sito non manda nessuna mail e tutto
