@@ -491,7 +491,7 @@ export default {
     intro:
       'Le richieste in attesa, con le risposte di selezione e il punteggio. Finché non approvi qualcuno, il suo profilo non lo vede nessuno.',
     nota:
-      'Qui non arriva nessuna mail. Il sito vecchio le mandava perché aveva un server; questo è fatto di file statici e una chiave di posta messa dentro la leggerebbe chiunque apra il codice. Finché resta così, questa pagina è la notifica: si apre e si vede.',
+      'Una mail a info arriva, quando qualcuno si candida: la manda uno script su Google Apps Script, perché una chiave di posta messa nel sito la leggerebbe chiunque apra il codice. Dentro però c’è solo il nome e l’indirizzo: le risposte si leggono qui, dietro l’accesso.',
     spento: 'Firebase non è configurato, quindi non c’è niente da leggere.',
     tornaAlPannello: 'Torna al pannello',
     soloRichieste: 'Apri solo le richieste',

@@ -120,8 +120,9 @@ function PrivacyIt() {
             <strong>cosa stai costruendo, cosa cerchi e cosa sai fare</strong>, i tuoi{' '}
             <strong>profili social</strong> e una <strong>foto</strong>, che puoi caricare dal
             dispositivo oppure indicare con un link. La foto caricata viene rimpicciolita dal
-            browser e salvata dentro il tuo profilo: non finisce su nessun altro servizio. Sono
-            tutti campi facoltativi.
+            browser e salvata dentro il tuo profilo: non finisce su nessun altro servizio. La foto
+            è facoltativa; il resto, la prima volta che ti candidi, va compilato. Per i link, se su
+            LinkedIn o Instagram non ci sei, c’è una casella per dirlo: va bene come risposta.
           </p>
 
           <h3 className={s.h3}>L’iscrizione passa da un’approvazione</h3>
@@ -136,6 +137,20 @@ function PrivacyIt() {
             <strong>stato della richiesta</strong> (in attesa, approvata, non approvata) e un{' '}
             <strong>ruolo</strong> che dice se sei fra gli organizzatori. Servono a far funzionare
             l’approvazione e la sezione «Chi organizza» della pagina Membri.
+          </p>
+
+          <h3 className={s.h3}>Le due mail che partono</h3>
+          <p className={s.p}>
+            Quando mandi la candidatura partono <strong>due messaggi</strong>: uno a noi
+            organizzatori, che dice il tuo nome e il tuo indirizzo e serve ad accorgerci che sei
+            arrivato, e uno <strong>a te</strong>, che conferma che è andata. Le risposte alle
+            domande di selezione <strong>non viaggiano per mail</strong>: restano nel database e si
+            leggono dal pannello, dietro l’accesso.
+          </p>
+          <p className={s.p}>
+            A mandarle è <strong>Google Apps Script</strong>, dalla casella Gmail di YET. È la
+            ragione per cui il tuo indirizzo passa anche da lì, e non solo da Firebase. Non è una
+            newsletter e non si ripete: parte una volta, quando ti candidi.
           </p>
 
           <h3 className={s.h3}>Cosa diventa pubblico</h3>
@@ -203,9 +218,10 @@ function PrivacyIt() {
           <h2 className={s.h2}>Dove finiscono i dati</h2>
           <p className={s.p}>
             Usiamo <strong>Google Firebase</strong> (Authentication e Firestore) per l’accesso e per
-            conservare i profili, e <strong>GitHub Pages</strong> per servire il sito. Sono i nostri
-            responsabili del trattamento: trattano i dati per conto nostro e secondo le nostre
-            istruzioni.
+            conservare i profili, <strong>GitHub Pages</strong> per servire il sito e{' '}
+            <strong>Google Apps Script</strong> con Gmail per le due mail dell’iscrizione. Sono i
+            nostri responsabili del trattamento: trattano i dati per conto nostro e secondo le
+            nostre istruzioni.
           </p>
           <p className={s.p}>
             Il database è configurato nella regione europea, ma entrambe le società fanno capo agli
@@ -405,12 +421,14 @@ function PrivacyEn() {
           <h3 className={s.h3}>What you write yourself</h3>
           <p className={s.p}>
             On the Join page you can add an <strong>introduction</strong> (up to 2500 characters),
-            the <strong>city or area</strong> you write from, three optional fields about{' '}
+            the <strong>city or area</strong> you write from, three fields about{' '}
             <strong>what you are building, what you are looking for and what you can do</strong>,
             your <strong>social profiles</strong> and a <strong>photo</strong>, which you can
             either upload from your device or point to with a link. An uploaded photo is shrunk by
             your browser and stored inside your profile: it does not end up on any other service.
-            All of these fields are optional.
+            The picture is optional; the rest has to be filled in the first time you apply. For
+            the links, if you are not on LinkedIn or Instagram there is a box to say so: that
+            counts as an answer.
           </p>
 
           <h3 className={s.h3}>Joining goes through an approval</h3>
@@ -426,6 +444,20 @@ function PrivacyEn() {
             <strong>status of the request</strong> (pending, approved, not approved) and a{' '}
             <strong>role</strong> saying whether you are one of the organisers. They make the
             approval flow and the “Who runs it” section of the members page work.
+          </p>
+
+          <h3 className={s.h3}>The two emails that go out</h3>
+          <p className={s.p}>
+            When you send your application, <strong>two messages</strong> go out: one to us
+            organisers, with your name and your address, so we notice you have arrived, and one{' '}
+            <strong>to you</strong>, confirming it went through. Your answers to the selection
+            questions <strong>do not travel by email</strong>: they stay in the database and are
+            read from the panel, behind the sign-in.
+          </p>
+          <p className={s.p}>
+            They are sent by <strong>Google Apps Script</strong>, from YET’s Gmail account. That is
+            why your address also passes through there, and not only through Firebase. It is not a
+            newsletter and it does not repeat: it goes out once, when you apply.
           </p>
 
           <h3 className={s.h3}>What becomes public</h3>
@@ -493,9 +525,9 @@ function PrivacyEn() {
           <h2 className={s.h2}>Where the data ends up</h2>
           <p className={s.p}>
             We use <strong>Google Firebase</strong> (Authentication and Firestore) for signing in
-            and for storing the profiles, and <strong>GitHub Pages</strong> to serve the site. They
-            are our data processors: they process the data on our behalf and under our
-            instructions.
+            and for storing the profiles, <strong>GitHub Pages</strong> to serve the site, and{' '}
+            <strong>Google Apps Script</strong> with Gmail for the two sign-up emails. They are our
+            data processors: they process the data on our behalf and under our instructions.
           </p>
           <p className={s.p}>
             The database is configured in the European region, but both companies are ultimately

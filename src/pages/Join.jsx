@@ -9,6 +9,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import { authErrorText, isInAppBrowser, useAuth } from '../lib/auth.jsx'
 import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
 import { memberPath } from '../lib/members.jsx'
+import { avvisaDellaCandidatura } from '../lib/posta.js'
 import {
   BIO_MAX,
   LOCATION_MAX,
@@ -404,7 +405,7 @@ function formFromProfile(profile, user) {
 /** Faccia B, utente autenticato: crea o aggiorna il proprio profilo. */
 function ProfileForm({ firebaseMissing }) {
   const { user, profile, profileLoading, refreshProfile } = useAuth()
-  const { t } = useI18n()
+  const { lang, t } = useI18n()
   const fid = useId()
 
   const [form, setForm] = useState(EMPTY_FORM)
@@ -816,6 +817,17 @@ function ProfileForm({ firebaseMissing }) {
         consensoPrivacy: form.consensoPrivacy,
         consensoWhatsapp: form.consensoWhatsapp,
       })
+
+      /* LE DUE MAIL, e solo alla PRIMA candidatura: chi torna qui per
+         cambiare una foto non deve far squillare la casella di nessuno.
+
+         Senza await, e di proposito. La candidatura a questo punto e' gia'
+         salvata: aspettare la mail per dire "fatto" vorrebbe dire far
+         guardare una rotella per una cosa che alla persona non serve, e un
+         errore della posta diventerebbe una persona convinta di non essersi
+         iscritta, che riprova e riscrive tutto. Se la mail non parte si
+         perde un avviso, e la candidatura resta dov'e'. */
+      if (!modifica) avvisaDellaCandidatura(lang)
 
       // Il profilo in memoria è ora vecchio: navbar e /membri devono vedere i
       // dati nuovi. Se il refresh fallisce il salvataggio è comunque riuscito,

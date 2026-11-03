@@ -450,7 +450,7 @@ export default {
     intro:
       'Pending requests, with the selection answers and the score. Until you approve someone, nobody can see their profile.',
     nota:
-      'No email arrives here. The old site sent them because it had a server; this one is made of static files, and a mail key put inside it could be read by anyone who opens the code. While that is the case, this page is the notification: you open it and you see.',
+      'An email does reach info when someone applies: it is sent by a Google Apps Script, because a mail key put inside the site could be read by anyone who opens the code. It carries only the name and the address, though: the answers are read here, behind the sign-in.',
     spento: 'Firebase is not configured, so there is nothing to read.',
     tornaAlPannello: 'Back to the panel',
     soloRichieste: 'Open just the requests',

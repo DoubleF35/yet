@@ -23,11 +23,11 @@ import s from './PendingRequests.module.css'
  * caricano più), ma non quello di un altro admin. Quello può farlo solo il
  * superadmin. Le condizioni esatte stanno in firestore.rules.
  *
- * NOTA SULLE NOTIFICHE: senza Cloud Functions (piano Spark) non è possibile
- * mandare una mail automatica quando arriva una richiesta. Il conteggio qui
- * sotto e il pallino sul link "Admin" nella navbar sono la sostituzione
- * onesta: gli amministratori se ne accorgono aprendo il sito, non ricevendo
- * un messaggio. Il README spiega cosa servirebbe per averle via mail.
+ * NOTA SULLE NOTIFICHE: una mail a info parte, quando arriva una candidatura,
+ * e la manda uno script su Google Apps Script (scripts/posta.gs) perché le
+ * Cloud Functions sul piano Spark non ci sono. Quella mail però dice solo che
+ * è arrivato qualcuno: il conteggio qui sotto e il pallino sul link "Admin"
+ * restano il modo in cui si vede QUANTE ne sono rimaste in attesa.
  */
 export default function PendingRequests({ onCountChange }) {
   const { lang, t } = useI18n()
