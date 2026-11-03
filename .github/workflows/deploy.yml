@@ -20,7 +20,8 @@
 #         VITE_FIREBASE_APP_ID
 #
 #      (VITE_FIREBASE_MEASUREMENT_ID è opzionale: se non lo crei, il build
-#      procede lo stesso.)
+#      procede lo stesso. Lo stesso vale per VITE_URL_POSTA, l'indirizzo
+#      dello script che manda le mail: senza, il sito non ne manda e basta.)
 #
 # E una terza, sul lato Firebase, che si scopre sempre troppo tardi:
 # Authentication -> Settings -> Authorized domains -> aggiungi
@@ -100,6 +101,7 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_URL_POSTA: ${{ secrets.VITE_URL_POSTA }}
         run: npm run build
 
       # Avviso utile invece di un deploy silenziosamente rotto: se i secret non
