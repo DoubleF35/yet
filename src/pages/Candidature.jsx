@@ -418,9 +418,6 @@ export default function Candidature() {
                         {t('candidaturePagina.senzaLinkedin')}
                       </span>
                     )}
-                    <span className={s.punti}>
-                      {t('candidaturePagina.punti', { punti: d.punteggio, su: d.su })}
-                    </span>
                     {d.citta && <span className={s.citta}>{d.citta}</span>}
                   </p>
 

@@ -533,7 +533,6 @@ export default {
       accettato: 'On the site',
       escluso: 'Turned down',
     },
-    punti: '{punti}/{su} points',
     whatsapp: 'WhatsApp',
     apri: 'Open the file',
 
@@ -584,18 +583,7 @@ export default {
     salvaNote: 'Save notes',
     salvate: 'Saved.',
 
-    punteggioTitolo: 'Score: {punti}/{su}',
-    punteggioSpiega:
-      'Four criteria, one point each: it helps you get an idea, it decides nothing. LinkedIn does not count. The score is stored nowhere: it is worked out while you look at it.',
 
-    criterio: {
-      pitch: 'Pitch',
-      prodotto: 'Product',
-      eventi: 'Events',
-      ambizione: 'Ambition',
-    },
-    piuUno: '(+1)',
-    zero: '(0)',
 
     domanda: {
       dataNascita: 'Date of birth',
