@@ -65,3 +65,42 @@ export async function avvisaDellaCandidatura(lang = 'it') {
     return false
   }
 }
+
+/**
+ * LA MAIL «SEI DENTRO», quando un admin preme Conferma.
+ *
+ * Qui il token e' quello DELL'ADMIN, non della persona: lo script controlla
+ * che chi chiama sia fra gli amministratori, e solo allora scrive. A chi?
+ * Non lo diciamo noi: lo script si e' tenuto l'indirizzo della persona il
+ * giorno in cui si e' iscritta, e da qui passa soltanto l'identificativo.
+ * Quindi nemmeno un admin puo' usare questa chiamata per scrivere a un
+ * indirizzo qualunque, e l'indirizzo continua a non stare nel database.
+ *
+ * A differenza dell'altra, questa la risposta la legge: chi ha appena
+ * confermato qualcuno deve sapere se la mail e' partita o se deve scrivergli
+ * lui, e "forse" non e' una risposta che aiuta.
+ *
+ * @returns {Promise<'mandata'|'sconosciuto'|'spenta'|'errore'>}
+ *   sconosciuto: si e' iscritto prima che le mail esistessero, e lo script
+ *   il suo indirizzo non l'ha mai visto.
+ */
+export async function avvisaAccettazione(uid) {
+  if (!INDIRIZZO || !isFirebaseConfigured) return 'spenta'
+  const admin = auth?.currentUser
+  if (!admin || !uid) return 'errore'
+
+  try {
+    const idToken = await admin.getIdToken()
+    const risposta = await fetch(INDIRIZZO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ idToken, azione: 'accettata', uid }),
+    })
+    const dati = await risposta.json()
+    if (dati?.ok) return 'mandata'
+    if (dati?.errore === 'indirizzo sconosciuto') return 'sconosciuto'
+    return 'errore'
+  } catch {
+    return 'errore'
+  }
+}

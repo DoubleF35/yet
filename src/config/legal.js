@@ -25,7 +25,7 @@ export const LEGAL = {
   /** Data dell'ultima modifica sostanziale, in formato ISO.
    *  Va aggiornata a mano quando cambia il testo, non a ogni deploy: dice
    *  "da quando vale questa versione", non "quando ho ricompilato". */
-  updatedAt: '2026-11-03',
+  updatedAt: '2026-11-06',
 }
 
 /**

@@ -29,18 +29,19 @@ import { anniCompiuti, ETA_MASSIMA, ETA_MINIMA } from '../config/candidatura.js'
 import { calcolaPunteggio } from './punteggio.js'
 
 /**
- * Gli esiti finali, cioe' i tre stati che chiudono una candidatura.
+ * LE DUE DECISIONI: dentro il sito o fuori.
  *
- * NON SONO UN CAMPO NUOVO: sono tre dei valori di `stato` che gia' esistono
- * in config/candidatura.js. Tenere l'esito dentro `stato` invece di
- * affiancargli un campo `esito` evita il caso che non si sa risolvere, cioe'
- * un documento che dice "escluso" in un campo e "accettato" nell'altro.
+ * Erano tre (Community Plus, Solo eventi, Escluso) e la terza non serviva:
+ * "solo eventi" era una cosa che si diceva a voce a due persone, non uno
+ * stato da tenere in un pannello. Quello che la decisione cambia davvero e'
+ * una cosa sola, cioe' se il profilo compare in vetrina, e per quello bastano
+ * due tasti.
  *
- * Di conseguenza "contattata" NON e' uno stato ma una data (`contattatoIl`):
- * se fosse uno stato, segnare come contattata una persona gia' accettata ne
- * cancellerebbe l'esito.
+ * I valori restano quelli di `stato` in config/candidatura.js, cosi' i
+ * documenti gia' scritti continuano a valere: chi aveva 'eventi' nello stato
+ * non diventa invalido, semplicemente nessun tasto lo scrive piu'.
  */
-export const ESITI = ['accettato', 'eventi', 'escluso']
+export const ESITI = ['accettato', 'escluso']
 
 /** Le tre fasce d'eta', piu' il caso "non si sa". */
 export const FASCE = ['u16', 'dentro', 'over']
@@ -53,9 +54,45 @@ export function fasciaDi(anni) {
   return 'dentro'
 }
 
-/** L'esito di una candidatura, o null se non e' ancora stato deciso. */
-export function esitoDi(stato) {
-  return ESITI.includes(stato) ? stato : null
+/**
+ * Com'e' finita, letto DAL PROFILO e non dalla candidatura.
+ *
+ * E' il punto di tutta la faccenda: "Conferma" vuol dire "compare nel sito",
+ * e cosa compare nel sito lo decide `users/{uid}.status`, non lo stato della
+ * candidatura. Leggere l'esito da li' vuol dire che il pannello non puo'
+ * dire "confermato" di qualcuno che in vetrina non c'e'.
+ *
+ * Ed e' esattamente il caso dei profili confermati prima di questa
+ * modifica: allora "Conferma" scriveva solo la candidatura e il profilo
+ * restava in attesa, quindi fuori dal sito. Adesso compaiono come "non
+ * ancora deciso", che e' la verita', e un clic su Conferma li mette dentro.
+ */
+export function esitoDi(profilo) {
+  if (profilo?.status === 'approved') return 'accettato'
+  if (profilo?.status === 'rejected') return 'escluso'
+  return null
+}
+
+/**
+ * Se a questa persona e' gia' stato scritto. UNA sola domanda.
+ *
+ * Prima le risposte erano due e si pestavano i piedi: la spunta "da
+ * scrivere" e il tasto "segna come contattato", che scrivevano due campi
+ * diversi e potevano dire cose opposte. Adesso la spunta li scrive tutti e
+ * due insieme, e qui si legge in quest'ordine:
+ *
+ *   1. `daScrivere`, se c'e', perche' e' la cosa che si tocca;
+ *   2. altrimenti la data dell'ultimo contatto, o lo stato 'contattato' dei
+ *      documenti piu' vecchi, che dicevano la stessa cosa a modo loro.
+ *
+ * ASSENTE VUOL DIRE "DA SCRIVERE": una candidatura appena arrivata non l'ha
+ * toccata nessuno, quindi a nessuno e' ancora stato scritto.
+ */
+export function scrittoA(candidatura) {
+  const c = candidatura ?? {}
+  if (c.daScrivere === false) return true
+  if (c.daScrivere === true) return false
+  return Boolean(c.contattatoIl) || c.stato === 'contattato'
 }
 
 /**
@@ -139,22 +176,14 @@ export function componiDossier(candidatura, profilo) {
     proposta,
 
     stato: c.stato ?? 'nuovo',
-    esito: esitoDi(c.stato),
+    esito: esitoDi(p),
     note: String(c.note ?? ''),
-    /* Il verso del campo: ASSENTE VUOL DIRE "DA SCRIVERE".
-       Una candidatura appena arrivata non l'ha toccata nessuno, quindi a
-       nessuno e' ancora stato scritto. Con il verso opposto (assente = gia'
-       fatto) le candidature nuove sarebbero sparite dal filtro proprio
-       mentre sono le uniche che hanno bisogno di una risposta. */
-    daScrivere: c.daScrivere !== false,
+    scritto: scrittoA(c),
     /* Le date restano come arrivano, cioe' Timestamp di Firestore: a
        trasformarle ci pensa formatDate() nel momento in cui si disegnano.
        Convertirle qui vorrebbe dire importare lib/db.js, e con lui Firebase,
        dentro un modulo che non legge e non scrive niente. */
     contattatoIl: c.contattatoIl ?? null,
-    /* Contattata anche per i documenti vecchi, che la data non ce l'hanno e
-       dicevano la stessa cosa mettendo 'contattato' nello stato. */
-    contattata: Boolean(c.contattatoIl) || c.stato === 'contattato',
     creataIl: c.createdAt ?? null,
   }
 }
@@ -168,9 +197,9 @@ export function componiDossiers(candidature = [], profili = []) {
 /**
  * I numeri in cima all'elenco.
  *
- * "Da valutare" sono quelle senza esito, non quelle con due punti: il
- * punteggio e' una proposta, la decisione e' un'altra cosa, e il conto che
- * serve guardando questa pagina e' quante ne restano da chiudere.
+ * Quelli che servono a chi scrive alle persone: quante ne restano da
+ * scrivere, quante sono gia' nel sito, quante sono state escluse. Le caselle
+ * Plus, Event e Da valutare sono sparite insieme ai tasti che le riempivano.
  */
 export function conteggi(dossiers = []) {
   const totale = dossiers.length
@@ -178,9 +207,8 @@ export function conteggi(dossiers = []) {
 
   return {
     totale,
-    plus: dossiers.filter((d) => d.esito === 'accettato').length,
-    daValutare: dossiers.filter((d) => d.esito === null).length,
-    event: dossiers.filter((d) => d.esito === 'eventi').length,
+    daScrivere: dossiers.filter((d) => !d.scritto).length,
+    nelSito: dossiers.filter((d) => d.esito === 'accettato').length,
     esclusi: dossiers.filter((d) => d.esito === 'escluso').length,
     /* Minorenni per ETA', non per stato: lo stato 'minorenne' lo mette una
        persona a mano e quasi nessuno si ricorda di metterlo, l'eta' invece
@@ -209,13 +237,11 @@ export function filtra(dossiers = [], filtri = {}) {
   const cifre = testo.replace(/[^\d]/g, '')
 
   return dossiers.filter((d) => {
-    /* Lo "stato" e' dove sta la persona nel giro, non come e' finita: o non
-       le si e' ancora scritto, o le si e' scritto. L'esito e' il filtro
-       accanto, e sono due cose che si incrociano: una gia' contattata puo'
-       essere ancora senza esito, e una decisa puo' non essere ancora stata
-       avvisata. */
-    if (filtri.stato === 'nuovo' && d.contattata) return false
-    if (filtri.stato === 'contattato' && !d.contattata) return false
+    /* Scritto o no, e com'e' finita: due domande che si incrociano. Una
+       persona a cui si e' gia' scritto puo' non essere ancora decisa, e una
+       confermata puo' non essere ancora stata avvisata. */
+    if (filtri.scritto === 'da-scrivere' && d.scritto) return false
+    if (filtri.scritto === 'scritto' && !d.scritto) return false
 
     if (filtri.esito === 'non-deciso' && d.esito !== null) return false
     if (ESITI.includes(filtri.esito) && d.esito !== filtri.esito) return false
@@ -224,7 +250,6 @@ export function filtra(dossiers = [], filtri = {}) {
     if (filtri.fascia === 'ignota' && d.fascia !== null) return false
 
     if (filtri.senzaLinkedin && !d.senzaLinkedin) return false
-    if (filtri.daScrivere && !d.daScrivere) return false
 
     if (testo) {
       const nome = (d.nome ?? '').toLowerCase()

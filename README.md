@@ -977,7 +977,20 @@ di loro.
 
 Quando qualcuno manda la candidatura partono due messaggi: **uno a
 `info.yetcommunity@gmail.com`**, con nome e indirizzo e il link al pannello, e
-**uno a chi si è iscritto**, che conferma che è arrivata. Le risposte di
+**uno a chi si è iscritto**, che conferma che è arrivata. Quando poi un admin
+preme **Conferma** nel pannello ne parte una **terza**, «sei dentro», alla
+persona confermata.
+
+**Per la terza lo script si tiene l'indirizzo.** Il giorno dell'iscrizione lo
+salva nelle *proprietà dello script* (dentro l'account di YET, insieme a nome e
+lingua), e non nel database: i profili li legge chiunque e l'informativa
+promette che l'email lì non ci finisce. Al momento della conferma il sito gli
+passa soltanto l'identificativo della persona e il token dell'admin; lo script
+controlla che chi chiama sia **fra gli amministratori** (la lista sta in cima
+allo script, la stessa di `firestore.rules`) e scrive all'indirizzo che si era
+tenuto. Chi si è iscritto **prima** che le mail esistessero quell'indirizzo non
+gliel'ha mai dato: in quel caso il profilo va comunque nel sito, e il pannello
+dice di avvisare la persona a mano. Le risposte di
 selezione non viaggiano per mail: restano nel database e si leggono dal
 pannello, dietro l'accesso. Una casella di posta è il posto sbagliato per una
 data di nascita e un numero di telefono.
@@ -1033,8 +1046,9 @@ script diventa un megafono per spammer. Sta scritto anche lì dentro, in cima.
    posti: `VITE_URL_POSTA` nel tuo `.env`, e un secret con lo stesso nome su
    GitHub (*Settings → Secrets and variables → Actions*).
 
-**Quando cambi lo script**, *Distribuisci → Gestisci distribuzioni → matita →
-Versione: Nuova*. Se invece crei una distribuzione nuova l'indirizzo cambia, e
+**Quando cambi lo script** — e succede: la terza mail è arrivata dopo —
+riincolla tutto il file **rimettendo la chiave Firebase in cima**, poi
+*Distribuisci → Gestisci distribuzioni → matita → Versione: Nuova*. Se invece crei una distribuzione nuova l'indirizzo cambia, e
 va aggiornato anche in `.env` e nel secret.
 
 #### Controllare che funzioni, senza mandare niente
@@ -1138,43 +1152,58 @@ sicurezza, e le regole ragionano per documento.
 
 ### Il pannello delle candidature
 
-Dal pannello, sotto la coda delle richieste, c'e' il bottone **«Apri le
-candidature»**: porta a `/admin/candidature`, e da li' alla scheda di
-ognuna.
+Il bottone **«Apri le candidature»** è la prima cosa di `/admin`, prima di
+tutto il resto: porta a `/admin/candidature`, e da lì alla scheda di ognuna.
 
-**Non e' la coda delle richieste, ed e' il motivo per cui sono due pagine.**
-`/admin/richieste` risponde a una domanda che si svuota: *chi devo approvare
-adesso*. `/admin/candidature` risponde a una che resta: *a chi ho gia'
-scritto, chi mi manca, come e' finita*. Approvare un profilo e decidere cosa
-fare di una persona sono due gesti diversi e succedono in momenti diversi.
+**Si approva da lì, non dalla coda.** Nella scheda ci sono due tasti e due
+soltanto:
 
-**L'elenco** ha in cima sei numeri (totale, Community Plus, ancora da
-decidere, solo eventi, under 16, quanti sono senza LinkedIn), poi i filtri —
-testo su nome, numero e citta', contattate o no, esito, fascia d'eta', senza
-LinkedIn, da scrivere — e infine le schede. I filtri si applicano mentre
-scrivi: il bottone «Filtra» e' li' per chiudere la tastiera sul telefono e
-per mandare il fuoco ai risultati, non perche' senza non filtri niente.
+- **Conferma Community Plus** mette il profilo **nel sito** (scrive
+  `users/{uid}.status = 'approved'`, cioè quello che decide la vetrina), segna
+  la candidatura come accettata e manda alla persona la mail «sei dentro»;
+- **Escludi** lo toglie (`status = 'rejected'`).
 
-**«Scarica CSV»** tira giu' i contatti di un esito alla volta: nome,
-WhatsApp, citta', Instagram, LinkedIn. Il file lo fabbrica il browser, non un
-server. **Dentro non ci sono ne' il punteggio ne' le note**, e non e' una
-svista: un CSV si gira per WhatsApp senza pensarci, e li' dentro finirebbero
-un giudizio su una persona e gli appunti di una telefonata.
+Si può cambiare idea quando si vuole. Il profilo si scrive *prima* della
+candidatura, di proposito: è la metà che si vede, e se la seconda scrittura
+fallisce la persona è comunque dove deve stare.
+
+**L'esito che il pannello mostra si legge dal profilo**, non dalla
+candidatura. Così non può dire «confermato» di qualcuno che in vetrina non c'è.
+Ed è il caso di chi è stato confermato **prima del 6 novembre 2026**: allora
+Conferma scriveva solo la candidatura e lasciava il profilo in attesa, cioè
+fuori dal sito. Quelle persone adesso compaiono come «non ancora deciso», che
+è la verità, e un clic su Conferma le mette dentro.
+
+Prima c'erano anche «Conferma Solo event» e le etichette Plus, Event e Da
+valutare: sono sparite perché non servivano a decidere niente. Chi ha
+`eventi` nello stato della candidatura resta un documento valido, solo che
+nessun tasto lo scrive più.
+
+**La coda delle richieste** (`/admin/richieste`) non sta più in cima a
+`/admin`, dove andava scorsa tutta ogni volta, ma la pagina resta, con un link
+sotto il bottone: serve ai profili che una candidatura non ce l'hanno, quelli
+nati prima delle domande di selezione, che altrimenti non avrebbero un posto
+da cui essere approvati.
+
+**L'elenco** ha in cima sei numeri (totale, da scrivere, nel sito, esclusi,
+under 16, quanti sono senza LinkedIn), poi i filtri — testo su nome, numero e
+città, scritto o no, esito, fascia d'età, senza LinkedIn — e infine le schede.
+I filtri si applicano mentre scrivi: il bottone «Filtra» è lì per chiudere la
+tastiera sul telefono, non perché senza non filtri niente.
+
+**«Le ho scritto» è UNA spunta**, sulla riga e nella scheda: «Da scrivere»
+finché non è spuntata, «Scritto su WA» dopo. Scrive insieme il promemoria
+(`daScrivere`) e la data dell'ultimo contatto (`contattatoIl`). Prima erano due
+controlli, la spunta e un tasto «Segna come contattato», che scrivevano due
+campi diversi e potevano dire cose opposte.
+
+**«Scarica CSV»** tira giù i contatti di un esito alla volta: nome, WhatsApp,
+città, Instagram, LinkedIn. **Dentro non ci sono né il punteggio né le note**:
+un CSV si gira per WhatsApp senza pensarci.
 
 **La scheda** (`/admin/candidature/<uid>`) ha un indirizzo suo, quindi si
-manda a un altro admin e si riapre dov'eri rimasto. Da li' si fanno quattro
-cose e quattro soltanto: si sceglie l'esito, si segna di aver scritto, si
-spunta «da scrivere», si prendono appunti. **Le risposte no**: quelle sono
-quello che la persona ha detto, e le regole non lasciano che un admin le
-riscriva.
-
-**L'esito sta dentro `stato`, non in un campo suo.** `accettato`, `eventi` e
-`escluso` sono gia' tre dei valori che `stato` poteva prendere: aggiungere un
-campo `esito` accanto avrebbe aperto il caso che non si sa risolvere, cioe'
-un documento che dice «escluso» da una parte e «accettato» dall'altra. Di
-conseguenza **«contattata» non e' uno stato ma una data** (`contattatoIl`):
-se fosse uno stato, segnare come contattata una persona gia' accettata le
-cancellerebbe l'esito.
+manda a un altro admin. Le **risposte** non si possono cambiare: sono quello
+che la persona ha detto, e le regole non lasciano che un admin le riscriva.
 
 **Le note le puo' leggere anche la persona di cui parlano.**
 `candidature/{uid}` e' leggibile dall'interessato — e' il suo documento, e

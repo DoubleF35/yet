@@ -8,7 +8,6 @@ import AttachmentEditor from '../components/AttachmentEditor.jsx'
 import GalleriaAdmin from '../components/GalleriaAdmin.jsx'
 import MembriAdmin from '../components/MembriAdmin.jsx'
 import OspitiAdmin from '../components/OspitiAdmin.jsx'
-import PendingRequests from '../components/PendingRequests.jsx'
 import SponsorAdmin from '../components/SponsorAdmin.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
@@ -349,42 +348,36 @@ export default function Admin() {
           </p>
         )}
 
-        {/* 1. Richieste di iscrizione -----------------------------------
-            Prima delle notizie di proposito: è l'unica cosa in questa pagina
-            in cui qualcuno sta aspettando una risposta. Una notizia può
-            attendere domani, una persona in coda no. */}
+        {/* 1. Le candidature -------------------------------------------
+            Il bottone in CIMA, prima di tutto il resto, perche' e' la cosa
+            per cui si apre questo pannello.
+
+            Qui sotto prima c'era la coda delle richieste, con i profili in
+            attesa uno per uno: era il posto dove si approvava qualcuno, e
+            chi apriva il pannello doveva scorrerla tutta per arrivare alle
+            candidature. Adesso si approva dalla scheda della candidatura
+            (Conferma mette il profilo nel sito, Escludi lo toglie), quindi la
+            coda qui non serve piu'.
+
+            La pagina della coda resta, e il link qui sotto ci porta: serve
+            per i profili che una candidatura non ce l'hanno, cioe' quelli
+            nati prima delle domande di selezione, che altrimenti non
+            avrebbero piu' nessun posto da cui essere approvati. */}
         {isFirebaseConfigured && (
           <>
-            <PendingRequests />
-            {/* La stessa cosa su una pagina sua, per chi vuole solo questa:
-                il pannello fa cinque mestieri e le richieste ci stanno in
-                mezzo. */}
-            <p className={s.scorciatoia}>
-              <Link className={s.scorciatoiaLink} to="/admin/richieste">
-                {t('richiestePagina.soloRichieste')}
-              </Link>
-            </p>
-
-            {/* LE CANDIDATURE GIA' MANDATE, che e' una domanda diversa da
-                quella qui sopra. La coda risponde a "chi devo approvare
-                adesso" e si svuota; l'elenco delle candidature resta, e
-                risponde a "a chi ho gia' scritto, chi mi manca, come e'
-                finita".
-
-                Un bottone e non un altro link sottolineato: la coda si
-                svuota e sparisce dagli occhi, quella pagina invece e' il
-                posto in cui si torna ogni volta, e deve farsi trovare. */}
             <p className={s.scorciatoia}>
               <Link className={s.bottoneCandidature} to="/admin/candidature">
                 {t('candidaturePagina.apriPannello')}
               </Link>
             </p>
+            <p className={s.scorciatoia}>
+              <Link className={s.scorciatoiaLink} to="/admin/richieste">
+                {t('richiestePagina.senzaCandidatura')}
+              </Link>
+            </p>
           </>
         )}
 
-        {/* Dopo la coda e non prima: l'ordine della pagina segue l'urgenza.
-            Una richiesta in attesa blocca una persona, un profilo da
-            sistemare no. */}
         {isFirebaseConfigured && <GalleriaAdmin />}
 
         {/* Accanto alle foto delle serate perche' parla della stessa cosa:

@@ -44,11 +44,10 @@ import s from './Candidature.module.css'
 
 const FILTRI_VUOTI = {
   testo: '',
-  stato: 'tutti',
+  scritto: 'tutti',
   esito: 'tutti',
   fascia: 'tutte',
   senzaLinkedin: false,
-  daScrivere: false,
 }
 
 /** Una delle sei caselle in cima. */
@@ -125,14 +124,21 @@ export default function Candidature() {
      il giro che si fa davvero e' scorrere l'elenco col telefono in mano,
      scrivere, e spuntare. Farlo aprendo e chiudendo venti schede non lo
      farebbe nessuno. */
-  const segnaDaScrivere = useCallback(
-    async (uid, valore) => {
+  const segnaScritto = useCallback(
+    async (uid, scritto) => {
       setOccupato((o) => ({ ...o, [uid]: true }))
       setErroriRiga((e) => ({ ...e, [uid]: null }))
       try {
-        await aggiornaValutazione(uid, { daScrivere: valore })
+        /* I due campi insieme, sempre: la spunta e la data dell'ultimo
+           contatto dicono la stessa cosa, e scriverne uno solo e' il modo in
+           cui prima finivano per dire cose opposte. */
+        await aggiornaValutazione(uid, { daScrivere: !scritto, contattatoIl: scritto })
         setDossiers((lista) =>
-          lista.map((d) => (d.uid === uid ? { ...d, daScrivere: valore } : d)),
+          lista.map((d) =>
+            d.uid === uid
+              ? { ...d, scritto, contattatoIl: scritto ? new Date() : null }
+              : d,
+          ),
         )
       } catch (err) {
         setErroriRiga((e) => ({
@@ -227,19 +233,18 @@ export default function Candidature() {
           <section className={s.numeri} aria-label={t('candidaturePagina.numeriAria')}>
             <Numero etichetta={t('candidaturePagina.conteggi.totale')} valore={numeri.totale} />
             <Numero
-              etichetta={t('candidaturePagina.conteggi.plus')}
-              valore={numeri.plus}
-              tono="plus"
-            />
-            <Numero
-              etichetta={t('candidaturePagina.conteggi.daValutare')}
-              valore={numeri.daValutare}
+              etichetta={t('candidaturePagina.conteggi.daScrivere')}
+              valore={numeri.daScrivere}
               tono="attesa"
             />
             <Numero
-              etichetta={t('candidaturePagina.conteggi.event')}
-              valore={numeri.event}
-              tono="event"
+              etichetta={t('candidaturePagina.conteggi.nelSito')}
+              valore={numeri.nelSito}
+              tono="plus"
+            />
+            <Numero
+              etichetta={t('candidaturePagina.conteggi.esclusi')}
+              valore={numeri.esclusi}
             />
             <Numero
               etichetta={t('candidaturePagina.conteggi.u16')}
@@ -275,13 +280,15 @@ export default function Candidature() {
 
             <select
               className={s.select}
-              value={filtri.stato}
-              onChange={cambia('stato')}
-              aria-label={t('candidaturePagina.stato.aria')}
+              value={filtri.scritto}
+              onChange={cambia('scritto')}
+              aria-label={t('candidaturePagina.scrittoFiltro.aria')}
             >
-              <option value="tutti">{t('candidaturePagina.stato.tutti')}</option>
-              <option value="nuovo">{t('candidaturePagina.stato.nuovo')}</option>
-              <option value="contattato">{t('candidaturePagina.stato.contattato')}</option>
+              <option value="tutti">{t('candidaturePagina.scrittoFiltro.tutti')}</option>
+              <option value="da-scrivere">
+                {t('candidaturePagina.scrittoFiltro.daScrivere')}
+              </option>
+              <option value="scritto">{t('candidaturePagina.scrittoFiltro.scritto')}</option>
             </select>
 
             <select
@@ -321,15 +328,6 @@ export default function Candidature() {
                 onChange={cambia('senzaLinkedin')}
               />
               {t('candidaturePagina.soloSenzaLinkedin')}
-            </label>
-
-            <label className={s.spunta}>
-              <input
-                type="checkbox"
-                checked={filtri.daScrivere}
-                onChange={cambia('daScrivere')}
-              />
-              {t('candidaturePagina.soloDaScrivere')}
             </label>
 
             <div className={s.bottoniFiltri}>
@@ -393,29 +391,26 @@ export default function Candidature() {
                         "da scrivere" e "scritto" sono lo stesso fatto visto
                         dai due lati, e due caselle che dicono la stessa cosa
                         finiscono prima o poi in disaccordo. */}
-                    <label
-                      className={d.daScrivere ? s.rigaSpunta : s.rigaSpuntaFatta}
-                    >
+                    <label className={d.scritto ? s.rigaSpuntaFatta : s.rigaSpunta}>
                       <input
                         type="checkbox"
-                        checked={!d.daScrivere}
+                        checked={d.scritto}
                         disabled={!!occupato[d.uid]}
-                        onChange={(e) => segnaDaScrivere(d.uid, !e.target.checked)}
+                        onChange={(e) => segnaScritto(d.uid, e.target.checked)}
                       />
-                      {d.daScrivere
-                        ? t('candidaturePagina.daScrivere')
-                        : t('candidaturePagina.scritto')}
+                      {d.scritto
+                        ? t('candidaturePagina.scritto')
+                        : t('candidaturePagina.daScrivere')}
                     </label>
                   </div>
 
                   <p className={s.etichette}>
-                    {d.esito ? (
+                    {/* Solo se c'e' una decisione: "non ancora deciso" e' lo
+                        stato di partenza di tutti, e un'etichetta uguale su
+                        ogni riga non dice niente a nessuno. */}
+                    {d.esito && (
                       <span className={`${s.badge} ${s[`badge_${d.esito}`]}`}>
                         {t(`candidaturePagina.badge.${d.esito}`)}
-                      </span>
-                    ) : (
-                      <span className={`${s.badge} ${s[`proposta_${d.proposta}`]}`}>
-                        {t(`candidatura.proposta.${d.proposta}`)}
                       </span>
                     )}
                     {d.senzaLinkedin && (
@@ -423,11 +418,6 @@ export default function Candidature() {
                         {t('candidaturePagina.senzaLinkedin')}
                       </span>
                     )}
-                    <span className={s.statoRiga}>
-                      {d.contattata
-                        ? t('candidaturePagina.stato.contattato')
-                        : t('candidaturePagina.stato.nuovo')}
-                    </span>
                     <span className={s.punti}>
                       {t('candidaturePagina.punti', { punti: d.punteggio, su: d.su })}
                     </span>

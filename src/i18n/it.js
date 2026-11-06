@@ -495,6 +495,7 @@ export default {
     spento: 'Firebase non è configurato, quindi non c’è niente da leggere.',
     tornaAlPannello: 'Torna al pannello',
     soloRichieste: 'Apri solo le richieste',
+    senzaCandidatura: 'Profili in attesa senza candidatura',
   },
 
   /* ---------------------------------------------------------------------
@@ -524,27 +525,26 @@ export default {
     numeriAria: 'I numeri delle candidature',
     conteggi: {
       totale: 'Totale',
-      plus: 'Plus',
-      daValutare: 'Da valutare',
-      event: 'Event',
+      daScrivere: 'Da scrivere',
+      nelSito: 'Nel sito',
+      esclusi: 'Esclusi',
       u16: 'U16',
       senzaLinkedin: 'Senza LinkedIn',
     },
 
     cerca: 'Cerca nome, telefono, città',
-    stato: {
-      aria: 'Filtra per stato',
-      tutti: 'Tutti gli stati',
-      nuovo: 'Da contattare',
-      contattato: 'Contattato',
+    scrittoFiltro: {
+      aria: 'Filtra per scritto o no',
+      tutti: 'Scritto e non',
+      daScrivere: 'Da scrivere',
+      scritto: 'Scritto su WA',
     },
     esito: {
       aria: 'Filtra per esito',
       tutti: 'Tutti gli esiti',
       nonDeciso: 'Non ancora deciso',
-      accettato: 'Community Plus',
-      eventi: 'Solo event',
-      escluso: 'Escluso',
+      accettato: 'Nel sito',
+      escluso: 'Esclusi',
     },
     fascia: {
       aria: 'Filtra per fascia d’età',
@@ -555,7 +555,6 @@ export default {
       ignota: 'Età non chiara',
     },
     soloSenzaLinkedin: 'Senza LinkedIn',
-    soloDaScrivere: 'Da scrivere su WA',
     filtra: 'Filtra',
     azzera: 'Azzera',
 
@@ -578,8 +577,7 @@ export default {
     scritto: 'Scritto su WA',
     senzaLinkedin: 'Senza LinkedIn',
     badge: {
-      accettato: 'Plus',
-      eventi: 'Event',
+      accettato: 'Nel sito',
       escluso: 'Escluso',
     },
     punti: '{punti}/{su} punti',
@@ -602,18 +600,29 @@ export default {
     candidataIl: 'candidatura del {data}',
 
     decisione: 'Decisione',
-    esitoFinale: 'Esito finale:',
+    nelSito: 'Nel sito:',
+    si: 'sì',
+    noEscluso: 'no, escluso',
     nonDeciso: 'non ancora deciso',
     ultimoContatto: 'Ultimo contatto:',
     mai: '—',
     conferma: {
       accettato: 'Conferma Community Plus',
-      eventi: 'Conferma Solo event',
       escluso: 'Escludi',
     },
     salvo: 'Salvo…',
-    segnaContattata: 'Segna come contattato',
-    annullaContatto: 'Non l’ho contattato',
+    cosaFannoITasti:
+      'Conferma mette il profilo nel sito e manda la mail di conferma. Escludi lo toglie. Puoi cambiare idea quando vuoi.',
+    mail: {
+      'in-corso': 'Mando la mail di conferma…',
+      mandata: 'Mail di conferma mandata.',
+      sconosciuto:
+        'Il profilo è nel sito, ma la mail non è partita: questa persona si è iscritta prima che le mail esistessero, e lo script il suo indirizzo non l’ha mai visto. Avvisala tu su WhatsApp.',
+      spenta:
+        'Il profilo è nel sito. Le mail su questo sito non sono attive, quindi l’avviso va mandato a mano.',
+      errore:
+        'Il profilo è nel sito, ma la mail di conferma non è partita. Avvisa tu questa persona, e se succede di nuovo guarda in Esecuzioni su Apps Script.',
+    },
 
     note: 'Note',
     notePlaceholder: 'Appunti dopo la chiamata, impressioni…',
@@ -624,7 +633,7 @@ export default {
 
     punteggioTitolo: 'Punteggio: {punti}/{su}',
     punteggioSpiega:
-      'Da 3 punti in su: Community Plus. 2 punti: Da valutare. Meno: Solo event sharing. LinkedIn non conta. Il punteggio non è salvato da nessuna parte: viene calcolato mentre lo guardi.',
+      'Quattro criteri, un punto ciascuno: serve a farsi un’idea, non decide niente. LinkedIn non conta. Il punteggio non è salvato da nessuna parte: viene calcolato mentre lo guardi.',
 
     criterio: {
       pitch: 'Pitch',

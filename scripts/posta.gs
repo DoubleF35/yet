@@ -27,9 +27,12 @@
  *
  *     CHI CHIAMA NON SCEGLIE NIENTE.
  *
- * Il corpo della richiesta porta solo un token di accesso. I destinatari li
- * decide questo file (l'indirizzo di YET, piu' quello scritto DENTRO il
- * token), e il testo pure. Non si accetta ne' un indirizzo, ne' un oggetto,
+ * Il corpo della richiesta porta un token di accesso e, al massimo, un
+ * identificativo. I destinatari li decide questo file, e il testo pure:
+ *
+ *   ISCRIZIONE   l'indirizzo di YET, piu' quello scritto DENTRO il token
+ *   CONFERMA     solo un admin la puo' chiedere, e l'indirizzo e' quello che
+ *                questo script si e' tenuto il giorno dell'iscrizione Non si accetta ne' un indirizzo, ne' un oggetto,
  * ne' una riga di messaggio. Il giorno in cui qualcuno aggiunge un parametro
  * "testo" per comodita', questo script diventa un megafono per spammer.
  *
@@ -68,6 +71,21 @@ const CHIAVE_FIREBASE = 'INCOLLA-QUI-VITE_FIREBASE_API_KEY'
 /** L'indirizzo del sito, per i link dentro le mail. */
 const SITO = 'https://yetcommunity.it'
 
+/**
+ * Chi puo' chiedere la mail di conferma. In minuscolo.
+ *
+ * E' la stessa lista di adminEmails() in firestore.rules e di ADMIN_EMAILS in
+ * src/config/admins.js: tre copie, perche' tre posti diversi (il database, il
+ * sito, questo script) devono saperlo e nessuno dei tre puo' chiederlo agli
+ * altri. Se aggiungi un admin, aggiungilo in tutti e tre e ripubblica.
+ */
+const AMMINISTRATORI = [
+  'fedefas.210@gmail.com',
+  'greta.dal19@gmail.com',
+  'lucafrancesco.rollino3@gmail.com',
+  'mattiapapa.075@gmail.com',
+]
+
 /* --------------------------------------------------------------------------
    IL PUNTO DI INGRESSO
    -------------------------------------------------------------------------- */
@@ -93,21 +111,39 @@ function doPost(e) {
       return rispondi({ ok: false, errore: 'token non valido' })
     }
 
+    if (corpo.azione === 'accettata') {
+      return confermaAccettazione(utente, corpo.uid)
+    }
+
     /* UNA VOLTA SOLA PER PERSONA, per sei ore.
        Il sito chiama questo indirizzo solo alla prima candidatura, ma il
        sito non e' l'unico che puo' chiamarlo: senza questo freno, chi ha un
        account valido potrebbe riempire di posta la casella di YET e la
-       propria. Sei ore e' il massimo che la cache di Apps Script tiene, ed e'
-       abbondante per quello che serve. */
+       propria.
+
+       La cache si scrive DOPO aver mandato e non prima: prima voleva dire
+       che una mail fallita (la quota del giorno finita, un intoppo di Gmail)
+       bloccava anche il secondo tentativo per sei ore, cioe' che l'avviso
+       non arrivava mai. */
     var cache = CacheService.getScriptCache()
     var chiave = 'avvisata-' + utente.uid
     if (cache.get(chiave)) {
       return rispondi({ ok: true, nota: 'gia mandata di recente' })
     }
-    cache.put(chiave, '1', 21600)
+
+    /* L'indirizzo si conserva QUI, nelle proprieta' dello script, e non nel
+       database: servira' il giorno in cui un admin preme Conferma, per dire
+       alla persona che e' dentro. Nel database non ci va perche' i profili
+       li legge chiunque e l'informativa promette che l'email non ci finisce;
+       qui la vede solo l'account di YET, che l'ha gia' nella mail di avviso. */
+    PropertiesService.getScriptProperties().setProperty(
+      'iscritto-' + utente.uid,
+      JSON.stringify({ email: utente.email, nome: utente.nome, lingua: lingua }),
+    )
 
     mandaAYet(utente)
     mandaAChiSiIscrive(utente, lingua)
+    cache.put(chiave, '1', 21600)
 
     return rispondi({ ok: true })
   } catch (errore) {
@@ -165,7 +201,53 @@ function verificaToken(token) {
        usa un account senza nome resta "una persona" invece di diventare
        una riga vuota. */
     nome: trovato.displayName || '',
+    /* Serve per gli admin: la lista li riconosce dall'indirizzo, e un
+       indirizzo non verificato e' un indirizzo che chiunque puo' dichiarare.
+       Con l'accesso Google e' sempre vero; lo si controlla lo stesso, per lo
+       stesso motivo per cui lo controllano le regole del database. */
+    verificata: trovato.emailVerified === true,
   }
+}
+
+/* --------------------------------------------------------------------------
+   LA CONFERMA
+   -------------------------------------------------------------------------- */
+
+/**
+ * "Sei dentro": la chiede un admin quando preme Conferma nel pannello.
+ *
+ * Tre controlli, e nessuno si salta:
+ *   1. chi chiama e' un admin, con l'indirizzo verificato;
+ *   2. la persona si e' iscritta da quando le mail esistono, cosi' questo
+ *      script ha il suo indirizzo (chi si e' iscritto prima non ce l'ha:
+ *      in quel caso si dice e basta, e il pannello avvisa di scrivergli a
+ *      mano);
+ *   3. non le e' gia' stata mandata nelle ultime sei ore, cosi' un doppio
+ *      clic non diventa due mail.
+ */
+function confermaAccettazione(admin, uid) {
+  if (!admin.verificata || AMMINISTRATORI.indexOf(admin.email.toLowerCase()) === -1) {
+    return rispondi({ ok: false, errore: 'non sei un admin' })
+  }
+  if (!uid || typeof uid !== 'string' || uid.length > 128) {
+    return rispondi({ ok: false, errore: 'chi?' })
+  }
+
+  var salvato = PropertiesService.getScriptProperties().getProperty('iscritto-' + uid)
+  if (!salvato) {
+    return rispondi({ ok: false, errore: 'indirizzo sconosciuto' })
+  }
+
+  var cache = CacheService.getScriptCache()
+  var chiave = 'accettata-' + uid
+  if (cache.get(chiave)) {
+    return rispondi({ ok: true, nota: 'gia mandata di recente' })
+  }
+
+  var persona = JSON.parse(salvato)
+  mandaAccettazione(persona)
+  cache.put(chiave, '1', 21600)
+  return rispondi({ ok: true })
 }
 
 /* --------------------------------------------------------------------------
@@ -240,6 +322,51 @@ function mandaAChiSiIscrive(utente, lingua) {
 
   MailApp.sendEmail({
     to: utente.email,
+    replyTo: INDIRIZZO_YET,
+    name: 'YET',
+    subject: testo.oggetto,
+    htmlBody: '<p>' + testo.ciao + '</p>' + testo.corpo,
+  })
+}
+
+/**
+ * La mail a chi e' stato confermato.
+ *
+ * Dice che il profilo adesso e' nel sito e dove sistemarlo. La ragione per
+ * mandarla e' quella seconda cosa: chi si e' iscritto settimane fa non si
+ * ricorda cosa ha scritto, e scoprirlo in vetrina insieme a tutti gli altri
+ * non e' bello.
+ */
+function mandaAccettazione(persona) {
+  var nome = persona.nome ? persona.nome.split(' ')[0] : ''
+
+  var testi = {
+    it: {
+      oggetto: 'Sei dentro YET',
+      ciao: nome ? 'Ciao ' + scappa(nome) + ',' : 'Ciao,',
+      corpo:
+        '<p>abbiamo letto la tua candidatura e sei dentro: il tuo profilo adesso compare ' +
+        'fra i membri, su <a href="' + SITO + '/vetrina">yetcommunity.it</a>.</p>' +
+        '<p>Se vuoi cambiare qualcosa — la foto, la presentazione, un link — lo fai ' +
+        'dalla <a href="' + SITO + '/join">tua pagina</a>, quando vuoi.</p>' +
+        '<p>Benvenuto,<br>YET</p>',
+    },
+    en: {
+      oggetto: 'You are in YET',
+      ciao: nome ? 'Hi ' + scappa(nome) + ',' : 'Hi,',
+      corpo:
+        '<p>we have read your application and you are in: your profile now shows up ' +
+        'among the members, on <a href="' + SITO + '/vetrina">yetcommunity.it</a>.</p>' +
+        '<p>If you want to change something — the photo, the introduction, a link — you ' +
+        'can do it from <a href="' + SITO + '/join">your page</a>, whenever you like.</p>' +
+        '<p>Welcome,<br>YET</p>',
+    },
+  }
+
+  var testo = testi[persona.lingua === 'en' ? 'en' : 'it']
+
+  MailApp.sendEmail({
+    to: persona.email,
     replyTo: INDIRIZZO_YET,
     name: 'YET',
     subject: testo.oggetto,
