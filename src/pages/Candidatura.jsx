@@ -11,10 +11,12 @@ import {
   getCandidatura,
   getUserProfile,
   setStatoCandidatura,
+  setUserStatus,
   toDate,
 } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
+import { avvisaAccettazione } from '../lib/posta.js'
 import { useInCimaQuandoPronta } from '../lib/scorrimento.js'
 
 import s from './Candidatura.module.css'
@@ -113,6 +115,8 @@ export default function Candidatura() {
   const [noteSalvate, setNoteSalvate] = useState(false)
   const [occupato, setOccupato] = useState(null)
   const [erroreAzione, setErroreAzione] = useState(null)
+  /* Com'e' andata la mail di conferma: null finche' non si conferma. */
+  const [mailConferma, setMailConferma] = useState(null)
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -183,8 +187,34 @@ export default function Candidatura() {
     [t],
   )
 
-  const decidi = (esito) =>
-    scrivi(esito, () => setStatoCandidatura(uid, esito), { stato: esito, esito })
+  /* CONFERMA METTE NEL SITO, ESCLUDI TOGLIE. E' quello che i due tasti
+     promettono, quindi e' quello che fanno: scrivono lo status del PROFILO
+     (approved / rejected), che e' cio' che decide la vetrina, e poi lo
+     stato della candidatura, perche' il pannello si ricordi la decisione.
+
+     Il profilo PRIMA, di proposito: e' la meta' che si vede. Se la seconda
+     scrittura fallisce, la persona e' comunque dove deve stare e l'errore
+     a schermo dice di riprovare; al contrario resterebbe una candidatura
+     "confermata" di qualcuno che in vetrina non c'e', che era esattamente il
+     difetto di prima. */
+  const decidi = async (esito) => {
+    const statoProfilo = esito === 'accettato' ? 'approved' : 'rejected'
+    setMailConferma(null)
+    const andata = await scrivi(
+      esito,
+      async () => {
+        await setUserStatus(uid, statoProfilo)
+        await setStatoCandidatura(uid, esito)
+      },
+      { stato: esito, esito, profilo: { ...dossier.profilo, status: statoProfilo } },
+    )
+    /* La mail parte solo a decisione SALVATA: dire a qualcuno "sei dentro"
+       mentre il suo profilo e' ancora fuori sarebbe la cosa peggiore. */
+    if (andata && esito === 'accettato') {
+      setMailConferma('in-corso')
+      setMailConferma(await avvisaAccettazione(uid))
+    }
+  }
 
   const salvaNote = async () => {
     const andata = await scrivi('note', () => aggiornaValutazione(uid, { note }), {
@@ -237,13 +267,15 @@ export default function Candidatura() {
             </h1>
 
             <p className={s.etichette}>
-              {/* La proposta e' una somma di quattro spunte, non un giudizio:
-                  sta accanto al nome perche' la si guarda, non perche' decida. */}
-              <span className={`${s.badge} ${s[`proposta_${dossier.proposta}`]}`}>
-                {t(`candidatura.proposta.${dossier.proposta}`)}
-              </span>
-              <span className={`${s.badge} ${s.badge_stato}`}>
-                {t(`candidatura.stato.${dossier.stato}`)}
+              {dossier.esito && (
+                <span className={`${s.badge} ${s[`esito_${dossier.esito}`]}`}>
+                  {t(`candidaturePagina.badge.${dossier.esito}`)}
+                </span>
+              )}
+              <span className={`${s.badge} ${dossier.scritto ? s.esito_accettato : s.badge_stato}`}>
+                {dossier.scritto
+                  ? t('candidaturePagina.scritto')
+                  : t('candidaturePagina.daScrivere')}
               </span>
             </p>
 
@@ -309,11 +341,13 @@ export default function Candidatura() {
             </h2>
 
             <p className={s.schedaRiga}>
-              {t('schedaCandidatura.esitoFinale')}{' '}
+              {t('schedaCandidatura.nelSito')}{' '}
               <strong>
-                {dossier.esito
-                  ? t(`candidaturePagina.esito.${dossier.esito}`)
-                  : t('schedaCandidatura.nonDeciso')}
+                {dossier.esito === 'accettato'
+                  ? t('schedaCandidatura.si')
+                  : dossier.esito === 'escluso'
+                    ? t('schedaCandidatura.noEscluso')
+                    : t('schedaCandidatura.nonDeciso')}
               </strong>
               {' · '}
               {t('schedaCandidatura.ultimoContatto')}{' '}
@@ -337,46 +371,42 @@ export default function Candidatura() {
                 </button>
               ))}
             </div>
+            <p className={s.spiega}>{t('schedaCandidatura.cosaFannoITasti')}</p>
 
+            {mailConferma && (
+              <p
+                className={mailConferma === 'mandata' ? s.mailOk : s.spiega}
+                role="status"
+              >
+                {t(`schedaCandidatura.mail.${mailConferma}`)}
+              </p>
+            )}
+
+            {/* UNA spunta sola per "le ho scritto": scrive insieme il
+                promemoria e la data, cosi' non possono piu' dire due cose
+                diverse come facevano la spunta e il vecchio tasto
+                "segna come contattato". */}
             <div className={s.bottoni}>
               <label className={s.spunta}>
                 <input
                   type="checkbox"
-                  checked={dossier.daScrivere}
+                  checked={dossier.scritto}
                   disabled={occupato !== null}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const scritto = e.target.checked
                     scrivi(
-                      'daScrivere',
-                      () => aggiornaValutazione(uid, { daScrivere: e.target.checked }),
-                      { daScrivere: e.target.checked },
+                      'scritto',
+                      () =>
+                        aggiornaValutazione(uid, {
+                          daScrivere: !scritto,
+                          contattatoIl: scritto,
+                        }),
+                      { scritto, contattatoIl: scritto ? new Date() : null },
                     )
-                  }
+                  }}
                 />
-                {t('candidaturePagina.daScrivere')}
+                {t('candidaturePagina.scritto')}
               </label>
-
-              {/* Scrive la DATA, non lo stato: se fosse uno stato, segnare
-                  come contattata una persona gia' accettata le cancellerebbe
-                  l'esito. Vedi il commento in lib/candidature.js. */}
-              <button
-                className={s.secondario}
-                type="button"
-                disabled={occupato !== null}
-                onClick={() =>
-                  scrivi(
-                    'contatto',
-                    () => aggiornaValutazione(uid, { contattatoIl: !dossier.contattata }),
-                    {
-                      contattata: !dossier.contattata,
-                      contattatoIl: dossier.contattata ? null : new Date(),
-                    },
-                  )
-                }
-              >
-                {dossier.contattata
-                  ? t('schedaCandidatura.annullaContatto')
-                  : t('schedaCandidatura.segnaContattata')}
-              </button>
             </div>
 
             {erroreAzione && (
