@@ -580,7 +580,6 @@ export default {
       accettato: 'Nel sito',
       escluso: 'Escluso',
     },
-    punti: '{punti}/{su} punti',
     whatsapp: 'WhatsApp',
     apri: 'Apri la scheda',
 
@@ -631,18 +630,7 @@ export default {
     salvaNote: 'Salva note',
     salvate: 'Salvate.',
 
-    punteggioTitolo: 'Punteggio: {punti}/{su}',
-    punteggioSpiega:
-      'Quattro criteri, un punto ciascuno: serve a farsi un’idea, non decide niente. LinkedIn non conta. Il punteggio non è salvato da nessuna parte: viene calcolato mentre lo guardi.',
 
-    criterio: {
-      pitch: 'Pitch',
-      prodotto: 'Prodotto',
-      eventi: 'Eventi',
-      ambizione: 'Ambizione',
-    },
-    piuUno: '(+1)',
-    zero: '(0)',
 
     /* LE STESSE DOMANDE, VISTE DA CHI LEGGE E NON DA CHI RISPONDE.
        Nel form sono rivolte alla persona ("Cosa fai adesso"); qui si sta

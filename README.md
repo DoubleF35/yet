@@ -1202,7 +1202,10 @@ città, Instagram, LinkedIn. **Dentro non ci sono né il punteggio né le note**
 un CSV si gira per WhatsApp senza pensarci.
 
 **La scheda** (`/admin/candidature/<uid>`) ha un indirizzo suo, quindi si
-manda a un altro admin. Le **risposte** non si possono cambiare: sono quello
+manda a un altro admin. **Il punteggio lì non compare**, né sulle righe
+dell'elenco: chi decide non lo usava, e le quattro cose che misura sono già
+nelle risposte, dette con le parole della persona. Il calcolo resta in
+`src/lib/punteggio.js` e si vede ancora nella coda delle richieste. Le **risposte** non si possono cambiare: sono quello
 che la persona ha detto, e le regole non lasciano che un admin le riscriva.
 
 **Le note le puo' leggere anche la persona di cui parlano.**
