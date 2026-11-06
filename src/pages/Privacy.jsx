@@ -139,7 +139,7 @@ function PrivacyIt() {
             l’approvazione e la sezione «Chi organizza» della pagina Membri.
           </p>
 
-          <h3 className={s.h3}>Le due mail che partono</h3>
+          <h3 className={s.h3}>Le mail che partono</h3>
           <p className={s.p}>
             Quando mandi la candidatura partono <strong>due messaggi</strong>: uno a noi
             organizzatori, che dice il tuo nome e il tuo indirizzo e serve ad accorgerci che sei
@@ -148,9 +148,16 @@ function PrivacyIt() {
             leggono dal pannello, dietro l’accesso.
           </p>
           <p className={s.p}>
-            A mandarle è <strong>Google Apps Script</strong>, dalla casella Gmail di YET. È la
-            ragione per cui il tuo indirizzo passa anche da lì, e non solo da Firebase. Non è una
-            newsletter e non si ripete: parte una volta, quando ti candidi.
+            Quando la candidatura viene accettata e il tuo profilo compare fra i membri, ne parte
+            una <strong>terza</strong>, che te lo dice e ti ricorda dove sistemare il profilo.
+          </p>
+          <p className={s.p}>
+            A mandarle è <strong>Google Apps Script</strong>, dalla casella Gmail di YET. Per poter
+            mandare anche la terza, lo script <strong>conserva il tuo indirizzo</strong> insieme al
+            tuo nome e alla lingua del sito, dentro l’account di YET e non nel database dei profili:
+            è la ragione per cui passa anche da lì, e non solo da Firebase. Non è una newsletter: sono
+            tre messaggi in tutto, legati alla tua candidatura. Se cancelli il profilo e vuoi che
+            sparisca anche da lì, scrivici.
           </p>
 
           <h3 className={s.h3}>Cosa diventa pubblico</h3>
@@ -446,7 +453,7 @@ function PrivacyEn() {
             approval flow and the “Who runs it” section of the members page work.
           </p>
 
-          <h3 className={s.h3}>The two emails that go out</h3>
+          <h3 className={s.h3}>The emails that go out</h3>
           <p className={s.p}>
             When you send your application, <strong>two messages</strong> go out: one to us
             organisers, with your name and your address, so we notice you have arrived, and one{' '}
@@ -455,9 +462,17 @@ function PrivacyEn() {
             read from the panel, behind the sign-in.
           </p>
           <p className={s.p}>
-            They are sent by <strong>Google Apps Script</strong>, from YET’s Gmail account. That is
-            why your address also passes through there, and not only through Firebase. It is not a
-            newsletter and it does not repeat: it goes out once, when you apply.
+            When your application is accepted and your profile shows up among the members, a{' '}
+            <strong>third</strong> one goes out, telling you so and reminding you where to edit your
+            profile.
+          </p>
+          <p className={s.p}>
+            They are sent by <strong>Google Apps Script</strong>, from YET’s Gmail account. To be
+            able to send the third one, the script <strong>keeps your address</strong> together
+            with your name and the site language, inside YET’s account and not in the profiles
+            database: that is why it also passes through there, and not only through Firebase. It is
+            not a newsletter: three messages in all, tied to your application. If you delete your
+            profile and want it gone from there too, write to us.
           </p>
 
           <h3 className={s.h3}>What becomes public</h3>
