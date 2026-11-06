@@ -449,42 +449,9 @@ export default function Candidatura() {
             {noteSalvate && <span className={s.salvate}>{t('schedaCandidatura.salvate')}</span>}
           </section>
 
-          {/* --- il punteggio ------------------------------------------ */}
-          <section className={s.scheda} aria-labelledby="punteggio">
-            <h2 className={s.schedaTitolo} id="punteggio">
-              {t('schedaCandidatura.punteggioTitolo', {
-                punti: dossier.punteggio,
-                su: dossier.su,
-              })}
-            </h2>
-            <p className={s.spiega}>{t('schedaCandidatura.punteggioSpiega')}</p>
-
-            <ul className={s.criteri}>
-              {dossier.dettaglio.map((d) => (
-                <li className={d.scattato ? s.criterioSi : s.criterioNo} key={d.id}>
-                  {/* Il segno PRIMA e il punteggio accanto al nome: si legge
-                      "questo si', e vale uno". Il segno non e' solo colore,
-                      perche' chi non distingue il verde dal rosso deve poter
-                      dire lo stesso quali criteri sono scattati. */}
-                  <span className={s.segno} aria-hidden="true">
-                    {d.scattato ? '✓' : '✗'}
-                  </span>
-                  <span>
-                    <strong className={s.criterioNome}>
-                      {t(`schedaCandidatura.criterio.${d.id}`)}
-                    </strong>{' '}
-                    <span className={s.criterioPunto}>
-                      {d.scattato
-                        ? t('schedaCandidatura.piuUno')
-                        : t('schedaCandidatura.zero')}
-                    </span>
-                    <span className={s.criterioTesto}>{t(d.chiave)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
+          {/* Il riquadro del punteggio non c'e' piu': chi decide non lo usava, e
+              le quattro spunte erano gia' tutte nelle risposte qui sotto, dette
+              con le parole della persona invece che come una somma. */}
           {/* --- le risposte ------------------------------------------- */}
           <section className={s.scheda} aria-labelledby="risposte">
             <h2 className={s.schedaTitolo} id="risposte">
