@@ -454,6 +454,7 @@ export default {
     spento: 'Firebase is not configured, so there is nothing to read.',
     tornaAlPannello: 'Back to the panel',
     soloRichieste: 'Open just the requests',
+    senzaCandidatura: 'Pending profiles without an application',
   },
 
   candidaturePagina: {
@@ -477,26 +478,25 @@ export default {
     numeriAria: 'Application numbers',
     conteggi: {
       totale: 'Total',
-      plus: 'Plus',
-      daValutare: 'To weigh up',
-      event: 'Event',
+      daScrivere: 'To write',
+      nelSito: 'On the site',
+      esclusi: 'Turned down',
       u16: 'U16',
       senzaLinkedin: 'No LinkedIn',
     },
 
     cerca: 'Search name, phone, city',
-    stato: {
-      aria: 'Filter by state',
-      tutti: 'All states',
-      nuovo: 'To contact',
-      contattato: 'Contacted',
+    scrittoFiltro: {
+      aria: 'Filter by written or not',
+      tutti: 'Written or not',
+      daScrivere: 'To write',
+      scritto: 'Written on WA',
     },
     esito: {
       aria: 'Filter by outcome',
       tutti: 'All outcomes',
       nonDeciso: 'Not decided yet',
-      accettato: 'Community Plus',
-      eventi: 'Event only',
+      accettato: 'On the site',
       escluso: 'Turned down',
     },
     fascia: {
@@ -508,7 +508,6 @@ export default {
       ignota: 'Age unclear',
     },
     soloSenzaLinkedin: 'No LinkedIn',
-    soloDaScrivere: 'To write on WA',
     filtra: 'Filter',
     azzera: 'Reset',
 
@@ -531,8 +530,7 @@ export default {
     scritto: 'Written on WA',
     senzaLinkedin: 'No LinkedIn',
     badge: {
-      accettato: 'Plus',
-      eventi: 'Event',
+      accettato: 'On the site',
       escluso: 'Turned down',
     },
     punti: '{punti}/{su} points',
@@ -555,18 +553,29 @@ export default {
     candidataIl: 'applied on {data}',
 
     decisione: 'Decision',
-    esitoFinale: 'Final outcome:',
+    nelSito: 'On the site:',
+    si: 'yes',
+    noEscluso: 'no, turned down',
     nonDeciso: 'not decided yet',
     ultimoContatto: 'Last contact:',
     mai: '—',
     conferma: {
       accettato: 'Confirm Community Plus',
-      eventi: 'Confirm Event only',
       escluso: 'Turn down',
     },
     salvo: 'Saving…',
-    segnaContattata: 'Mark as contacted',
-    annullaContatto: 'I have not contacted them',
+    cosaFannoITasti:
+      'Confirm puts the profile on the site and sends the confirmation email. Turn down takes it off. You can change your mind whenever you like.',
+    mail: {
+      'in-corso': 'Sending the confirmation email…',
+      mandata: 'Confirmation email sent.',
+      sconosciuto:
+        'The profile is on the site, but the email did not go out: this person applied before the emails existed, and the script never saw their address. Let them know yourself on WhatsApp.',
+      spenta:
+        'The profile is on the site. Emails are not active on this site, so the notice has to be sent by hand.',
+      errore:
+        'The profile is on the site, but the confirmation email did not go out. Let this person know yourself, and if it happens again check Executions in Apps Script.',
+    },
 
     note: 'Notes',
     notePlaceholder: 'Notes after the call, impressions…',
@@ -577,7 +586,7 @@ export default {
 
     punteggioTitolo: 'Score: {punti}/{su}',
     punteggioSpiega:
-      '3 points or more: Community Plus. 2 points: to weigh up. Less: event sharing only. LinkedIn does not count. The score is stored nowhere: it is worked out while you look at it.',
+      'Four criteria, one point each: it helps you get an idea, it decides nothing. LinkedIn does not count. The score is stored nowhere: it is worked out while you look at it.',
 
     criterio: {
       pitch: 'Pitch',
