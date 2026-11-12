@@ -68,11 +68,11 @@ export default {
     fasciaEta: '16 to 23',
     citta: 'Turin',
     raggio: 'all of Italy',
-    reach: 'First events in Turin, aiming for all of Italy',
+    reach: 'Events all over Italy',
     descrizioneBreve:
       'The club for young people building something. Even if you have nothing in your hands yet: what counts is the attitude, not a project that is already running.',
     descrizione:
-      'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. The first events will be in Turin, but the plan is to spread across Italy. No membership fee: just a few questions, so we get to know you.',
+      'YET, Young Entrepreneurs Together, is a club for young people who are building something: a product, an association, a project, an idea that is still a mess. And if you have nothing in your hands yet, that is fine too: what we are looking for is the attitude, not a running project. We run events all over Italy. No membership fee: just a few questions, so we get to know you.',
   },
 
   /* --- channels --------------------------------------------------------- */
@@ -772,7 +772,7 @@ export default {
     eyebrow: 'Events',
     titolo: 'What is happening',
     lead:
-      'Meetups, announcements and things we are building. The first events will be in Turin, but the goal is to run them all over Italy: if you want to organise one where you are, write to us.',
+      'Meetups, announcements and things we are building. We run events all over Italy: if you want to organise one where you are, write to us.',
   },
 
   /* --- contact ----------------------------------------------------------- */
@@ -795,9 +795,9 @@ export default {
     nessunCanaleTesto:
       'We are still setting up our profiles. In the meantime the email above works perfectly.',
     doveSiamo: 'Where we are',
-    partenza: 'We start from {citta} and we are heading across Italy',
+    partenza: 'Born in {citta}, active all over Italy',
     raggio:
-      'The first events will be in {citta}, but the goal is to spread across all of Italy: if you live in Palermo or in Udine, you can find people from your own city and help run events right where you are.',
+      'We run events all over Italy: if you live in Palermo or in Udine, you can find people from your own city and help run events right where you are.',
     caffe: 'And of course: if you are passing through {citta}, write to us and we will grab a coffee.',
   },
 
@@ -929,7 +929,7 @@ export default {
       perChi: {
         titolo: 'Who it is for',
         testo:
-          'From {eta} years old, from all over Italy. The first events will be in {citta}, but the goal is to spread out: if you live in Palermo or in Udine you can find people from your own city and help run events right where you are.',
+          'From {eta} years old, from all over Italy, with events all over Italy: if you live in Palermo or in Udine you can find people from your own city and help run events right where you are.',
       },
       cosaSiFa: {
         titolo: 'What we do',
