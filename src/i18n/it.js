@@ -69,11 +69,11 @@ export default {
        nome: Torino è "Turin". Un esonimo è una traduzione, non un dato. */
     citta: 'Torino',
     raggio: 'tutta Italia',
-    reach: 'I primi eventi a Torino, l’obiettivo è tutta Italia',
+    reach: 'Eventi in tutta Italia',
     descrizioneBreve:
       'Il club dei giovani che costruiscono qualcosa. Anche se non hai ancora niente fra le mani: conta l’attitudine, non il progetto già avviato.',
     descrizione:
-      'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna quota di iscrizione: solo qualche domanda, per conoscerti.',
+      'YET, Young Entrepreneurs Together è il club dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato. Facciamo eventi in tutta Italia. Nessuna quota di iscrizione: solo qualche domanda, per conoscerti.',
   },
 
   /* --- i canali --------------------------------------------------------- */
@@ -836,7 +836,7 @@ export default {
     eyebrow: 'Eventi',
     titolo: 'Cosa succede',
     lead:
-      'Incontri, annunci e cose che stiamo costruendo. I primi eventi saranno a Torino, ma l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.',
+      'Incontri, annunci e cose che stiamo costruendo. Facciamo eventi in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.',
   },
 
   /* --- contatti ---------------------------------------------------------- */
@@ -859,9 +859,9 @@ export default {
     nessunCanaleTesto:
       'Stiamo sistemando i nostri profili. Nel frattempo la mail qui sopra funziona benissimo.',
     doveSiamo: 'Dove siamo',
-    partenza: 'Si parte da {citta}, si va verso tutta Italia',
+    partenza: 'Nati a {citta}, presenti in tutta Italia',
     raggio:
-      'I primi eventi saranno a {citta}, ma l’obiettivo è espandersi in tutta Italia: se vivi a Palermo o a Udine, puoi trovare gente della tua stessa città e contribuire a fare eventi proprio dove sei tu.',
+      'Facciamo eventi in tutta Italia: se vivi a Palermo o a Udine, puoi trovare gente della tua stessa città e contribuire a fare eventi proprio dove sei tu.',
     caffe: 'E, ovvio: se sei di passaggio a {citta}, scrivici e ci prendiamo un caffè.',
   },
 
@@ -993,7 +993,7 @@ export default {
       perChi: {
         titolo: 'Per chi',
         testo:
-          'Dai {eta} anni, da tutta Italia. I primi eventi saranno a {citta}, ma l’obiettivo è espandersi: se vivi a Palermo o a Udine puoi trovare gente della tua città e contribuire a farne proprio dove sei tu.',
+          'Dai {eta} anni, da tutta Italia, con eventi in tutta Italia: se vivi a Palermo o a Udine puoi trovare gente della tua città e contribuire a farne proprio dove sei tu.',
       },
       cosaSiFa: {
         titolo: 'Cosa si fa',

@@ -48,20 +48,20 @@ const ROTTE = [
   {
     path: '/',
     title: 'YET · Build ambition.',
-    desc: 'YET, Young Entrepreneurs Together: la community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Primi eventi a Torino, obiettivo tutta Italia. Nessuna selezione, nessuna quota: conta l’attitudine.',
+    desc: 'YET, Young Entrepreneurs Together: la community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Eventi in tutta Italia. Nessuna selezione, nessuna quota: conta l’attitudine.',
     h1: 'YET, Young Entrepreneurs Together',
     testo: [
       'La community dei giovani che costruiscono qualcosa: un prodotto, un’associazione, un progetto, un’idea ancora confusa. Dai 16 ai 23 anni. E se non hai ancora niente fra le mani va bene lo stesso: quello che cerchiamo è l’attitudine, non il progetto già avviato.',
-      'I primi eventi saranno a Torino, ma l’obiettivo è espandersi in tutta Italia. Nessuna selezione, nessuna quota di iscrizione.',
+      'Facciamo eventi in tutta Italia. Nessuna selezione, nessuna quota di iscrizione.',
     ],
   },
   {
     path: '/home',
     title: 'YET · Build ambition.',
-    desc: 'La community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Primi eventi a Torino, obiettivo tutta Italia.',
+    desc: 'La community dei giovani che costruiscono qualcosa, dai 16 ai 23 anni. Eventi in tutta Italia.',
     h1: 'YET, Young Entrepreneurs Together',
     testo: [
-      'Chi siamo, cosa facciamo e le ultime novità della community. Dai 16 ai 23 anni, primi eventi a Torino e obiettivo tutta Italia.',
+      'Chi siamo, cosa facciamo e le ultime novità della community. Dai 16 ai 23 anni, eventi in tutta Italia.',
     ],
   },
   {
@@ -77,10 +77,10 @@ const ROTTE = [
   {
     path: '/eventi',
     title: 'Eventi · YET',
-    desc: 'Gli incontri di YET: quando, dove e di cosa si parla. I primi eventi saranno a Torino, ma l’obiettivo è farne in tutta Italia.',
+    desc: 'Gli incontri di YET: quando, dove e di cosa si parla. Facciamo eventi in tutta Italia.',
     h1: 'Gli eventi di YET',
     testo: [
-      'Incontri, annunci e cose che stiamo costruendo. I primi eventi saranno a Torino, ma l’obiettivo è farne in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.',
+      'Incontri, annunci e cose che stiamo costruendo. Facciamo eventi in tutta Italia: se vuoi organizzarne uno dove stai tu, scrivici.',
     ],
   },
   {
