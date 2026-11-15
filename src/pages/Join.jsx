@@ -647,6 +647,17 @@ function ProfileForm({ firebaseMissing }) {
     if (photoURL && !photoURL.startsWith('data:') && !isHttpUrl(photoURL)) {
       nextErrors.photoURL = t('join.form.fotoErrore')
     }
+    /* LA FOTO E' OBBLIGATORIA alla prima candidatura: in vetrina una tessera
+       con le iniziali grigie non fa capire chi sei, e chi organizza deve poter
+       riconoscere le persone agli eventi. Vale anche la foto dell'account
+       Google, che il form mette gia' da solo: per la maggior parte delle
+       persone il campo arriva pieno e non devono fare niente.
+
+       In modifica no, come per gli altri campi: chi ha un profilo nato prima
+       di questa regola non deve ritrovarsi il salvataggio bloccato. */
+    if (!modifica && !photoURL) {
+      nextErrors.photoURL = t('join.form.fotoObbligatoria')
+    }
 
     /* I TRE CAMPI DI «COSA FAI» E I TRE LINK ADESSO VOGLIONO UNA RISPOSTA.
        Erano facoltativi, e qui sopra c'era scritto che un profilo con solo
@@ -1048,6 +1059,7 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-photo`}>
                 {t('join.form.foto')}
+                {!modifica && <Obbligatorio t={t} />}
               </label>
               <div className={s.photoRow}>
                 <div className={s.photoPreview}>

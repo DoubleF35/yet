@@ -1000,6 +1000,8 @@ export default {
       bioErrore: 'The bio is over {max} characters: remove {troppi}.',
       bioConteggio: '{n} characters out of {max} available',
       foto: 'Profile photo (link)',
+      fotoObbligatoria:
+        'A photo where you can be recognised is needed: upload it from your phone or paste a link.',
       fotoNomeTu: 'You',
       caricaFoto: 'Upload a photo',
       preparoFoto: 'Preparing the photo…',
