@@ -587,3 +587,15 @@
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+
+/* L'avviso a chi e' stato mandato qui perche' il profilo non ha una foto. */
+.fotoMancante {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--coral);
+  border-radius: var(--radius);
+  background-color: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--step-0);
+  line-height: var(--lh-base);
+}
