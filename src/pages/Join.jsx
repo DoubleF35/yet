@@ -609,6 +609,11 @@ function ProfileForm({ firebaseMissing }) {
      e quelle risposte servono a decidere se approvarla. */
   const modifica = profile != null
 
+  /* Un profilo gia' salvato ma senza foto. E' il caso per cui la Layout
+     manda qui chiunque entri nel sito: finche' non ne mette una, questa e'
+     l'unica pagina che puo' vedere (piu' le informative). */
+  const senzaFoto = modifica && !String(profile?.photoURL ?? '').trim()
+
   // Il link ai membri compare dopo il primo salvataggio, ma anche a chi ha già
   // un profilo salvato: è già in quella lista, non ha senso nascondergli la via.
   const canSeeMembers = savedNow || profile != null
@@ -647,15 +652,17 @@ function ProfileForm({ firebaseMissing }) {
     if (photoURL && !photoURL.startsWith('data:') && !isHttpUrl(photoURL)) {
       nextErrors.photoURL = t('join.form.fotoErrore')
     }
-    /* LA FOTO E' OBBLIGATORIA alla prima candidatura: in vetrina una tessera
+    /* LA FOTO E' OBBLIGATORIA, sempre: in vetrina una tessera
        con le iniziali grigie non fa capire chi sei, e chi organizza deve poter
        riconoscere le persone agli eventi. Vale anche la foto dell'account
        Google, che il form mette gia' da solo: per la maggior parte delle
        persone il campo arriva pieno e non devono fare niente.
 
-       In modifica no, come per gli altri campi: chi ha un profilo nato prima
-       di questa regola non deve ritrovarsi il salvataggio bloccato. */
-    if (!modifica && !photoURL) {
+       Anche IN MODIFICA, a differenza degli altri campi, ed e' voluto: chi ha
+       un profilo senza foto viene mandato qui appena entra (vedi Layout.jsx)
+       proprio per metterla, e un salvataggio che la lasciasse vuota lo
+       rimanderebbe qui all'infinito. */
+    if (!photoURL) {
       nextErrors.photoURL = t('join.form.fotoObbligatoria')
     }
 
@@ -919,6 +926,15 @@ function ProfileForm({ firebaseMissing }) {
         </div>
       ) : (
         <form className={s.form} onSubmit={handleSubmit} noValidate>
+          {/* Detto in cima e non solo accanto al campo: chi e' stato mandato
+              qui all'ingresso deve capire subito perche', prima di pensare che
+              il sito si sia rotto. */}
+          {senzaFoto && (
+            <p className={s.fotoMancante} role="alert">
+              {t('join.form.fotoMancanteProfilo')}
+            </p>
+          )}
+
           <fieldset className={s.group}>
             <legend className={s.legend}>{t('join.form.chiSei')}</legend>
 
@@ -1059,7 +1075,7 @@ function ProfileForm({ firebaseMissing }) {
             <div className={s.field}>
               <label className={s.label} htmlFor={`${fid}-photo`}>
                 {t('join.form.foto')}
-                {!modifica && <Obbligatorio t={t} />}
+                <Obbligatorio t={t} />
               </label>
               <div className={s.photoRow}>
                 <div className={s.photoPreview}>

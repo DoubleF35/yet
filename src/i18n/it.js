@@ -1072,6 +1072,8 @@ export default {
       bioErrore: 'La bio supera {max} caratteri: togline {troppi}.',
       bioConteggio: '{n} caratteri su {max} disponibili',
       foto: 'Foto del profilo (link)',
+      fotoMancanteProfilo:
+        'Per continuare a usare il sito aggiungi una foto al tuo profilo: la usiamo in vetrina e per riconoscerti agli eventi. Caricala qui sotto e salva.',
       fotoObbligatoria:
         'Serve una foto in cui ti si riconosca: caricala dal telefono o incolla un link.',
       fotoNomeTu: 'Tu',

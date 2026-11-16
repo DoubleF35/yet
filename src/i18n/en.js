@@ -1000,6 +1000,8 @@ export default {
       bioErrore: 'The bio is over {max} characters: remove {troppi}.',
       bioConteggio: '{n} characters out of {max} available',
       foto: 'Profile photo (link)',
+      fotoMancanteProfilo:
+        'To keep using the site, add a photo to your profile: we use it in the members page and to recognise you at events. Upload it below and save.',
       fotoObbligatoria:
         'A photo where you can be recognised is needed: upload it from your phone or paste a link.',
       fotoNomeTu: 'You',
