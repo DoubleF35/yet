@@ -540,6 +540,21 @@ export default {
     operazioneFallita: 'That did not work. Try again.',
   },
 
+  gruppo: {
+    titolo: 'The WhatsApp group',
+    riassunto: '{persone} people in the group · {numeri} numbers loaded · {mancanti} without an application',
+    spiega:
+      'The number of people is the one shown on the home page: write it looking at WhatsApp. The numbers are only used here, to tell who in the group has already applied and who has not: they do not appear anywhere on the site.',
+    persone: 'How many people are in the group',
+    incolla: 'Paste the numbers (they are added to the ones already loaded)',
+    trovati: '{n} numbers recognised in the pasted text.',
+    salva: 'Save',
+    salvato: 'Saved.',
+    regole: 'The database refused: the Firestore rules need to be published again.',
+    mancantiTitolo: 'In the group but without an application ({n})',
+    badge: 'In the group',
+  },
+
   schedaCandidatura: {
     tutte: 'All applications',
     nonTrovata: 'This application does not exist.',

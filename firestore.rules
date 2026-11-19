@@ -898,6 +898,32 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // IL GRUPPO WHATSAPP
+    //
+    // gruppo/pubblico e' un numero solo, quello della home: lo legge chiunque.
+    // gruppo/numeri sono i telefoni di chi e' nel gruppo: SOLO GLI ADMIN, in
+    // lettura e in scrittura. Quelle persone non si sono iscritte al sito e non
+    // hanno dato nessun consenso a comparirci: i loro numeri servono soltanto
+    // al pannello per riconoscere chi si e' gia' candidato.
+    // =========================================================================
+    match /gruppo/pubblico {
+      allow read: if true;
+      allow write: if isAdmin()
+                   && request.resource.data.keys().hasOnly(['persone', 'aggiornatoIl'])
+                   && request.resource.data.persone is int
+                   && request.resource.data.persone >= 0
+                   && request.resource.data.persone <= 100000;
+    }
+
+    match /gruppo/numeri {
+      allow read: if isAdmin();
+      allow write: if isAdmin()
+                   && request.resource.data.keys().hasOnly(['numeri', 'aggiornatoIl'])
+                   && request.resource.data.numeri is list
+                   && request.resource.data.numeri.size() <= 2000;
+    }
+
+    // =========================================================================
     // TUTTO IL RESTO: NEGATO
     //
     // Non è ridondante rispetto al comportamento predefinito di Firestore.
