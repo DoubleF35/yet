@@ -121,7 +121,7 @@ function PrivacyIt() {
             <strong>profili social</strong> e una <strong>foto</strong>, che puoi caricare dal
             dispositivo oppure indicare con un link. La foto caricata viene rimpicciolita dal
             browser e salvata dentro il tuo profilo: non finisce su nessun altro servizio. La prima
-            volta che ti candidi va compilato tutto, foto compresa. Per i link, se su
+            volta che ti candidi va compilato tutto, compresa una foto in cui ci sei tu. Per i link, se su
             LinkedIn o Instagram non ci sei, c’è una casella per dirlo: va bene come risposta.
           </p>
 
@@ -433,7 +433,7 @@ function PrivacyEn() {
             your <strong>social profiles</strong> and a <strong>photo</strong>, which you can
             either upload from your device or point to with a link. An uploaded photo is shrunk by
             your browser and stored inside your profile: it does not end up on any other service.
-            Everything has to be filled in the first time you apply, picture included. For
+            Everything has to be filled in the first time you apply, including a photo of yourself. For
             the links, if you are not on LinkedIn or Instagram there is a box to say so: that
             counts as an answer.
           </p>
