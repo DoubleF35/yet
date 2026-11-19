@@ -23,6 +23,7 @@ import { useI18n } from '../lib/i18n.jsx'
 import { memberLinks, memberName, memberPath } from '../lib/members.jsx'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { prefersReducedMotion } from '../lib/motion.js'
+import { PERSONE_SOLO_NEL_GRUPPO } from '../config/gruppo.js'
 import s from './Membri.module.css'
 
 /* Quante card fantasma durante il caricamento. Sei riempiono la griglia a
@@ -338,6 +339,7 @@ export default function Membri() {
   const membriVisibili = altri.filter((m) => membroInCitta(m, cittaScelta))
 
   const count = members.length
+  const inTutto = count + PERSONE_SOLO_NEL_GRUPPO
   const visibili = organizzatoriVisibili.length + membriVisibili.length
   const liveMessage =
     status === 'loading'
@@ -382,11 +384,16 @@ export default function Membri() {
             {/* Il contatore compare solo a dati caricati: mostrare "0" mentre si
                 carica direbbe una cosa falsa, e su un club appena nato la
                 differenza fra "zero membri" e "sto caricando" è tutta. */}
+            {/* Lo stesso numero della home: i profili qui sotto PIU' chi e'
+                nel gruppo WhatsApp ma un profilo non l'ha fatto (vedi
+                config/gruppo.js). Due numeri diversi per "quanti siamo" in
+                due pagine dello stesso sito farebbero dubitare di tutti e
+                due. Le tessere restano quelle dei profili veri. */}
             {status === 'ready' && count > 0 && (
               <p className={s.tally}>
-                <span className={s.tallyNumber}>{count}</span>
+                <span className={s.tallyNumber}>{inTutto}</span>
                 <span className={s.tallyLabel}>
-                  {count === 1 ? t('vetrina.contatoreUno') : t('vetrina.contatoreTanti')}
+                  {inTutto === 1 ? t('vetrina.contatoreUno') : t('vetrina.contatoreTanti')}
                 </span>
               </p>
             )}
