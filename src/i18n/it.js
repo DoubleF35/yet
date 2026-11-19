@@ -80,6 +80,7 @@ export default {
   socials: {
     linkedin: { label: 'LinkedIn', handle: 'YET Club' },
     instagram: { label: 'Instagram', handle: '@yet.community' },
+    tiktok: { label: 'TikTok', handle: '@yet.community' },
     whatsapp: { label: 'Gruppo WhatsApp', handle: 'Entra nella chat della community' },
     /* `{email}` e non l'indirizzo scritto: l'indirizzo vero sta in
        config/socials.js, qui ci passa attraverso. Vedi lib/socials.jsx. */
