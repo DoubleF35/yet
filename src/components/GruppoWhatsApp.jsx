@@ -9,21 +9,13 @@ import s from './GruppoWhatsApp.module.css'
 /* =========================================================================
    IL GRUPPO WHATSAPP, NEL PANNELLO
 
-   Due cose, che vanno in due posti diversi del database:
-
-     QUANTE PERSONE ci sono nel gruppo: e' il numero della home, e lo legge
-     chiunque (gruppo/pubblico). Si scrive a mano, guardando WhatsApp, perche'
-     molti contatti in rubrica WhatsApp li mostra col nome e non col numero,
-     quindi contare i numeri incollati darebbe un totale sbagliato per difetto.
-
-     I NUMERI: si incollano da dove capita, e servono SOLO qui, a riconoscere
+   I NUMERI del gruppo: si incollano da dove capita, e servono SOLO qui, a riconoscere
      chi del gruppo si e' gia' candidato e chi no (gruppo/numeri, solo admin).
      Non compaiono su nessuna pagina pubblica: quelle persone non si sono
      iscritte al sito.
    ========================================================================= */
 export default function GruppoWhatsApp({ gruppo, onSalvato, numeriCandidati }) {
   const { t } = useI18n()
-  const [persone, setPersone] = useState(String(gruppo?.persone || ''))
   const [testo, setTesto] = useState('')
   const [stato, setStato] = useState(null) // null | salvo | salvato | errore
   const [errore, setErrore] = useState(null)
@@ -44,7 +36,7 @@ export default function GruppoWhatsApp({ gruppo, onSalvato, numeriCandidati }) {
       /* I numeri incollati si AGGIUNGONO a quelli che c'erano: incollare una
          seconda pagina dell'elenco non deve cancellare la prima. */
       const tutti = [...new Set([...numeri, ...nuovi])]
-      const salvato = await adminSalvaGruppo({ persone, numeri: tutti })
+      const salvato = await adminSalvaGruppo({ numeri: tutti })
       onSalvato(salvato)
       setTesto('')
       setStato('salvato')
@@ -64,7 +56,6 @@ export default function GruppoWhatsApp({ gruppo, onSalvato, numeriCandidati }) {
         {t('gruppo.titolo')}
         <span className={s.riassunto}>
           {t('gruppo.riassunto', {
-            persone: gruppo?.persone || 0,
             numeri: numeri.length,
             mancanti: mancanti.length,
           })}
@@ -72,19 +63,6 @@ export default function GruppoWhatsApp({ gruppo, onSalvato, numeriCandidati }) {
       </summary>
 
       <p className={s.spiega}>{t('gruppo.spiega')}</p>
-
-      <label className={s.etichetta} htmlFor="gruppo-persone">
-        {t('gruppo.persone')}
-      </label>
-      <input
-        className={s.campo}
-        id="gruppo-persone"
-        type="number"
-        inputMode="numeric"
-        min="0"
-        value={persone}
-        onChange={(e) => setPersone(e.target.value)}
-      />
 
       <label className={s.etichetta} htmlFor="gruppo-numeri">
         {t('gruppo.incolla')}
