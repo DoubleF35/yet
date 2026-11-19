@@ -589,10 +589,9 @@ export default {
 
   gruppo: {
     titolo: 'Il gruppo WhatsApp',
-    riassunto: '{persone} persone nel gruppo · {numeri} numeri caricati · {mancanti} senza candidatura',
+    riassunto: '{numeri} numeri caricati · {mancanti} senza candidatura',
     spiega:
-      'Il numero di persone è quello che si vede in home: scrivilo guardando WhatsApp. I numeri servono solo qui, a riconoscere chi del gruppo si è già candidato e chi no: non compaiono da nessuna parte sul sito.',
-    persone: 'Quante persone ci sono nel gruppo',
+      'I numeri servono solo qui, a riconoscere chi del gruppo si è già candidato e chi no: non compaiono da nessuna parte sul sito.',
     incolla: 'Incolla i numeri (si aggiungono a quelli già caricati)',
     trovati: '{n} numeri riconosciuti nel testo incollato.',
     salva: 'Salva',

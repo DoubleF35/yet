@@ -98,7 +98,7 @@ export default function Candidature() {
        e' una pagina, e' un dump. Quindi Promise.all e non allSettled. */
     adminGetGruppo()
       .then((g) => vivo && setGruppo(g))
-      .catch(() => vivo && setGruppo({ persone: 0, numeri: [], nonLeggibile: true }))
+      .catch(() => vivo && setGruppo({ numeri: [], nonLeggibile: true }))
 
     Promise.all([listCandidature(), adminListUsers()])
       .then(([candidature, profili]) => {
@@ -363,7 +363,7 @@ export default function Candidature() {
 
           {gruppo && (
             <GruppoWhatsApp
-              key={gruppo.numeri.length + '-' + gruppo.persone}
+              key={gruppo.numeri.length}
               gruppo={gruppo}
               onSalvato={setGruppo}
               numeriCandidati={numeriCandidati}

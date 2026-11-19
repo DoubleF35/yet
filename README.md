@@ -1201,15 +1201,18 @@ campi diversi e potevano dire cose opposte.
 città, Instagram, LinkedIn. **Dentro non ci sono né il punteggio né le note**:
 un CSV si gira per WhatsApp senza pensarci.
 
-**Il gruppo WhatsApp** è una sezione chiusa in cima all'elenco. Due cose:
-quante persone ci sono nel gruppo, scritto a mano, che diventa **il numero della
-home** (il più grande fra quello e i profili approvati, mai la somma, che
-conterebbe due volte chi è in tutti e due); e i **numeri di telefono** del
-gruppo, che si incollano da dove capita e servono solo lì, a riconoscere chi
-del gruppo si è già candidato (badge «Nel gruppo») e a elencare chi no. I numeri
-stanno in `gruppo/numeri`, leggibile **solo dagli admin**, e non compaiono su
-nessuna pagina pubblica: quelle persone sono entrate in un gruppo, non si sono
-iscritte al sito.
+**Il numero della home** è: profili approvati **+ 79**, le persone che sono nel
+gruppo WhatsApp ma sul sito no. Il 79 è in `src/config/gruppo.js`, fissato il 19
+novembre 2026 (145 nel gruppo, 66 profili). Ogni profilo approvato fa salire il
+numero di uno. **Da riguardare a maggio 2027**: chi del gruppo si iscrive viene
+contato due volte, quindi col tempo il numero cresce più del vero.
+
+**Il gruppo WhatsApp** è anche una sezione chiusa in cima all'elenco, dove si
+incollano i **numeri di telefono** del gruppo. Servono solo lì: chi del gruppo
+si è già candidato prende il badge «Nel gruppo», e chi no finisce in un elenco
+con il link per scrivergli. Stanno in `gruppo/numeri`, leggibile **solo dagli
+admin**, e non compaiono su nessuna pagina pubblica: quelle persone sono
+entrate in un gruppo, non si sono iscritte al sito.
 
 **La scheda** (`/admin/candidature/<uid>`) ha un indirizzo suo, quindi si
 manda a un altro admin. **Il punteggio lì non compare**, né sulle righe

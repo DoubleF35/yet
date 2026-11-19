@@ -542,10 +542,9 @@ export default {
 
   gruppo: {
     titolo: 'The WhatsApp group',
-    riassunto: '{persone} people in the group · {numeri} numbers loaded · {mancanti} without an application',
+    riassunto: '{numeri} numbers loaded · {mancanti} without an application',
     spiega:
-      'The number of people is the one shown on the home page: write it looking at WhatsApp. The numbers are only used here, to tell who in the group has already applied and who has not: they do not appear anywhere on the site.',
-    persone: 'How many people are in the group',
+      'The numbers are only used here, to tell who in the group has already applied and who has not: they do not appear anywhere on the site.',
     incolla: 'Paste the numbers (they are added to the ones already loaded)',
     trovati: '{n} numbers recognised in the pasted text.',
     salva: 'Save',

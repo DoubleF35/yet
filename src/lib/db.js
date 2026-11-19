@@ -29,6 +29,7 @@ import {
 
 import { auth, db, isFirebaseConfigured } from './firebase.js'
 import { isAdminEmail } from '../config/admins.js'
+import { PERSONE_SOLO_NEL_GRUPPO } from '../config/gruppo.js'
 import {
   FONTI,
   N_EVENTI,
@@ -1686,10 +1687,11 @@ export async function setOspiti(nomi) {
    che un profilo non l'hanno ancora fatto. Due documenti, con due destini
    diversi, ed e' tutto il punto:
 
-     gruppo/pubblico  { persone }        lo legge CHIUNQUE: e' solo un numero,
-                                         quello della home
      gruppo/numeri    { numeri: [...] }  lo leggono SOLO GLI ADMIN: i numeri
                                          di telefono di chi e' nel gruppo
+
+   Il numero di persone della home invece non sta nel database: e' una
+   costante in config/gruppo.js.
 
    I numeri non finiscono mai su una pagina pubblica, nemmeno come segnaposto:
    quelle persone sono entrate in un gruppo, non si sono iscritte al sito, e
@@ -1700,40 +1702,19 @@ export async function setOspiti(nomi) {
 const GRUPPO = 'gruppo'
 
 /**
- * Il numero della home: quante persone ci sono nella community.
- *
- * Il piu' grande fra chi e' nel gruppo e chi ha un profilo approvato. Non la
- * somma: quasi tutti quelli col profilo sono anche nel gruppo, e sommarli li
- * conterebbe due volte. Il massimo invece non conta nessuno due volte e non
- * scende mai sotto il numero di profili veri.
- *
- * Se il numero del gruppo non c'e' (mai inserito, o regole non pubblicate) si
- * torna al conteggio dei profili, come prima.
+ * Il numero della home: i profili approvati, piu' le persone che sono nel
+ * gruppo WhatsApp ma sul sito no. Quella seconda cifra sta in
+ * config/gruppo.js, con la data in cui e' stata fissata e quando riguardarla.
  */
 export async function contaMembri() {
-  if (!isFirebaseConfigured) throw notConfigured()
-  const [profili, gruppo] = await Promise.allSettled([
-    countApprovedUsers(),
-    getDoc(doc(db, GRUPPO, 'pubblico')),
-  ])
-  const nProfili = profili.status === 'fulfilled' ? profili.value : 0
-  const nGruppo =
-    gruppo.status === 'fulfilled' && gruppo.value.exists()
-      ? Number(gruppo.value.data().persone) || 0
-      : 0
-  if (profili.status === 'rejected' && nGruppo === 0) throw profili.reason
-  return Math.max(nProfili, nGruppo)
+  return (await countApprovedUsers()) + PERSONE_SOLO_NEL_GRUPPO
 }
 
-/** Per il pannello: quante persone nel gruppo e i loro numeri. */
+/** Per il pannello: i numeri di telefono di chi e' nel gruppo. */
 export async function adminGetGruppo() {
   if (!isFirebaseConfigured) throw notConfigured()
-  const [pub, num] = await Promise.all([
-    getDoc(doc(db, GRUPPO, 'pubblico')),
-    getDoc(doc(db, GRUPPO, 'numeri')),
-  ])
+  const num = await getDoc(doc(db, GRUPPO, 'numeri'))
   return {
-    persone: pub.exists() ? Number(pub.data().persone) || 0 : 0,
     numeri: num.exists() && Array.isArray(num.data().numeri) ? num.data().numeri : [],
   }
 }
@@ -1758,14 +1739,10 @@ export function estraiNumeri(testo) {
   return [...new Set(puliti)]
 }
 
-/** Salva il numero di persone (pubblico) e i numeri (solo admin). */
-export async function adminSalvaGruppo({ persone, numeri }) {
+/** Salva i numeri del gruppo (solo admin). */
+export async function adminSalvaGruppo({ numeri }) {
   if (!isFirebaseConfigured) throw notConfigured()
-  const n = Math.max(0, Math.min(100000, Math.round(Number(persone) || 0)))
   const lista = [...new Set((numeri ?? []).filter((x) => /^\+[0-9]{8,15}$/.test(x)))].slice(0, 2000)
-  await Promise.all([
-    setDoc(doc(db, GRUPPO, 'pubblico'), { persone: n, aggiornatoIl: serverTimestamp() }),
-    setDoc(doc(db, GRUPPO, 'numeri'), { numeri: lista, aggiornatoIl: serverTimestamp() }),
-  ])
-  return { persone: n, numeri: lista }
+  await setDoc(doc(db, GRUPPO, 'numeri'), { numeri: lista, aggiornatoIl: serverTimestamp() })
+  return { numeri: lista }
 }
