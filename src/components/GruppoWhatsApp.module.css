@@ -1,0 +1,101 @@
+/* Il gruppo WhatsApp nel pannello: chiuso di partenza, perche' si apre di
+   rado (quando cambia il gruppo) e non deve allungare la pagina. */
+.gruppo {
+  margin-block-end: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+}
+
+.titolo {
+  cursor: pointer;
+  font-weight: var(--weight-bold);
+  min-block-size: 2.75rem;
+}
+
+.riassunto {
+  display: block;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-weight: var(--weight-regular);
+}
+
+.spiega {
+  margin: var(--space-2) 0 var(--space-3);
+  color: var(--muted);
+  font-size: var(--step--1);
+  line-height: var(--lh-base);
+}
+
+.etichetta {
+  display: block;
+  margin-block: var(--space-3) var(--space-1);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.campo {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.salva {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--ink);
+  color: var(--bg);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.ok {
+  margin-inline-start: var(--space-3);
+  color: var(--ok);
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+}
+
+.errore {
+  color: var(--danger);
+  font-size: var(--step--1);
+}
+
+.sottotitolo {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--step-0);
+}
+
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--step--1);
+}
+
+.link {
+  display: inline-flex;
+  min-block-size: 2.25rem;
+  align-items: center;
+  color: var(--whatsapp);
+}
+
+.titolo:focus-visible,
+.campo:focus-visible,
+.salva:focus-visible,
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}

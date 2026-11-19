@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import EmptyState from '../components/EmptyState.jsx'
 import ErrorState from '../components/ErrorState.jsx'
+import GruppoWhatsApp from '../components/GruppoWhatsApp.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import {
   ESITI,
@@ -15,7 +16,7 @@ import {
   linkLinkedin,
 } from '../lib/candidature.js'
 import { useAuth } from '../lib/auth.jsx'
-import { adminListUsers, aggiornaValutazione, listCandidature } from '../lib/db.js'
+import { adminGetGruppo, adminListUsers, aggiornaValutazione, listCandidature } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { useInCimaQuandoPronta } from '../lib/scorrimento.js'
@@ -65,6 +66,10 @@ export default function Candidature() {
   const { signOutUser } = useAuth()
 
   const [dossiers, setDossiers] = useState([])
+  /* Il gruppo WhatsApp: null finche' non e' letto, o se le regole non lo
+     lasciano leggere (non pubblicate): in quel caso la sezione non compare e
+     il resto della pagina funziona lo stesso. */
+  const [gruppo, setGruppo] = useState(null)
   const [stato, setStato] = useState('loading') // loading | ready | error | spento
   const [errore, setErrore] = useState(null)
   const [tentativo, setTentativo] = useState(0)
@@ -91,6 +96,10 @@ export default function Candidature() {
     /* Le due letture insieme. Qui pero' servono TUTTE E DUE: senza i profili
        l'elenco non avrebbe nemmeno i nomi, e un elenco di identificativi non
        e' una pagina, e' un dump. Quindi Promise.all e non allSettled. */
+    adminGetGruppo()
+      .then((g) => vivo && setGruppo(g))
+      .catch(() => vivo && setGruppo({ persone: 0, numeri: [], nonLeggibile: true }))
+
     Promise.all([listCandidature(), adminListUsers()])
       .then(([candidature, profili]) => {
         if (!vivo) return
@@ -113,6 +122,14 @@ export default function Candidature() {
   useInCimaQuandoPronta(stato === 'ready')
 
   const numeri = useMemo(() => conteggi(dossiers), [dossiers])
+  /* I numeri di chi si e' candidato e quelli del gruppo, nella stessa forma
+     (+39...): la candidatura salva il numero gia' normalizzato, e il gruppo
+     anche, quindi basta confrontarli. */
+  const numeriCandidati = useMemo(
+    () => new Set(dossiers.map((d) => d.whatsapp).filter(Boolean)),
+    [dossiers],
+  )
+  const numeriGruppo = useMemo(() => new Set(gruppo?.numeri ?? []), [gruppo])
   const visibili = useMemo(() => filtra(dossiers, filtri), [dossiers, filtri])
 
   const cambia = (campo) => (e) => {
@@ -344,6 +361,15 @@ export default function Candidature() {
             </div>
           </form>
 
+          {gruppo && (
+            <GruppoWhatsApp
+              key={gruppo.numeri.length + '-' + gruppo.persone}
+              gruppo={gruppo}
+              onSalvato={setGruppo}
+              numeriCandidati={numeriCandidati}
+            />
+          )}
+
           <div className={s.esporta}>
             <label className={s.esportaEtichetta} htmlFor="csv-esito">
               {t('candidaturePagina.esporta')}
@@ -411,6 +437,11 @@ export default function Candidature() {
                     {d.esito && (
                       <span className={`${s.badge} ${s[`badge_${d.esito}`]}`}>
                         {t(`candidaturePagina.badge.${d.esito}`)}
+                      </span>
+                    )}
+                    {numeriGruppo.has(d.whatsapp) && (
+                      <span className={`${s.badge} ${s.badge_contattata}`}>
+                        {t('gruppo.badge')}
                       </span>
                     )}
                     {d.senzaLinkedin && (

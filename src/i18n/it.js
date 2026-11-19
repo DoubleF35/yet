@@ -587,6 +587,21 @@ export default {
     operazioneFallita: 'Non è andata. Riprova.',
   },
 
+  gruppo: {
+    titolo: 'Il gruppo WhatsApp',
+    riassunto: '{persone} persone nel gruppo · {numeri} numeri caricati · {mancanti} senza candidatura',
+    spiega:
+      'Il numero di persone è quello che si vede in home: scrivilo guardando WhatsApp. I numeri servono solo qui, a riconoscere chi del gruppo si è già candidato e chi no: non compaiono da nessuna parte sul sito.',
+    persone: 'Quante persone ci sono nel gruppo',
+    incolla: 'Incolla i numeri (si aggiungono a quelli già caricati)',
+    trovati: '{n} numeri riconosciuti nel testo incollato.',
+    salva: 'Salva',
+    salvato: 'Salvato.',
+    regole: 'Il database ha rifiutato: vanno ripubblicate le regole Firestore.',
+    mancantiTitolo: 'Nel gruppo ma senza candidatura ({n})',
+    badge: 'Nel gruppo',
+  },
+
   schedaCandidatura: {
     tutte: 'Tutte le candidature',
     nonTrovata: 'Questa candidatura non c’è.',

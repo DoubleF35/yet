@@ -18,7 +18,7 @@ import {
 } from '../lib/attachments.js'
 import { EVENTI } from '../config/eventi.js'
 import { CITTA_CON_REFERENTE, contaCitta } from '../lib/citta.js'
-import { countApprovedUsers, formatDate, getMedia, listenMeetups, listenNews } from '../lib/db.js'
+import { contaMembri, formatDate, getMedia, listenMeetups, listenNews } from '../lib/db.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
 import { useI18n } from '../lib/i18n.jsx'
 import { LOGO } from '../lib/marchio.js'
@@ -161,14 +161,15 @@ export default function Home() {
     setCittaDeiMembri(contaCitta(elenco))
   }, [])
 
-  /* Il conteggio dei membri per la riga di apertura.
-     Query di aggregazione: il server risponde con un numero, senza spedire i
+  /* Il conteggio dei membri per la riga di apertura: chi e' nella community,
+     cioe' il piu' grande fra il gruppo WhatsApp e i profili approvati. Vedi
+     contaMembri() in lib/db.js. Query di aggregazione: il server risponde con un numero, senza spedire i
      documenti. Se fallisce non si dice niente e non si mostra niente, un
      contatore è un di più, e non deve poter rompere la home. */
   useEffect(() => {
     if (!isFirebaseConfigured) return undefined
     let alive = true
-    countApprovedUsers()
+    contaMembri()
       .then((n) => alive && setMembri(n))
       .catch(() => alive && setMembri(null))
     return () => {
