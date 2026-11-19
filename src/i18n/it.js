@@ -1003,7 +1003,7 @@ export default {
       comeSiEntra: {
         titolo: 'Come si entra',
         testo:
-          'Accedi con Google, scrivi due righe su di te e rispondi a qualche domanda su dove sei arrivato: ci vogliono tre minuti. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione, e le risposte alle domande non finiscono in vetrina: le leggiamo solo noi.',
+          'Accedi con Google, metti una foto in cui ci sei tu, scrivi due righe su di te e rispondi a qualche domanda su dove sei arrivato: ci vogliono tre minuti. La richiesta arriva agli organizzatori e, appena approvata, compari fra i membri. Non c’è quota di iscrizione, e le risposte alle domande non finiscono in vetrina: le leggiamo solo noi.',
       },
       seNonHai: {
         titolo: 'Se non hai ancora niente',
@@ -1071,11 +1071,11 @@ export default {
       bioObbligatoria: 'Scrivi due righe su di te: una tessera vuota non dice niente a chi la apre.',
       bioErrore: 'La bio supera {max} caratteri: togline {troppi}.',
       bioConteggio: '{n} caratteri su {max} disponibili',
-      foto: 'Foto del profilo (link)',
+      foto: 'Foto del profilo, con te dentro',
       fotoMancanteProfilo:
-        'Per continuare a usare il sito aggiungi una foto al tuo profilo: la usiamo in vetrina e per riconoscerti agli eventi. Caricala qui sotto e salva.',
+        'Per continuare a usare il sito aggiungi una foto al tuo profilo, una in cui ci sei tu: la usiamo in vetrina e per riconoscerti agli eventi. Caricala qui sotto e salva.',
       fotoObbligatoria:
-        'Serve una foto in cui ti si riconosca: caricala dal telefono o incolla un link.',
+        'Serve una foto in cui ci sei tu e ti si riconosce: caricala dal telefono o incolla un link.',
       fotoNomeTu: 'Tu',
       caricaFoto: 'Carica una foto',
       preparoFoto: 'Preparo la foto…',
@@ -1083,7 +1083,7 @@ export default {
       fotoCaricata:
         'Foto caricata dal tuo dispositivo, ridotta a {peso}. Usa «Togli» per sceglierne un’altra o per tornare a un indirizzo.',
       fotoHint:
-        'Facoltativo: se non metti niente usiamo le tue iniziali. Puoi caricare una foto dal dispositivo oppure incollare qui sopra l’indirizzo di una già online. Le foto caricate vengono ritagliate quadrate e rimpicciolite a {peso}.',
+        'Obbligatoria, e deve esserci la tua faccia: niente loghi, paesaggi, animali o avatar. Serve a chi ti cerca in vetrina e a noi per riconoscerti agli eventi; se la foto non ritrae te, il profilo non viene approvato. Puoi caricarla dal dispositivo oppure incollare qui sopra l’indirizzo di una già online. Le foto caricate vengono ritagliate quadrate e rimpicciolite a {peso}.',
       fotoErrore: 'Il link della foto deve iniziare con http:// o https://.',
       fotoIncompleto: 'Ci vuole un indirizzo completo, che inizi con http:// o https://.',
       fotoControllo: 'Sto controllando il link…',

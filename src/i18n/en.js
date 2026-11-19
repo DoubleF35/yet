@@ -939,7 +939,7 @@ export default {
       comeSiEntra: {
         titolo: 'How to get in',
         testo:
-          'Sign in with Google, write a couple of lines about yourself and answer a few questions about where you are: it takes three minutes. The request reaches the organisers and, as soon as it is approved, you show up among the members. There is no membership fee, and the answers to those questions never go on the showcase: only we read them.',
+          'Sign in with Google, add a photo of yourself, write a couple of lines about yourself and answer a few questions about where you are: it takes three minutes. The request reaches the organisers and, as soon as it is approved, you show up among the members. There is no membership fee, and the answers to those questions never go on the showcase: only we read them.',
       },
       seNonHai: {
         titolo: 'If you have nothing yet',
@@ -999,11 +999,11 @@ export default {
       bioObbligatoria: 'Write a couple of lines about yourself: an empty card says nothing to whoever opens it.',
       bioErrore: 'The bio is over {max} characters: remove {troppi}.',
       bioConteggio: '{n} characters out of {max} available',
-      foto: 'Profile photo (link)',
+      foto: 'Profile photo, with you in it',
       fotoMancanteProfilo:
-        'To keep using the site, add a photo to your profile: we use it in the members page and to recognise you at events. Upload it below and save.',
+        'To keep using the site, add a photo of yourself to your profile: we use it in the members page and to recognise you at events. Upload it below and save.',
       fotoObbligatoria:
-        'A photo where you can be recognised is needed: upload it from your phone or paste a link.',
+        'A photo of you, where you can be recognised, is needed: upload it from your phone or paste a link.',
       fotoNomeTu: 'You',
       caricaFoto: 'Upload a photo',
       preparoFoto: 'Preparing the photo…',
@@ -1011,7 +1011,7 @@ export default {
       fotoCaricata:
         'Photo uploaded from your device, reduced to {peso}. Use “Remove” to pick another one or to go back to an address.',
       fotoHint:
-        'Optional: if you leave it empty we use your initials. You can upload a photo from your device or paste the address of one already online. Uploaded photos are cropped square and shrunk to {peso}.',
+        'Required, and your face has to be in it: no logos, landscapes, pets or avatars. It helps people who look you up in the members page, and helps us recognise you at events; if the photo is not of you, the profile is not approved. You can upload it from your device or paste the address of one already online. Uploaded photos are cropped square and shrunk to {peso}.',
       fotoErrore: 'The photo link has to start with http:// or https://.',
       fotoIncompleto: 'A complete address is needed, starting with http:// or https://.',
       fotoControllo: 'Checking the link…',
