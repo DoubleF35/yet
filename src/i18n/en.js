@@ -79,6 +79,7 @@ export default {
   socials: {
     linkedin: { label: 'LinkedIn', handle: 'YET Club' },
     instagram: { label: 'Instagram', handle: '@yet.community' },
+    tiktok: { label: 'TikTok', handle: '@yet.community' },
     whatsapp: { label: 'WhatsApp group', handle: 'Join the community chat' },
     email: { label: 'Write to us', handle: '{email}' },
   },
