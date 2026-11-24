@@ -4,7 +4,6 @@ import { Link, useParams } from 'react-router-dom'
 import Avatar from '../components/Avatar.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import Skeleton from '../components/Skeleton.jsx'
-import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { formatDate, getMemberProfile, listUsers } from '../lib/db.js'
 import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
@@ -394,7 +393,6 @@ export default function Profilo() {
         {/* Chi arriva su un profilo dai social sta guardando una persona, non
             il club: l'invito al gruppo è l'unico modo che ha di entrarci in
             contatto senza aspettare un'approvazione. */}
-        <WhatsAppCta />
       </div>
     </section>
   )

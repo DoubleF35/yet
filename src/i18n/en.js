@@ -80,7 +80,6 @@ export default {
     linkedin: { label: 'LinkedIn', handle: 'YET Club' },
     instagram: { label: 'Instagram', handle: '@yet.community' },
     tiktok: { label: 'TikTok', handle: '@yet.community' },
-    whatsapp: { label: 'WhatsApp group', handle: 'Join the community chat' },
     email: { label: 'Write to us', handle: '{email}' },
   },
 
@@ -115,15 +114,6 @@ export default {
   },
 
   /* --- group invite ----------------------------------------------------- */
-  whatsapp: {
-    eyebrow: 'Where things actually happen',
-    titolo: 'The WhatsApp group',
-    testo:
-      'That is where we organise between one meetup and the next: you ask for a hand, you show where you have got to, you agree on when to meet. The site tells you what we do, the group is where we do it. You are in straight away, no approval to wait for.',
-    bottone: 'Join the group',
-    srSuffisso: ', the YET WhatsApp group (opens in a new tab)',
-  },
-
   /* --- shared states ---------------------------------------------------- */
   stati: {
     riprova: 'Try again',
