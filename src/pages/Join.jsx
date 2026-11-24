@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar.jsx'
 import DeleteAccount from '../components/DeleteAccount.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
-import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { authErrorText, isInAppBrowser, useAuth } from '../lib/auth.jsx'
 import { messaggioErrore, useI18n } from '../lib/i18n.jsx'
@@ -245,7 +244,6 @@ function JoinPitch({ firebaseMissing }) {
       {/* Prima del login: il profilo richiede un'approvazione, il gruppo no.
           Chi non se la sente di aspettare ha comunque un modo di entrare
           oggi, invece di chiudere la pagina. */}
-      <WhatsAppCta />
 
       <HandsDivider />
 

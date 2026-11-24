@@ -8,7 +8,6 @@ import Hero from '../components/Hero.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import Skeleton from '../components/Skeleton.jsx'
-import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import {
   mediaIdsOf,
   normalizeAttachments,
@@ -390,7 +389,6 @@ export default function Home() {
 
       {/* Chiude la home: chi è arrivato in fondo ha letto tutto quel che
           c'era da leggere, ed è il momento in cui l'invito serve davvero. */}
-      <WhatsAppCta />
     </div>
   )
 }

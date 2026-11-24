@@ -81,7 +81,6 @@ export default {
     linkedin: { label: 'LinkedIn', handle: 'YET Club' },
     instagram: { label: 'Instagram', handle: '@yet.community' },
     tiktok: { label: 'TikTok', handle: '@yet.community' },
-    whatsapp: { label: 'Gruppo WhatsApp', handle: 'Entra nella chat della community' },
     /* `{email}` e non l'indirizzo scritto: l'indirizzo vero sta in
        config/socials.js, qui ci passa attraverso. Vedi lib/socials.jsx. */
     email: { label: 'Scrivici', handle: '{email}' },
@@ -115,16 +114,6 @@ export default {
     nonCollegateTesto2b: 'in',
     nonCollegateTesto2c: ', riempi le sei chiavi dalla console Firebase e riavvia',
     nonCollegateTesto2d: '. I dettagli sono nel README.',
-  },
-
-  /* --- invito al gruppo ------------------------------------------------- */
-  whatsapp: {
-    eyebrow: 'Il posto dove succedono le cose',
-    titolo: 'Il gruppo WhatsApp',
-    testo:
-      'È lì che ci si organizza fra un incontro e l’altro: si chiede una mano, si mostra a che punto si è, si decide quando vedersi. Il sito racconta cosa facciamo, il gruppo è dove lo facciamo. Si entra subito, senza aspettare approvazioni.',
-    bottone: 'Entra nel gruppo',
-    srSuffisso: ' WhatsApp di YET (si apre in una nuova scheda)',
   },
 
   /* --- stati comuni ----------------------------------------------------- */

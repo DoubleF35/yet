@@ -8,7 +8,6 @@ import ErrorState from '../components/ErrorState.jsx'
 import HandsDivider from '../components/HandsDivider.jsx'
 import MappaItalia from '../components/MappaItalia.jsx'
 import Skeleton from '../components/Skeleton.jsx'
-import WhatsAppCta from '../components/WhatsAppCta.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import {
   cittaValida,
@@ -600,7 +599,6 @@ export default function Membri() {
         </div>
       </section>
 
-      <WhatsAppCta />
     </>
   )
 }
